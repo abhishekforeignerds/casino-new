@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login and Register</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">Welcome</h2>
+        <p class="text-center">Please log in or register to continue.</p>
+
+        <!-- Trigger modals -->
+        <div class="text-center">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div id="loginAlertContainer"></div>
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" id="loginEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalLabel">Register</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="registerForm">
+                        <div id="registerAlertContainer"></div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" id="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="text" name="phone" class="form-control" id="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control" id="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-secondary w-100">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Close Login Modal when Register Modal opens
+            $('#registerModal').on('show.bs.modal', function () {
+                $('#loginModal').modal('hide');
+            });
+
+            // Close Register Modal when Login Modal opens
+            $('#loginModal').on('show.bs.modal', function () {
+                $('#registerModal').modal('hide');
+            });
+
+            // Handle login form submission
+            $('#loginForm').on('submit', function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: 'login.php',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.status === 'success') {
+                            $('#loginAlertContainer').html('<div class="alert alert-success">' + response.message + '</div>');
+                            setTimeout(function () {
+                                window.location.href = response.redirect;
+                            }, 1500);
+                        } else {
+                            $('#loginAlertContainer').html('<div class="alert alert-danger">' + response.message + '</div>');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+            console.error('AJAX Error:', {
+                status: status,
+                error: error,
+                response: xhr.responseText
+            });
+            $('#loginAlertContainer').html('<div class="alert alert-danger">An error occurred. Please try again later.</div>');
+        }
+    });
+});
+
+            // Handle register form submission
+            $('#registerForm').on('submit', function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: 'register.php',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.status === 'success') {
+                            $('#registerAlertContainer').html('<div class="alert alert-success">' + response.message + '</div>');
+                            setTimeout(function () {
+                                window.location.href = response.redirect;
+                            }, 1500);
+                        } else if (response.status === 'error') {
+                            if (Array.isArray(response.message)) {
+                                response.message.forEach(function (error) {
+                                    $('#registerAlertContainer').append('<div class="alert alert-danger">' + error + '</div>');
+                                });
+                            } else {
+                                $('#registerAlertContainer').html('<div class="alert alert-danger">' + response.message + '</div>');
+                            }
+                        }
+                    },
+                    error: function () {
+                        $('#registerAlertContainer').html('<div class="alert alert-danger">An error occurred. Please try again later.</div>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
