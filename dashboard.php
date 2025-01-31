@@ -30,32 +30,39 @@ if (!isset($_SESSION['user'])) {
         }
 
         .tab {
-            padding: 15px 20px;
-            position: relative;
-            cursor: pointer;
-            font-weight: bold;
-            color: #333;
-            transition: all 0.3s ease;
-        }
+  background-color: transparent;
+  color: #007bff;
+  padding: 10px 20px;
+  display: inline-block;
+  border: 2px solid #007bff;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
 
-        .tab:hover {
-            background-color: #f8f9fa;
-        }
+.tab.active {
+  color: white;
+  background: linear-gradient(135deg, #007bff, #ff4d4d, #00d084);
+  background-size: 300% 300%;
+  animation: gradientShift 4s ease infinite;
+}
 
-        .tab.active {
-            background-color: #007bff;
-            color: #fff;
-        }
+.tab.active:hover {
+  animation: gradientShift 1.5s ease infinite;
+}
 
-        .tab.active::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            right: -10px;
-            transform: translateY(-50%);
-            border: 10px solid transparent;
-            border-left-color: #007bff;
-        }
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 
         /* Tab Content Styling */
         .tab-content {
@@ -67,6 +74,40 @@ if (!isset($_SESSION['user'])) {
         .tab-content.active {
             display: block;
         }
+        .tab .tabs-images {
+            width: 10rem;
+        }
+        .card-body img{
+            width: 100%;
+        }
+        .card {
+  position: relative;
+  padding: 20px;
+  background: linear-gradient(135deg, #f093fb, #f5576c, #4facfe, #43e97b);
+  background-size: 400% 400%;
+  animation: gradientPulse 5s ease infinite;
+  border-radius: 12px;
+  color: #fff;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card:hover {
+  animation: gradientPulse 2s ease infinite;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes gradientPulse {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
     </style>
 </head>
 <body>
@@ -77,25 +118,23 @@ if (!isset($_SESSION['user'])) {
         <div class="dashboard-container">
             <!-- Vertical Tabs -->
             <div class="vertical-tabs">
-                <div class="tab active" data-target="#tab1">Dashboard</div>
-                <div class="tab" data-target="#tab2">Profile</div>
-                <div class="tab" data-target="#tab3">Settings</div>
+                <div class="tab active" data-target="#tab1"> <img class="tabs-images" src="/assets/img/roulette.png"> </div>
+                <div class="tab" data-target="#tab2"><img class="tabs-images" src="/assets/img/roulette.png"> </div>
+                <div class="tab" data-target="#tab3"><img class="tabs-images" src="/assets/img/roulette.png"> </div>
             </div>
 
             <!-- Tab Content -->
             <div class="tab-content active" id="tab1">
-                <h3>Dashboard Content</h3>
-                <p>This is the content for the Dashboard tab. Customize this section with your desired information.</p>
+             
         
                 <div class="row">
                     
                         <div class="col-4 mb-3">
                             <div class="card shadow border-0">
                                 <div class="card-body">
-                                <a href="/roulette.php" taget="_blank">
-                                    <h5 class="card-title">Box 1</h5>
-                                    <p class="card-text">This is the first box content.</p>
-                                </a>
+                                    <a href="/luck-thirty-six-mini-timer.php" taget="_blank">
+                                    <img class="tabs-images" src="/assets/img/roulette.png"> 
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -104,8 +143,9 @@ if (!isset($_SESSION['user'])) {
                     <div class="col-4 mb-3">
                         <div class="card shadow border-0">
                             <div class="card-body">
-                                <h5 class="card-title">Box 2</h5>
-                                <p class="card-text">This is the second box content.</p>
+                            <a href="/luck-thirty-six-timer.php" taget="_blank">
+                            <img class="tabs-images" src="/assets/img/roulette.png"> 
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -113,8 +153,9 @@ if (!isset($_SESSION['user'])) {
                     <div class="col-4">
                         <div class="card shadow border-0">
                             <div class="card-body">
-                                <h5 class="card-title">Box 3</h5>
-                                <p class="card-text">This is the third box content.</p>
+                            <a href="/luck-thirty-six.php" taget="_blank">
+                            <img class="tabs-images" src="/assets/img/roulette.png"> 
+                                </a>
                             </div>
                         </div>
                     </div>

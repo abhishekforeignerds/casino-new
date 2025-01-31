@@ -796,3 +796,33 @@ html, body{
 	margin-top: -25px;
 }
 /*chip end*/
+
+
+#container {
+	padding: 30px;
+	background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+	background-size: 300% 300%;
+	animation: darkColorFlow 6s ease-in-out infinite;
+	border-radius: 16px;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+	color: white;
+  }
+  
+  #container:hover {
+	animation: darkColorFlow 2.5s ease-in-out infinite;
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+  }
+  
+  @keyframes darkColorFlow {
+	0% {
+	  background-position: 0% 50%;
+	}
+	50% {
+	  background-position: 100% 50%;
+	}
+	100% {
+	  background-position: 0% 50%;
+	}
+  }
+  
+
