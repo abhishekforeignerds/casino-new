@@ -2,7 +2,7 @@
 $host = "localhost";
 $user = "root"; // Change to your database username
 $pass = "";     // Change to your database password
-$dbname = "user_system";
+$dbname = "casino-game";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
 

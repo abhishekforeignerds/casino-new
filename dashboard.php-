@@ -1,0 +1,317 @@
+<?php
+session_start();
+
+// Restrict access if the user is not logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: index.php");
+    exit();
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .dashboard-container {
+            display: flex;
+            margin-top: 2rem;
+        }
+
+        /* Vertical Tabs Styling */
+        .vertical-tabs {
+            display: flex;
+            flex-direction: column;
+            width: 200px;
+            border-right: 2px solid #ddd;
+        }
+
+        .tab {
+  background-color: transparent;
+  color: #007bff;
+  padding: 10px 20px;
+  display: inline-block;
+  border: 2px solid #007bff;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.tab.active {
+  color: white;
+  background: linear-gradient(135deg, #007bff, #ff4d4d, #00d084);
+  background-size: 300% 300%;
+  animation: gradientShift 4s ease infinite;
+}
+
+.tab.active:hover {
+  animation: gradientShift 1.5s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+
+        /* Tab Content Styling */
+        .tab-content {
+            flex-grow: 1;
+            padding: 20px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        .tab .tabs-images {
+            width: 10rem;
+        }
+        .card-body img{
+            width: 100%;
+        }
+        .card {
+  position: relative;
+  padding: 20px;
+  background: linear-gradient(135deg, #f093fb, #f5576c, #4facfe, #43e97b);
+  background-size: 400% 400%;
+  animation: gradientPulse 5s ease infinite;
+  border-radius: 12px;
+  color: #fff;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card:hover {
+  animation: gradientPulse 2s ease infinite;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes gradientPulse {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mt-3">Welcome, <?php echo htmlspecialchars($_SESSION['user_id']); ?>!</h2>
+        <a href="logout.php" class="btn btn-danger mt-3">Logout</a>
+
+        <div class="dashboard-container">
+            <!-- Vertical Tabs -->
+            <div class="vertical-tabs">
+                <div class="tab active" data-target="#tab1"> <img class="tabs-images" src="/assets-normal/img/roulette.png"> </div>
+                <div class="tab" data-target="#tab2"><img class="tabs-images" src="/assets-normal/img/roulette.png"> </div>
+                <div class="tab" data-target="#tab3"><img class="tabs-images" src="/assets-normal/img/roulette.png"> </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content active" id="tab1">
+             
+        
+                <div class="row">
+                    
+                        <div class="col-4 mb-3">
+                            <div class="card shadow border-0">
+                                <div class="card-body">
+                                    <a href="/luck-thirty-six-mini-timer.php" taget="_blank">
+                                    <img class="tabs-images" src="/assets-normal/img/download-removebg-preview.png"> 
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                   
+
+                    <div class="col-4 mb-3">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                            <a href="/luck-thirty-six-timer.php" taget="_blank">
+                            <img class="tabs-images" src="/assets-normal/img/images-removebg-preview.png"> 
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                            <a href="/luck-thirty-six.php" taget="_blank">
+                            <img class="tabs-images" src="/assets-normal/img/roulette6.png"> 
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4 mb-3">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 1</h5>
+                                <p class="card-text">This is the first box content.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-4 mb-3">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 2</h5>
+                                <p class="card-text">This is the second box content.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 3</h5>
+                                <p class="card-text">This is the third box content.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4 mb-3">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 1</h5>
+                                <p class="card-text">This is the first box content.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-4 mb-3">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 2</h5>
+                                <p class="card-text">This is the second box content.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 3</h5>
+                                <p class="card-text">This is the third box content.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab2">
+            <div class="row">
+                    <div class="col-4 mb-3">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 1</h5>
+                                <p class="card-text">This is the first box content.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-4 mb-3">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 2</h5>
+                                <p class="card-text">This is the second box content.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 3</h5>
+                                <p class="card-text">This is the third box content.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4 mb-3">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 1</h5>
+                                <p class="card-text">This is the first box content.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-4 mb-3">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 2</h5>
+                                <p class="card-text">This is the second box content.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="tab-content" id="tab3">
+            <div class="row">as
+                    <div class="col-4 mb-3">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 1</h5>
+                                <p class="card-text">This is the first box content.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-4 mb-3">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Box 2</h5>
+                                <p class="card-text">This is the second box content.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching logic
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and contents
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(tc => tc.classList.remove('active'));
+
+                // Add active class to the clicked tab and its content
+                tab.classList.add('active');
+                const target = document.querySelector(tab.dataset.target);
+                target.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

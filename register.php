@@ -61,12 +61,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_insert->bind_param("ssss", $username, $email, $phone, $hashed_password);
 
         if ($stmt_insert->execute()) {
+            $user_id = $conn->insert_id; // Get newly inserted user's ID
+
+            // Insert default values into the bets table
+            $stmt_bets = $conn->prepare("
+                INSERT INTO bets (user_id, bank_value, current_bet, wager, last_wager, bet, numbers_bet, previous_numbers) 
+                VALUES (?, 1000, 0, 5, 0, '[]', '[]', '[]')
+            ");
+            $stmt_bets->bind_param("i", $user_id);
+            $stmt_bets->execute();
+            $stmt_bets->close();
+
             // Automatically log in the user after registration
             $_SESSION['user'] = [
-                'id' => $conn->insert_id,
+                'id' => $user_id,
                 'username' => $username,
                 'email' => $email,
             ];
+
+
+            $stmt_fetch_bets = $conn->prepare("SELECT * FROM bets WHERE user_id = ?");
+                $stmt_fetch_bets->bind_param("i", $user_id);
+                $stmt_fetch_bets->execute();
+                $result_bets = $stmt_fetch_bets->get_result();
+                $bets_data = $result_bets->fetch_assoc();
+                $stmt_fetch_bets->close();
+
+                // Store user data and bets data in session
+            
+                // If user has data in bets table, add it to session
+                if ($bets_data) {
+                    $_SESSION['bets'] = $bets_data; // Stores all bets table columns in session
+                }
 
             $response = [
                 'status' => 'success',

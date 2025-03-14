@@ -1,317 +1,473 @@
-<?php
-session_start();
-
-// Restrict access if the user is not logged in
-if (!isset($_SESSION['user'])) {
-    header("Location: index.php");
-    exit();
-}
-?>
-
+ <!-- meta tags and other links -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .dashboard-container {
-            display: flex;
-            margin-top: 2rem;
-        }
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Casino - Online Casino Platform</title>
+        <link rel="icon" type="image/png" href="assets/images/favicon.png"
+            sizes="16x16">
+        <!-- bootstrap 5  -->
+        <link rel="stylesheet" href="assets/css/lib/bootstrap.min.css">
+        <!-- Icon Link  -->
+        <link rel="stylesheet" href="assets/css/all.min.css">
+        <link rel="stylesheet" href="assets/css/line-awesome.min.css">
+        <link rel="stylesheet" href="assets/css/lib/animate.css">
 
-        /* Vertical Tabs Styling */
-        .vertical-tabs {
-            display: flex;
-            flex-direction: column;
-            width: 200px;
-            border-right: 2px solid #ddd;
-        }
+        <!-- Plugin Link -->
+        <link rel="stylesheet" href="assets/css/lib/slick.css">
 
-        .tab {
-  background-color: transparent;
-  color: #007bff;
-  padding: 10px 20px;
-  display: inline-block;
-  border: 2px solid #007bff;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
+        <!-- Main css -->
+        <link rel="stylesheet" href="assets/css/main.css">
+    </head>
+    <body data-bs-spy="scroll" data-bs-offset="170"
+        data-bs-target=".privacy-policy-sidebar-menu">
 
-.tab.active {
-  color: white;
-  background: linear-gradient(135deg, #007bff, #ff4d4d, #00d084);
-  background-size: 300% 300%;
-  animation: gradientShift 4s ease infinite;
-}
-
-.tab.active:hover {
-  animation: gradientShift 1.5s ease infinite;
-}
-
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-
-        /* Tab Content Styling */
-        .tab-content {
-            flex-grow: 1;
-            padding: 20px;
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-        .tab .tabs-images {
-            width: 10rem;
-        }
-        .card-body img{
-            width: 100%;
-        }
-        .card {
-  position: relative;
-  padding: 20px;
-  background: linear-gradient(135deg, #f093fb, #f5576c, #4facfe, #43e97b);
-  background-size: 400% 400%;
-  animation: gradientPulse 5s ease infinite;
-  border-radius: 12px;
-  color: #fff;
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-}
-
-.card:hover {
-  animation: gradientPulse 2s ease infinite;
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
-}
-
-@keyframes gradientPulse {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2 class="text-center mt-3">Welcome, <?php echo htmlspecialchars($_SESSION['user']['username']); ?>!</h2>
-        <a href="logout.php" class="btn btn-danger mt-3">Logout</a>
-
-        <div class="dashboard-container">
-            <!-- Vertical Tabs -->
-            <div class="vertical-tabs">
-                <div class="tab active" data-target="#tab1"> <img class="tabs-images" src="/assets/img/roulette.png"> </div>
-                <div class="tab" data-target="#tab2"><img class="tabs-images" src="/assets/img/roulette.png"> </div>
-                <div class="tab" data-target="#tab3"><img class="tabs-images" src="/assets/img/roulette.png"> </div>
+        <div class="overlay"></div>
+        <div class="preloader">
+            <div class="scene" id="scene">
+                <input type="checkbox" id="andicator" />
+                <div class="cube">
+                    <div class="cube__face cube__face--front"><i></i></div>
+                    <div
+                        class="cube__face cube__face--back"><i></i><i></i></div>
+                    <div class="cube__face cube__face--right">
+                        <i></i> <i></i> <i></i> <i></i> <i></i>
+                    </div>
+                    <div class="cube__face cube__face--left">
+                        <i></i> <i></i> <i></i> <i></i> <i></i> <i></i>
+                    </div>
+                    <div class="cube__face cube__face--top">
+                        <i></i> <i></i> <i></i>
+                    </div>
+                    <div class="cube__face cube__face--bottom">
+                        <i></i> <i></i> <i></i> <i></i>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <!-- Tab Content -->
-            <div class="tab-content active" id="tab1">
-             
-        
+        <div class="header">
+            <div class="container">
+                <div class="header-bottom">
+                    <div class="header-bottom-area align-items-center">
+                        <div class="logo"><a href="index.php"><img
+                                    src="assets/images/logo.png"
+                                    alt="logo"></a></div>
+                        <ul class="menu">
+                            <li>
+                                <a href="index.php">Home</a>
+                            </li>
+                            <li>
+                                <a href="about.php">About</a>
+                            </li>
+                            <li>
+                                <a href="games.php">Games <span
+                                        class="badge badge--sm badge--base text-dark">NEW</span></a>
+                            </li>
+                            <li>
+                                <a href="faq.php">Faq</a>
+                            </li>
+                            <li>
+                                <a href="#0">Pages</a>
+                                <ul class="sub-menu">
+                                    <li>
+                                        <a href="dashboard.php">User
+                                            Dashboard</a>
+                                    </li>
+                                    <li>
+                                        <a href="game-details.php">Game
+                                            Details</a>
+                                    </li>
+                                    <li>
+                                        <a href="policy.php">Privacy Policy</a>
+                                    </li>
+                                    <li>
+                                        <a href="terms-conditions.php">Terms &
+                                            Conditions</a>
+                                    </li>
+                                    <li>
+                                        <a href="sign-in.php">Sign In</a>
+                                    </li>
+                                    <li>
+                                        <a href="sign-up.php">Sign Up</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#0">Blog</a>
+                                <ul class="sub-menu">
+                                    <li><a href="blog.php">Blog</a></li>
+                                    <li><a href="blog-details.php">Blog
+                                            Details</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="contact.php">Contact</a>
+                            </li>
+                            <button
+                                class="btn-close btn-close-white d-lg-none"></button>
+                        </ul>
+                        <div
+                            class="header-trigger-wrapper d-flex d-lg-none align-items-center">
+                            <div class="header-trigger me-4">
+                                <span></span>
+                            </div>
+                            <a href="sign-in.php"
+                                class="cmn--btn active btn--md d-none d-sm-block">Sign
+                                In</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- inner hero section start -->
+        <section class="inner-banner bg_img"
+            style="background: url('assets/images/inner-banner/bg2.jpg') top;">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-7 col-xl-6 text-center">
+                        <h2 class="title text-white">User Dashboard</h2>
+                        <ul
+                            class="breadcrumbs d-flex flex-wrap align-items-center justify-content-center">
+                            <li><a href="index.php">Home</a></li>
+                            <li>Dashboard</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- inner hero section end -->
+
+        <!-- Dashboard Section Starts Here -->
+        <div class="dashboard-section padding-top padding-bottom">
+            <div class="container">
                 <div class="row">
-                    
-                        <div class="col-4 mb-3">
-                            <div class="card shadow border-0">
-                                <div class="card-body">
-                                    <a href="/luck-thirty-six-mini-timer.php" taget="_blank">
-                                    <img class="tabs-images" src="/assets/img/roulette.png"> 
-                                    </a>
+                    <div class="col-lg-3">
+                        <div class="dashboard-sidebar">
+                            <div class="close-dashboard d-lg-none">
+                                <i class="las la-times"></i>
+                            </div>
+                            <div class="dashboard-user">
+                                <div class="user-thumb">
+                                    <img src="assets/images/top/item1.png"
+                                        alt="dashboard">
+                                </div>
+                                <div class="user-content">
+                                    <span class="fs-sm">Welcome</span>
+                                    <h5 class="name">Munna Ahmed</h5>
+                                    <ul class="user-option">
+                                        <li>
+                                            <a href="#0">
+                                                <i class="las la-bell"></i>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#0">
+                                                <i class="las la-pen"></i>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#0">
+                                                <i class="las la-envelope"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <ul class="user-dashboard-tab">
+                                <li>
+                                    <a href="dashboard.php"
+                                        class="active">Dashboard</a>
+                                </li>
+                                <li>
+                                    <a href="deposit-log.php">Deposit
+                                        History</a>
+                                </li>
+                                <li>
+                                    <a href="withdraw-log.php">Withdraw
+                                        History</a>
+                                </li>
+                                <li>
+                                    <a href="transection.php">Transection
+                                        History</a>
+                                </li>
+                                <li>
+                                    <a href="profile.php">Account Settings</a>
+                                </li>
+                                <li>
+                                    <a href="change-pass.php">Security
+                                        Settings</a>
+                                </li>
+                                <li>
+                                    <a href="#0">Sign Out</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-9">
+                        <div
+                            class="user-toggler-wrapper d-flex align-items-center d-lg-none">
+                            <h4 class="title m-0">User Dashboard</h4>
+                            <div class="user-toggler">
+                                <i class="las la-sliders-h"></i>
+                            </div>
+                        </div>
+                        <div class="row justify-content-center g-4">
+                            <div class="col-lg-6 col-xl-4 col-md-6 col-sm-10">
+                                <div class="dashboard__card">
+                                    <div class="dashboard__card-content">
+                                        <h2 class="price">₹1750</h2>
+                                        <p class="info">TOTAL BALANCE</p>
+                                        <a href="#0" class="view-btn">View
+                                            All</a>
+                                    </div>
+                                    <div class="dashboard__card-icon">
+                                        <i class="las la-wallet"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-xl-4 col-md-6 col-sm-10">
+                                <div class="dashboard__card">
+                                    <div class="dashboard__card-content">
+                                        <h2 class="price">₹1550</h2>
+                                        <p class="info">TOTAL DEPOSIT</p>
+                                        <a href="#0" class="view-btn">View
+                                            All</a>
+                                    </div>
+                                    <div class="dashboard__card-icon">
+                                        <i class="las la-wallet"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-xl-4 col-md-6 col-sm-10">
+                                <div class="dashboard__card">
+                                    <div class="dashboard__card-content">
+                                        <h2 class="price">₹1500</h2>
+                                        <p class="info">TOTAL WITHDRAW</p>
+                                        <a href="#0" class="view-btn">View
+                                            All</a>
+                                    </div>
+                                    <div class="dashboard__card-icon">
+                                        <i class="las la-money-check"></i>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                   
-
-                    <div class="col-4 mb-3">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                            <a href="/luck-thirty-six-timer.php" taget="_blank">
-                            <img class="tabs-images" src="/assets/img/roulette.png"> 
-                                </a>
+                        <div class="pt-5 row gy-4 justify-content-center">
+                            <div class="col-lg-6 col-xl-4 col-md-6 col-sm-6">
+                                <div class="game-item">
+                                    <div class="game-inner">
+                                        <div class="game-item__thumb">
+                                            <img
+                                                src="assets/images/game/item2.png"
+                                                alt="game">
+                                        </div>
+                                        <div class="game-item__content">
+                                            <h4 class="title">Roulette</h4>
+                                            <p class="invest-info">Invest
+                                                Limit</p>
+                                            <p class="invest-amount">₹10.49 -
+                                                ₹1,000</p>
+                                            <a href="#0"
+                                                class="cmn--btn active btn--md radius-0">Play
+                                                Now</a>
+                                        </div>
+                                    </div>
+                                    <div class="ball"></div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-xl-4 col-md-6 col-sm-6">
+                                <div class="game-item">
+                                    <div class="game-inner">
+                                        <div class="game-item__thumb">
+                                            <img
+                                                src="assets/images/game/item1.png"
+                                                alt="game">
+                                        </div>
+                                        <div class="game-item__content">
+                                            <h4 class="title">Zero To Ninty</h4>
+                                            <p class="invest-info">Invest
+                                                Limit</p>
+                                            <p class="invest-amount">₹10.49 -
+                                                ₹1,000</p>
+                                            <a href="#0"
+                                                class="cmn--btn active btn--md radius-0">Play
+                                                Now</a>
+                                        </div>
+                                    </div>
+                                    <div class="ball"></div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-xl-4 col-md-6 col-sm-6">
+                                <div class="game-item">
+                                    <div class="game-inner">
+                                        <div class="game-item__thumb">
+                                            <img
+                                                src="assets/images/game/item3.png"
+                                                alt="game">
+                                        </div>
+                                        <div class="game-item__content">
+                                            <h4 class="title">Number Buy</h4>
+                                            <p class="invest-info">Invest
+                                                Limit</p>
+                                            <p class="invest-amount">₹10.49 -
+                                                ₹1,000</p>
+                                            <a href="#0"
+                                                class="cmn--btn active btn--md radius-0">Play
+                                                Now</a>
+                                        </div>
+                                    </div>
+                                    <div class="ball"></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="col-4">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                            <a href="/luck-thirty-six.php" taget="_blank">
-                            <img class="tabs-images" src="/assets/img/roulette.png"> 
-                                </a>
-                            </div>
+                        <div class="table--responsive--md mt-5">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Transection ID</th>
+                                        <th>Transection Type</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="trx-id"
+                                            data-label="Transection ID">#481XV93NCKD0</td>
+                                        <td class="trx-type"
+                                            data-label="Transection Type">Withdraw</td>
+                                        <td class="date" data-label="Date">12
+                                            Mar, 21 at 12:30 AM</td>
+                                        <td class="amount"
+                                            data-label="Amount">₹150.50</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="trx-id"
+                                            data-label="Transection ID">#V93N481XCKD0</td>
+                                        <td class="trx-type"
+                                            data-label="Transection Type">Deposit</td>
+                                        <td class="date" data-label="Date">12
+                                            Mar, 21 at 12:30 AM</td>
+                                        <td class="amount"
+                                            data-label="Amount">₹100.50</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="trx-id"
+                                            data-label="Transection ID">#1XCKD0V93N48</td>
+                                        <td class="trx-type"
+                                            data-label="Transection Type">Deposit</td>
+                                        <td class="date" data-label="Date">12
+                                            Mar, 21 at 12:30 AM</td>
+                                        <td class="amount"
+                                            data-label="Amount">₹150.50</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="trx-id"
+                                            data-label="Transection ID">#V981XCKD03N4</td>
+                                        <td class="trx-type"
+                                            data-label="Transection Type">Withdraw</td>
+                                        <td class="date" data-label="Date">12
+                                            Mar, 21 at 12:30 AM</td>
+                                        <td class="amount"
+                                            data-label="Amount">₹150.50</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="trx-id"
+                                            data-label="Transection ID">#481XV93NCKD0</td>
+                                        <td class="trx-type"
+                                            data-label="Transection Type">Deposit</td>
+                                        <td class="date" data-label="Date">12
+                                            Mar, 21 at 12:30 AM</td>
+                                        <td class="amount"
+                                            data-label="Amount">₹150.50</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="trx-id"
+                                            data-label="Transection ID">#V93N481XCKD0</td>
+                                        <td class="trx-type"
+                                            data-label="Transection Type">Withdraw</td>
+                                        <td class="date" data-label="Date">12
+                                            Mar, 21 at 12:30 AM</td>
+                                        <td class="amount"
+                                            data-label="Amount">₹100.50</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="trx-id"
+                                            data-label="Transection ID">#1XCKD0V93N48</td>
+                                        <td class="trx-type"
+                                            data-label="Transection Type">Deposit</td>
+                                        <td class="date" data-label="Date">12
+                                            Mar, 21 at 12:30 AM</td>
+                                        <td class="amount"
+                                            data-label="Amount">₹150.50</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="trx-id"
+                                            data-label="Transection ID">#V981XCKD03N4</td>
+                                        <td class="trx-type"
+                                            data-label="Transection Type">Withdraw</td>
+                                        <td class="date" data-label="Date">12
+                                            Mar, 21 at 12:30 AM</td>
+                                        <td class="amount"
+                                            data-label="Amount">₹150.50</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-4 mb-3">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 1</h5>
-                                <p class="card-text">This is the first box content.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-4 mb-3">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 2</h5>
-                                <p class="card-text">This is the second box content.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-4">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 3</h5>
-                                <p class="card-text">This is the third box content.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-4 mb-3">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 1</h5>
-                                <p class="card-text">This is the first box content.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-4 mb-3">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 2</h5>
-                                <p class="card-text">This is the second box content.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-4">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 3</h5>
-                                <p class="card-text">This is the third box content.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-content" id="tab2">
-            <div class="row">
-                    <div class="col-4 mb-3">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 1</h5>
-                                <p class="card-text">This is the first box content.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-4 mb-3">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 2</h5>
-                                <p class="card-text">This is the second box content.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-4">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 3</h5>
-                                <p class="card-text">This is the third box content.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-4 mb-3">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 1</h5>
-                                <p class="card-text">This is the first box content.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-4 mb-3">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 2</h5>
-                                <p class="card-text">This is the second box content.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-            <div class="tab-content" id="tab3">
-            <div class="row">as
-                    <div class="col-4 mb-3">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 1</h5>
-                                <p class="card-text">This is the first box content.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-4 mb-3">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">Box 2</h5>
-                                <p class="card-text">This is the second box content.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    
                 </div>
             </div>
         </div>
-        </div>
-    </div>
+        <!-- Dashboard Section Ends Here -->
 
-    <script>
-        // Tab switching logic
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
+        <!-- Footer Section Starts Here -->
+        <footer class="footer-section bg_img"
+            style="background: url(assets/images/footer/bg.jpg) center;">
+            <div class="footer-top">
+                <div class="container">
+                    <div
+                        class="footer-wrapper d-flex flex-wrap align-items-center justify-content-md-between justify-content-center">
+                        <div class="logo mb-3 mb-md-0"><a href="index.php"><img
+                                    src="assets/images/logo.png"
+                                    alt="logo"></a></div>
+                        <ul
+                            class="footer-links d-flex flex-wrap justify-content-center">
+                            <li><a href="games.php">Games</a></li>
+                            <li><a href="terms-conditions.php">Terms &
+                                    Conditions</a></li>
+                            <li><a href="policy.php">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="container">
+                    <div
+                        class="footer-wrapper d-flex flex-wrap justify-content-center align-items-center text-center">
+                        <p class="copyright text-white">Copyrights &copy; 2021
+                            All Rights Reserved by <a href="#0"
+                                class=" text--base ms-2">Viserlab</a></p>
+                    </div>
+                </div>
+            </div>
+            <div class="shapes">
+                <img src="assets/images/footer/shape.png" alt="footer"
+                    class="shape1">
+            </div>
+        </footer>
+        <!-- Footer Section Ends Here -->
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Remove active class from all tabs and contents
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(tc => tc.classList.remove('active'));
+        <!-- jQuery library -->
+        <script src="assets/js/lib/jquery-3.6.0.min.js"></script>
+        <!-- bootstrap 5 js -->
+        <script src="assets/js/lib/bootstrap.min.js"></script>
 
-                // Add active class to the clicked tab and its content
-                tab.classList.add('active');
-                const target = document.querySelector(tab.dataset.target);
-                target.classList.add('active');
-            });
-        });
-    </script>
-</body>
+        <!-- Pluglin Link -->
+        <script src="assets/js/lib/slick.min.js"></script>
+
+        <!-- main js -->
+        <script src="assets/js/main.js"></script>
+    </body>
 </html>

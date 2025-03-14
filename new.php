@@ -372,15 +372,15 @@ var Poker = (function () {
     updateBlinds: function (round) {
       var round_blinds = blinds[round - 1] || blinds[blinds.length];
       
-      $('.small-blind').html(round_blinds.small);
-      $('.big-blind').html(round_blinds.big);
+      $('.small-blind').php(round_blinds.small);
+      $('.big-blind').php(round_blinds.big);
     },
     updateClock: function (timer) {
       var minute = Math.floor(timer / 60),
           second = (timer % 60) + "",
           second = second.length > 1 ? second : "0" + second;
         
-      $('.clock').html(minute + ":" + second);
+      $('.clock').php(minute + ":" + second);
       
       if (timer <= 0) {
         this.startNextRound();
@@ -405,7 +405,7 @@ var Poker = (function () {
       }
     },
     updateRound: function (round) {
-      $('#round').html('Round' + ' ' + round);
+      $('#round').php('Round' + ' ' + round);
     }
   };
 }());
