@@ -550,7 +550,14 @@ function spin(){
 				}
 			}
 			win(winningSpin, winValue, betTotal);
-		}
+		} else {
+			
+			let lostBetTotal = 0;
+			for (i = 0; i < bet.length; i++){
+			  lostBetTotal += bet[i].amt;
+			}
+			lose(winningSpin, lostBetTotal);
+		  }
 
 		currentBet = 0;
 		document.getElementById('bankSpan').innerText = '' + bankValue.toLocaleString("en-GB") + '';
@@ -616,6 +623,43 @@ function win(winningSpin, winValue, betTotal){
 	}
 }
 
+function lose(winningSpin, betTotal) {
+	let notification = document.createElement('div');
+	notification.setAttribute('id', 'notification');
+  
+	let nSpan = document.createElement('div');
+	nSpan.setAttribute('class', 'nSpan');
+  
+	let nsnumber = document.createElement('span');
+	nsnumber.setAttribute('class', 'nsnumber');
+	nsnumber.style.cssText = (numRed.includes(winningSpin)) ? 'color:red' : 'color:black';
+	nsnumber.innerText = winningSpin;
+	nSpan.append(nsnumber);
+  
+	let nsTxt = document.createElement('span');
+	nsTxt.innerText = ' Lose';
+	nSpan.append(nsTxt);
+  
+	let nsLost = document.createElement('div');
+	nsLost.setAttribute('class', 'nsLost');
+  
+	let nsLostBlock = document.createElement('div');
+	nsLostBlock.setAttribute('class', 'nsLostBlock');
+	nsLostBlock.innerText = 'Bet: ' + betTotal;
+	nsLost.append(nsLostBlock);
+  
+	nSpan.append(nsLost);
+	notification.append(nSpan);
+	container.prepend(notification);
+  
+	setTimeout(function(){
+	  notification.style.cssText = 'opacity:0';
+	}, 3000);
+	setTimeout(function(){
+	  notification.remove();
+	}, 4000);
+  }
+  
 function removeBet(e, n, t, o){
 	wager = (wager == 0)? 100 : wager;
 	for(i = 0; i < bet.length; i++){

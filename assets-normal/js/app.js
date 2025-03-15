@@ -512,7 +512,14 @@ function spin(){
 				}
 			}
 			win(winningSpin, winValue, betTotal);
-		}
+		} else {
+			// Calculate the total lost bet amount (all bets lost)
+			let lostBetTotal = 0;
+			for (i = 0; i < bet.length; i++){
+			  lostBetTotal += bet[i].amt;
+			}
+			lose(winningSpin, lostBetTotal);
+		  }
 
 		currentBet = 0;
 		document.getElementById('bankSpan').innerText = '' + bankValue.toLocaleString("en-GB") + '';
@@ -577,6 +584,7 @@ function win(winningSpin, winValue, betTotal){
 		}, 4000);
 	}
 }
+
 
 function removeBet(e, n, t, o){
 	wager = (wager == 0)? 100 : wager;

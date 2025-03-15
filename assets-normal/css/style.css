@@ -311,13 +311,14 @@ html, body{
 	cursor: pointer;
 }
 
-.cdChipSpan{
-	display: inherit;
-	position: relative;
-	top: 5px;
-	width: 26px;
+.cdChipSpan {
+    display: inherit;
+    position: relative;
+    top: -5px;
+    width: 26px;
 	font-weight: bold;
 	font-size: 14px;
+	left: -4px;
 	text-align: center;
 }
 
@@ -472,8 +473,8 @@ html, body{
 
 .outerRim {
 	position: absolute;
-	left:0;
-	top:0;
+	left: 10px;
+	top:10px;
 	width: 290px;
 	height: 290px;
 	border-radius: 100%;

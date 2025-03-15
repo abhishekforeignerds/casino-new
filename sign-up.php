@@ -1,5 +1,4 @@
- <!-- meta tags and other links -->
- <?php
+<?php
 session_start();
 require 'db.php';
 
@@ -26,15 +25,56 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-    // Hash the password for secure storage
-    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
+    // Prepare an array to collect errors
+    $errors = [];
 
-    // Prepare and execute the insert query
+    // Check if email exists
+    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows > 0) {
+        $errors['email'] = "Email is already taken.";
+    }
+    $stmt->close();
+
+    // Check if username exists
+    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows > 0) {
+        $errors['username'] = "Username is already taken.";
+    }
+    $stmt->close();
+
+    // Check if phone number exists
+    $stmt = $conn->prepare("SELECT id FROM users WHERE phone = ?");
+    $stmt->bind_param("s", $phone);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows > 0) {
+        $errors['phone'] = "Phone number is already taken.";
+    }
+    $stmt->close();
+
+    // If there are any errors, you can send them back to the form
+    if (!empty($errors)) {
+        // For simplicity, we're just echoing the errors.
+        // In a production scenario, you might store these in a session or return them as JSON.
+        foreach ($errors as $key => $error) {
+            echo "<div class='error' id='{$key}Error'>{$error}</div>";
+        }
+        exit;
+    }
+
+    // If no errors, hash the password and insert the new user
+    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
     $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, country, phone, email, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("sssssss", $first_name, $last_name, $country, $phone, $email, $username, $hashed_password);
 
     if ($stmt->execute()) {
-        // Auto-login: Set session variables using the inserted user's ID and username
+        // Auto-login: Set session variables and redirect
         $_SESSION['user_id'] = $stmt->insert_id;
         $_SESSION['username'] = $username;
         header("Location: dashboard.php");
@@ -47,6 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->close();
 }
 ?>
+
 
 
  <!DOCTYPE html>
@@ -224,19 +265,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="col-xl-6 col-md-6">
         <div class="input-group">
             <span class="input-group-text text--base style--two">+80</span>
-            <input type="text" name="phone" class="form--control form-control style--two" placeholder="Phone Number" required>
+            <input id="phone" type="text" name="phone" class="form--control form-control style--two" placeholder="Phone Number" required>
+           
         </div>
+        <div id="phoneError" class="error-message" style="color: red;"></div>
     </div>
     <div class="col-xl-6 col-md-6">
         <div class="form-group">
             <div class="input-pre-icon"><i class="las la-envelope"></i></div>
             <input id="email" type="email" name="email" class="form--control form-control style--two" placeholder="Email" required>
+            <div id="emailError" class="error-message" style="color: red;"></div>
         </div>
     </div>
     <div class="col-xl-6 col-md-6">
         <div class="form-group">
             <div class="input-pre-icon"><i class="las la-user"></i></div>
             <input id="username" type="text" name="username" class="form--control form-control style--two" placeholder="Username" required>
+            <div id="usernameError" class="error-message" style="color: red;"></div>
         </div>
     </div>
     <div class="col-xl-6 col-md-6">
@@ -253,7 +298,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
     <div class="col-lg-12">
         <div class="form-group">
-            <button class="cmn--btn active w-100 btn--round" type="submit">Sign Up</button>
+        <button id="submitBtn" class="cmn--btn active w-100 btn--round" type="submit">Sign Up</button>
         </div>
     </div>
 </form>
@@ -323,5 +368,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <!-- main js -->
         <script src="assets/js/main.js"></script>
+        <script>
+function checkDuplicate(field, value) {
+    fetch('check_duplicate.php?field=' + field + '&value=' + encodeURIComponent(value))
+        .then(response => response.json())
+        .then(data => {
+            const errorDiv = document.getElementById(field + 'Error');
+            if (data.exists) {
+                errorDiv.textContent = field.charAt(0).toUpperCase() + field.slice(1) + " is already taken.";
+            } else {
+                errorDiv.textContent = "";
+            }
+            checkSubmitButton();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            checkSubmitButton();
+        });
+}
+
+function checkSubmitButton() {
+    // Retrieve the text content from all error containers
+    const emailError = document.getElementById("emailError").textContent;
+    const usernameError = document.getElementById("usernameError").textContent;
+    const phoneError = document.getElementById("phoneError").textContent;
+    const submitButton = document.getElementById("submitBtn");
+
+    // Disable the button if any error exists
+    if (emailError || usernameError || phoneError) {
+        submitButton.disabled = true;
+    } else {
+        submitButton.disabled = false;
+    }
+}
+
+// Attach event listeners to call checkDuplicate() on blur for each field
+document.getElementById("email").addEventListener("blur", function(){
+    checkDuplicate("email", this.value);
+});
+
+document.getElementById("username").addEventListener("blur", function(){
+    checkDuplicate("username", this.value);
+});
+
+document.getElementById("phone").addEventListener("blur", function(){
+    checkDuplicate("phone", this.value);
+});
+</script>
+
+
     </body>
 </html>

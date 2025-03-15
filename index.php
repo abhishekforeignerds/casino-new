@@ -2,10 +2,10 @@
 session_start();
 
 // Restrict access if the user is not logged in
-if (!isset($_SESSION['user_id'])) {
-    header("Location: sign-in.php");
-    exit();
-}
+// if (!isset($_SESSION['user_id'])) {
+//     header("Location: sign-in.php");
+//     exit();
+// }
 ?>
 
 <!-- meta tags and other links -->
@@ -78,7 +78,14 @@ if (!isset($_SESSION['user_id'])) {
                  
                     </li>
                     <li>
-                    <a class="text-center mt-3">Welcome, <?php echo htmlspecialchars($_SESSION['fname']); ?>!</a>
+                    <a class="text-center mt-3">Welcome, <?php 
+if (isset($_SESSION['fname'])) {
+    echo htmlspecialchars($_SESSION['fname']);
+} else {
+    echo "Guest"; // You can set a default value if the session variable is not set
+}
+?>
+!</a>
                  
                     </li>
                     <button class="btn-close btn-close-white d-lg-none"></button>
@@ -167,7 +174,14 @@ if (!isset($_SESSION['user_id'])) {
                                 <h4 class="title">Roulette</h4>
                                 <p class="invest-info">Lucky Thirty Six Mini Timer</p>
                                 <p class="invest-amount">₹10.49 - ₹1,000</p>
-                                <a href="/luck-thirty-six-mini-timer.php" class="cmn--btn active btn--md radius-0">Play Now</a>
+                             <?php
+                                if (!isset($_SESSION['user_id'])) { ?>
+   <a href="/sign-in.php" class="cmn--btn active btn--md radius-0">Play Now</a>
+                                <?php } else { ?>
+                                    <a href="/luck-thirty-six-mini-timer.php" class="cmn--btn active btn--md radius-0">Play Now</a>
+<?php }
+?>
+                               
                             </div>
                         </div>
                         <div class="ball"></div>
@@ -215,7 +229,14 @@ if (!isset($_SESSION['user_id'])) {
                                 <h4 class="title">Roulette</h4>
                                 <p class="invest-info">Lucky Thirty Six Timer</p>
                                 <p class="invest-amount">₹10.49 - ₹1,000</p>
-                                <a href="/luck-thirty-six-timer.php" class="cmn--btn active btn--md radius-0">Play Now</a>
+                                <?php
+                                if (!isset($_SESSION['user_id'])) { ?>
+   <a href="/sign-in.php" class="cmn--btn active btn--md radius-0">Play Now</a>
+                                <?php } else { ?>
+                                    <a href="/luck-thirty-six-timer.php" class="cmn--btn active btn--md radius-0">Play Now</a>
+<?php }
+?>
+                               
                             </div>
                         </div>
                         <div class="ball"></div>
@@ -247,7 +268,14 @@ if (!isset($_SESSION['user_id'])) {
                                 <h4 class="title">Dice Rolling</h4>
                                 <p class="invest-info">Lucky Thirty Six</p>
                                 <p class="invest-amount">₹10.49 - ₹1,000</p>
-                                <a href="/luck-thirty-six.php" class="cmn--btn active btn--md radius-0">Play Now</a>
+                                <?php
+                                if (!isset($_SESSION['user_id'])) { ?>
+   <a href="/sign-in.php" class="cmn--btn active btn--md radius-0">Play Now</a>
+                                <?php } else { ?>
+                                    <a href="/luck-thirty-six.php" class="cmn--btn active btn--md radius-0">Play Now</a>
+<?php }
+?>
+
                             </div>
                         </div>
                         <div class="ball"></div>

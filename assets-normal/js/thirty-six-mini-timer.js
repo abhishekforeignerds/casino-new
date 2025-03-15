@@ -1,4 +1,4 @@
-let bankValue = 1000;
+
 let currentBet = 0;
 let wager = 5;
 let lastWager = 0;
@@ -442,7 +442,7 @@ function clearBet(){
 let timerInterval;
 
 function startTimer() {
-    let timeLeft = 40; // 30 seconds
+    let timeLeft = 4; // 30 seconds
     let timerElement = document.getElementById('timer');
 
     if (!timerElement) {
@@ -479,6 +479,13 @@ function spin() {
     // Simulate spin duration (3 seconds here)
     setTimeout(() => {
         console.log("Roulette spin complete!");
+		const bankValueElem = document.getElementById('bankSpan');
+		console.log("Bank Value:", bankValueElem.innerText);
+		
+		// Log the winning numbers (each span inside pnContent)
+		const pnContentElem = document.getElementById('pnContent');
+		const winningNumbers = Array.from(pnContentElem.querySelectorAll('span')).map(span => span.innerText);
+		console.log("Winning Numbers:", winningNumbers);
         startTimer(); // Restart the timer after the spin completes
     }, 3000);
 }
@@ -538,19 +545,33 @@ function spin(){
 	var winningSpin = Math.floor(Math.random() * 37);
 	spinWheel(winningSpin);
 	setTimeout(function(){
-		if(numbersBet.includes(winningSpin)){
+		if (numbersBet.includes(winningSpin)) {
 			let winValue = 0;
 			let betTotal = 0;
-			for(i = 0; i < bet.length; i++){
+			for (let i = 0; i < bet.length; i++) {
 				var numArray = bet[i].numbers.split(',').map(Number);
-				if(numArray.includes(winningSpin)){
-					bankValue = (bankValue + (bet[i].odds * bet[i].amt) + bet[i].amt);
+				if (numArray.includes(winningSpin)) {
+					bankValue = bankValue + (bet[i].odds * bet[i].amt) + bet[i].amt;
 					winValue = winValue + (bet[i].odds * bet[i].amt);
 					betTotal = betTotal + bet[i].amt;
 				}
 			}
-			win(winningSpin, winValue, betTotal);
+			// Only call win if a bet was actually placed
+			if (betTotal > 0) {
+				win(winningSpin, winValue, betTotal);
+			}
+		} else {
+			// Calculate the total lost bet amount (all bets lost)
+			let lostBetTotal = 0;
+			for (let i = 0; i < bet.length; i++) {
+				lostBetTotal += bet[i].amt;
+			}
+			// Only call lose if a bet was actually placed
+			if (lostBetTotal > 0) {
+				lose(winningSpin, lostBetTotal);
+			}
 		}
+		
 
 		currentBet = 0;
 		document.getElementById('bankSpan').innerText = '' + bankValue.toLocaleString("en-GB") + '';
@@ -571,7 +592,15 @@ function spin(){
 		if(bankValue == 0 && currentBet == 0){
 			gameOver();
 		}
+		const bankValueElem = document.getElementById('bankSpan');
+		console.log("Bank Value:", bankValueElem.innerText);
+		
+		// Log the winning numbers (each span inside pnContent)
+		const pnContentElem = document.getElementById('pnContent');
+		const winningNumbers = Array.from(pnContentElem.querySelectorAll('span')).map(span => span.innerText);
+		console.log("Winning Numbers:", winningNumbers);
 	}, 10000);
+	
 }
 
 function win(winningSpin, winValue, betTotal){
@@ -616,6 +645,43 @@ function win(winningSpin, winValue, betTotal){
 	}
 }
 
+function lose(winningSpin, betTotal) {
+	let notification = document.createElement('div');
+	notification.setAttribute('id', 'notification');
+  
+	let nSpan = document.createElement('div');
+	nSpan.setAttribute('class', 'nSpan');
+  
+	let nsnumber = document.createElement('span');
+	nsnumber.setAttribute('class', 'nsnumber');
+	nsnumber.style.cssText = (numRed.includes(winningSpin)) ? 'color:red' : 'color:black';
+	nsnumber.innerText = winningSpin;
+	nSpan.append(nsnumber);
+  
+	let nsTxt = document.createElement('span');
+	nsTxt.innerText = ' Lose';
+	nSpan.append(nsTxt);
+  
+	let nsLost = document.createElement('div');
+	nsLost.setAttribute('class', 'nsLost');
+  
+	let nsLostBlock = document.createElement('div');
+	nsLostBlock.setAttribute('class', 'nsLostBlock');
+	nsLostBlock.innerText = 'Bet: ' + betTotal;
+	nsLost.append(nsLostBlock);
+  
+	nSpan.append(nsLost);
+	notification.append(nSpan);
+	container.prepend(notification);
+  
+	setTimeout(function(){
+	  notification.style.cssText = 'opacity:0';
+	}, 3000);
+	setTimeout(function(){
+	  notification.remove();
+	}, 4000);
+  }
+  
 function removeBet(e, n, t, o){
 	wager = (wager == 0)? 100 : wager;
 	for(i = 0; i < bet.length; i++){
