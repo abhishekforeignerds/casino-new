@@ -1,4 +1,4 @@
-let bankValue = 1000;
+
 let currentBet = 0;
 let wager = 5;
 let lastWager = 0;
@@ -442,7 +442,7 @@ function clearBet(){
 let timerInterval;
 
 function startTimer() {
-    let timeLeft = 25;
+    let timeLeft = 45;
     let timerElement = document.getElementById('timer');
 
     if (!timerElement) {
@@ -479,6 +479,13 @@ function spin() {
     // Simulate spin duration (3 seconds here)
     setTimeout(() => {
         console.log("Roulette spin complete!");
+		const bankValueElem = document.getElementById('bankSpan');
+		console.log("Bank Value:", bankValueElem.innerText);
+		
+		// Log the winning numbers (each span inside pnContent)
+		const pnContentElem = document.getElementById('pnContent');
+		const winningNumbers = Array.from(pnContentElem.querySelectorAll('span')).map(span => span.innerText);
+		console.log("Winning Numbers:", winningNumbers);
         startTimer(); // Restart the timer after the spin completes
     }, 3000);
 }
@@ -578,7 +585,41 @@ function spin(){
 		if(bankValue == 0 && currentBet == 0){
 			gameOver();
 		}
-	}, 10000);
+		const bankValueElem = document.getElementById('bankSpan');
+
+function updateBankValue() {
+    // Get the value from the element. Trim it in case there are extra spaces.
+    const bankValue = bankValueElem.innerText.trim();
+    
+    fetch('../../api/update_bank.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `bankValue=${encodeURIComponent(bankValue)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Bank value updated successfully:", data.message);
+        } else {
+            console.error("Error updating bank value:", data.message);
+        }
+    })
+    .catch(error => console.error('AJAX request failed:', error));
+}
+
+// Call the update function whenever needed, for example on a button click or after updating the element.
+updateBankValue();
+
+		console.log("Bank Value:", bankValueElem.innerText);
+		
+		// Log the winning numbers (each span inside pnContent)
+		const pnContentElem = document.getElementById('pnContent');
+		const winningNumbers = Array.from(pnContentElem.querySelectorAll('span')).map(span => span.innerText);
+		console.log("Winning Numbers:", winningNumbers);
+	}, 20000);
+	
 }
 
 function win(winningSpin, winValue, betTotal){
@@ -621,6 +662,7 @@ function win(winningSpin, winValue, betTotal){
 			notification.remove();
 		}, 4000);
 	}
+	recordGameResult(winningSpin, betTotal, winValue);
 }
 
 function lose(winningSpin, betTotal) {
@@ -651,7 +693,8 @@ function lose(winningSpin, betTotal) {
 	nSpan.append(nsLost);
 	notification.append(nSpan);
 	container.prepend(notification);
-  
+	
+	recordGameResult(winningSpin, betTotal);
 	setTimeout(function(){
 	  notification.style.cssText = 'opacity:0';
 	}, 3000);
@@ -660,6 +703,32 @@ function lose(winningSpin, betTotal) {
 	}, 4000);
   }
   
+  function recordGameResult(winningSpin, betTotal, winValue = 0) {
+    // Create a URL-encoded form data string
+    let formData = `winningSpin=${encodeURIComponent(winningSpin)}&betTotal=${encodeURIComponent(betTotal)}`;
+    // Include winValue only if it is provided (non-zero)
+    if(winValue > 0){
+        formData += `&winValue=${encodeURIComponent(winValue)}`;
+    }
+    
+    fetch('../../api/record_game.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Game result stored:", data.message);
+        } else {
+            console.error("Error storing game result:", data.message);
+        }
+    })
+    .catch(error => console.error('AJAX request failed:', error));
+}
+
 function removeBet(e, n, t, o){
 	wager = (wager == 0)? 100 : wager;
 	for(i = 0; i < bet.length; i++){

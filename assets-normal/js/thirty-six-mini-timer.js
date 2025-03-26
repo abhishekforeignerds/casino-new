@@ -442,7 +442,7 @@ function clearBet(){
 let timerInterval;
 
 function startTimer() {
-    let timeLeft = 4; // 30 seconds
+    let timeLeft = 45;
     let timerElement = document.getElementById('timer');
 
     if (!timerElement) {
@@ -545,33 +545,26 @@ function spin(){
 	var winningSpin = Math.floor(Math.random() * 37);
 	spinWheel(winningSpin);
 	setTimeout(function(){
-		if (numbersBet.includes(winningSpin)) {
+		if(numbersBet.includes(winningSpin)){
 			let winValue = 0;
 			let betTotal = 0;
-			for (let i = 0; i < bet.length; i++) {
+			for(i = 0; i < bet.length; i++){
 				var numArray = bet[i].numbers.split(',').map(Number);
-				if (numArray.includes(winningSpin)) {
-					bankValue = bankValue + (bet[i].odds * bet[i].amt) + bet[i].amt;
+				if(numArray.includes(winningSpin)){
+					bankValue = (bankValue + (bet[i].odds * bet[i].amt) + bet[i].amt);
 					winValue = winValue + (bet[i].odds * bet[i].amt);
 					betTotal = betTotal + bet[i].amt;
 				}
 			}
-			// Only call win if a bet was actually placed
-			if (betTotal > 0) {
-				win(winningSpin, winValue, betTotal);
-			}
+			win(winningSpin, winValue, betTotal);
 		} else {
-			// Calculate the total lost bet amount (all bets lost)
+			
 			let lostBetTotal = 0;
-			for (let i = 0; i < bet.length; i++) {
-				lostBetTotal += bet[i].amt;
+			for (i = 0; i < bet.length; i++){
+			  lostBetTotal += bet[i].amt;
 			}
-			// Only call lose if a bet was actually placed
-			if (lostBetTotal > 0) {
-				lose(winningSpin, lostBetTotal);
-			}
-		}
-		
+			lose(winningSpin, lostBetTotal);
+		  }
 
 		currentBet = 0;
 		document.getElementById('bankSpan').innerText = '' + bankValue.toLocaleString("en-GB") + '';
@@ -593,6 +586,32 @@ function spin(){
 			gameOver();
 		}
 		const bankValueElem = document.getElementById('bankSpan');
+
+function updateBankValue() {
+    // Get the value from the element. Trim it in case there are extra spaces.
+    const bankValue = bankValueElem.innerText.trim();
+    
+    fetch('../../api/update_bank.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `bankValue=${encodeURIComponent(bankValue)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Bank value updated successfully:", data.message);
+        } else {
+            console.error("Error updating bank value:", data.message);
+        }
+    })
+    .catch(error => console.error('AJAX request failed:', error));
+}
+
+// Call the update function whenever needed, for example on a button click or after updating the element.
+updateBankValue();
+
 		console.log("Bank Value:", bankValueElem.innerText);
 		
 		// Log the winning numbers (each span inside pnContent)
@@ -643,6 +662,7 @@ function win(winningSpin, winValue, betTotal){
 			notification.remove();
 		}, 4000);
 	}
+	recordGameResult(winningSpin, betTotal, winValue);
 }
 
 function lose(winningSpin, betTotal) {
@@ -673,7 +693,8 @@ function lose(winningSpin, betTotal) {
 	nSpan.append(nsLost);
 	notification.append(nSpan);
 	container.prepend(notification);
-  
+	
+	recordGameResult(winningSpin, betTotal);
 	setTimeout(function(){
 	  notification.style.cssText = 'opacity:0';
 	}, 3000);
@@ -682,6 +703,32 @@ function lose(winningSpin, betTotal) {
 	}, 4000);
   }
   
+  function recordGameResult(winningSpin, betTotal, winValue = 0) {
+    // Create a URL-encoded form data string
+    let formData = `winningSpin=${encodeURIComponent(winningSpin)}&betTotal=${encodeURIComponent(betTotal)}`;
+    // Include winValue only if it is provided (non-zero)
+    if(winValue > 0){
+        formData += `&winValue=${encodeURIComponent(winValue)}`;
+    }
+    
+    fetch('../../api/record_game.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Game result stored:", data.message);
+        } else {
+            console.error("Error storing game result:", data.message);
+        }
+    })
+    .catch(error => console.error('AJAX request failed:', error));
+}
+
 function removeBet(e, n, t, o){
 	wager = (wager == 0)? 100 : wager;
 	for(i = 0; i < bet.length; i++){

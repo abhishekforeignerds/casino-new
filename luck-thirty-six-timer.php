@@ -21,7 +21,7 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="assets/css/line-awesome.min.css"> 
     <link rel="stylesheet" href="assets/css/lib/animate.css"> 
     <script>
-        let bankValue = <?php echo htmlspecialchars($_SESSION['bets']['bank_value']); ?>;
+        let bankValue = <?php echo htmlspecialchars($_SESSION['points']); ?>;
     </script>
 	<link href="./assets-normal/css/style.css" rel="stylesheet" type="text/css">
     <style>
@@ -125,7 +125,7 @@ if (!isset($_SESSION['user_id'])) {
 	</div>
     <div id="timer"></div>
 	<div id="roulette"></div>
-	
+
 	<script src="./assets-normal/js/thirty-six-timer.js"></script>
     <footer class="footer-section bg_img" style="background: url(assets/images/footer/bg.jpg) center;">
     <div class="footer-top">

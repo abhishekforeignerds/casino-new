@@ -125,7 +125,6 @@ if (!isset($_SESSION['user_id'])) {
 	</div>
     <div id="timer"></div>
 	<div id="roulette"></div>
-	
 	<script src="./assets-normal/js/thirty-six-mini-timer.js"></script>
     <footer class="footer-section bg_img" style="background: url(assets/images/footer/bg.jpg) center;">
     <div class="footer-top">

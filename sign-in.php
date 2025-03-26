@@ -4,7 +4,7 @@ require 'db.php';
 
 // If already logged in, redirect to dashboard (or any page you choose)
 if (isset($_SESSION['user_id'])) {
-    header("Location: dashboard.php");
+    header("Location: poker-roulette.php");
     exit();
 }
 
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['username'] = $user['username'];
             $_SESSION['fname'] = $user['first_name'];
             $_SESSION['points'] = $user['points'];
-            header("Location: dashboard.php");
+            header("Location: poker-roulette.php");
             exit();
         } else {
             $error = "Invalid username/email or password.";
