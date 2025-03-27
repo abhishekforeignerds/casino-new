@@ -84,7 +84,7 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     </div>
 
-    <div class="header">
+    <div id="navbar-header" class="header">
         <div class="container">
             <div class="header-bottom">
                 <div class="header-bottom-area align-items-center">
@@ -122,15 +122,24 @@ if (!isset($_SESSION['user_id'])) {
                         <a href="sign-in.php" class="cmn--btn active btn--md d-none d-sm-block">Sign In</a>
                     </div>
                   <!-- Toggle Fullscreen Button with Icon -->
-                    <button id="fullscreenBtn" style="color:white;font-size: 24px; border: none; background: none; cursor: pointer;">
+                    
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <button id="fullscreenBtn" style="color:white;font-size: 32px;border: none;background: none;z-index: 1000;cursor: pointer;">
                     <i class="fas fa-expand"></i>
                     </button>
 
                     <script>
                     const fullscreenBtn = document.getElementById("fullscreenBtn");
+                    const navbar = document.getElementById("navbar-header");
+                    const footer = document.getElementById("poker-footer");
 
                     fullscreenBtn.addEventListener("click", function() {
                         if (!document.fullscreenElement) {
+                            
                         // Request fullscreen mode
                         document.documentElement.requestFullscreen().catch(err => console.warn("Error attempting to enable fullscreen:", err));
                         } else {
@@ -143,414 +152,16 @@ if (!isset($_SESSION['user_id'])) {
                     document.addEventListener("fullscreenchange", () => {
                         if (!document.fullscreenElement) {
                         fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                        navbar.style.display= 'block';
+                        footer.style.display= 'block';
                         } else {
                         fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                        navbar.style.display= 'none';
+                        footer.style.display= 'none';
                         }
                     });
                     </script>
-
-                </div>
-            </div>
-        </div>
-    </div>
-    <style>
-        :root {
-            --primary-color: #e91e63;
-            --background-color: #f7f7f7;
-            --chip-gradient: linear-gradient(145deg, #ff80ab, #f50057);
-            --chip-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-            --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-
-        /* Balance Display */
-        #image-roulette #balance-display {
-            font-size: 1.75rem;
-            font-weight: bold;
-            color: #ffffff;
-            margin-top: 6rem;
-            margin-left: 2rem;
-        }
-
-
-
-        #image-roulette #coin-container {
-            margin-bottom: 25px;
-        }
-
-        #image-roulette .coin {
-
-        }
-
-        #image-roulette .coin:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        #image-roulette .coin.selected {
-            outline: 3px solid var(--primary-color);
-            transform: scale(1.1);
-        }
-
-        /* Main Container */
-        #image-roulette #main-container {
-            display: flex;
-            gap: 40px;
-            align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            flex-direction: row-reverse;
-        }
-
-        /* Wheel Container (350x350) */
-        #image-roulette #wheel-container {
-            position: relative;
-            width: 350px;
-            height: 350px;
-            border-radius: 50%;
-            overflow: hidden;
-            background: #fff;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Rotating Wheel */
-        #image-roulette #wheel {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
-            z-index: 10;
-        }
-
-        /* SVG layers */
-        #image-roulette #segments-svg,
-        #image-roulette #lines-svg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-        }
-
-        #image-roulette #lines-svg {
-            z-index: 15;
-        }
-
-        /* Card wrapper */
-        #image-roulette .card-wrapper {
-            position: absolute;
-            transform-origin: center;
-        }
-
-        /* Card */
-        #image-roulette .card {
-            width: 55px;
-            height: 75px;
-            display: block;
-            box-shadow: var(--card-shadow);
-            transform-origin: center;
-        }
-
-        /* Center Circle */
-        #image-roulette #center-circle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #890e0e, #0b164bfa);
-            border: 3px solid var(--primary-color);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 25;
-            
-        }
-
-        /* Marker */
-        #image-roulette #marker {
-            position: absolute;
-            top: -35px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 21px solid transparent;
-            border-right: 21px solid transparent;
-            border-bottom: 28px solid var(--primary-color);
-            z-index: 30;
-            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-        }
-
-        /* Card Grid */
-        #image-roulette #card-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            max-width: 300px;
-        }
-
-        #image-roulette .grid-card {
-            position: relative;
-            width: 80px;
-            height: 110px;
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        #image-roulette .grid-card:hover {
-            transform: scale(1.05);
-        }
-
-        #image-roulette .grid-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.8;
-        }
-
-        /* Bet Overlay */
-        #image-roulette .bet-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1rem;
-            font-weight: bold;
-            background: rgba(233, 30, 99, 0.9);
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 12px;
-            pointer-events: none;
-        }
-
-        /* Winner Animation */
-        @keyframes blink {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        #image-roulette .winner {
-            animation: blink 1s infinite;
-            border: 2px solid var(--primary-color);
-            border-radius: 8px;
-        }
-
-        /* Spin Button */
-        #image-roulette #spinBtn {
-            padding: 12px 25px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            border: none;
-            border-radius: 50px;
-            background: var(--primary-color);
-            color: #fff;
-            box-shadow: var(--chip-shadow);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        #image-roulette #spinBtn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        /* History Box */
-        #image-roulette #history-box {
-            margin-top: 30px;
-            max-width: 550px;
-            height: 88px;
-            border: 2px solid var(--primary-color);
-            padding: 10px;
-            background: #ffffff00;
-            margin-bottom: 30px;
-            width: 550px;
-        }
-
-        #image-roulette #history-box h3 {
-            margin: 0 0 10px 0;
-            text-align: center;
-            font-size: 1.2rem;
-        }
-
-        #image-roulette #history-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            justify-content: center;
-        }
-
-        #image-roulette .history-card {
-            width: 55px;
-            height: 67px;
-            box-shadow: var(--card-shadow);
-            object-fit: cover;
-        }
-
-        #image-roulette .custom-alert {
-            padding: 15px;
-            border-radius: 5px;
-            font-size: 18px;
-            margin: 10px 0;
-            display: none;
-            font-weight: bold;
-        }
-
-        #image-roulette .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        #image-roulette .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        #image-roulette .alert-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
-
-        #image-roulette .alert-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        #image-roulette .close-btn {
-            margin-left: 15px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        #image-roulette #wheel-container {
-            position: relative;
-            width: 400px;  /* increased from 350px */
-            height: 400px; /* increased from 350px */
-            border-radius: 50%;
-            overflow: hidden;
-            background: #fff;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Update the SVG dimensions accordingly */
-        #image-roulette #segments-svg,
-        #image-roulette #lines-svg {
-            width: 400px;
-            height: 400px;
-        }
-        .container-chip-child {
-                    display: flex;
-                    justify-content: center;
-                    margin-top: 50px;
-                }
-
-                .coin {
-                    height: 100px;
-                    width: 100px;
-                    border-radius: 50%;
-                    border: 7px dashed white;
-                    transition: all 1s;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: white;
-                    font-family: 'Lato', sans-serif;
-                    font-size: 26px;
-                    margin: 0px 8px;
-                    opacity: 0; /* Start with hidden state */
-                }
-
-                .coin span {
-                    border: 3px dashed white;
-                    height: 80px;
-                    width: 80px;
-                    border-radius: 50%;
-                    text-align: center;
-                    line-height: 78px;
-                }
-                /* Card Grid Container */
-#image-roulette #card-grid {
-  display: grid;
-  /* Now 5 columns: an extra one for the left labels */
-  grid-template-columns: auto repeat(4, 1fr);
-  gap: 15px;
-  max-width: 400px; /* Adjusted width for extra column */
-  align-items: center;
-  justify-items: center;
-  margin: auto;
-}
-
-/* Header cells at the top */
-#image-roulette .grid-header {
-    font-size: 3rem;
-    font-weight: bold;
-    text-align: center;
-    border: 2px solid blue;
-    padding: 0px 22px;
-    width: 130px;
-}
-
-/* The top left empty cell */
-#image-roulette .grid-header.empty {
-  background: transparent;
-}
-
-/* Left column labels (K, Q, J) */
-#image-roulette .grid-label {
-    font-size: 1.5rem;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 40px;
-    border: 2px solid blue;
-    background: linear-gradient(110deg, #0000ff, #070912);
-    border-radius: 7px;
-}
-
-/* Existing card styles */
-#image-roulette .grid-card {
-  position: relative;
-  width: 80px;
-  height: 110px;
-  overflow: hidden;
-  box-shadow: var(--card-shadow);
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-#image-roulette .grid-card:hover {
-  transform: scale(1.05);
-}
-
-#image-roulette .grid-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.8;
-}
-#image-roulette .grid-header.empty {
-    height: 86px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-    </style>
+   <link href="./assets-normal/css/poker-roulette.css" rel="stylesheet" type="text/css">
     </head>
     <body>
     <!-- Result Message Display -->
@@ -626,15 +237,15 @@ if (!isset($_SESSION['user_id'])) {
             
           
 
-            <div>
+            <div id="grid-outer">
                
             <div id="card-grid">
                 <!-- Top header row -->
                 <div class="grid-header empty">  <div id="withdraw-time" style="font-size: 15px;"></div></div>
-                <div class="grid-header">♠</div>
-                <div class="grid-header">♦</div>
-                <div class="grid-header">♣</div>
-                <div class="grid-header">♥</div>
+                <div class="grid-header" style="color:black">♠</div>
+                <div class="grid-header" style="color:red">♦</div>
+                <div class="grid-header" style="color:black">♣</div>
+                <div class="grid-header" style="color:red">♥</div>
 
                 <!-- King Row -->
                 <div class="grid-label">K</div>
@@ -688,7 +299,7 @@ if (!isset($_SESSION['user_id'])) {
         <div id="main-container">
             <!-- Wheel Container -->
             
-            <!-- <button id="spinBtn">Spin</button> -->
+            <button id="spinBtn">Spin</button>
 
             <div id="auto-spin-countdown" style="font-size: 18px; text-align: center;">
   <svg id="circular-timer" width="200" height="200" viewBox="0 0 200 200"></svg>
@@ -723,7 +334,7 @@ if (!isset($_SESSION['user_id'])) {
             const centerX = 200, centerY = 200, outerRadius = 200, innerRadius = 28;
 
             // Define three colors for the segments
-            const segmentColors = ["#0b164bfa", "#890e0e", "blue"]; // Change these values as desired
+            const segmentColors = ["#dc9600", "#ffdc00", "#f5cd28","d19e1d"]; // Change these values as desired
 
             // Draw alternating segments with three colors
             function drawSegments() {
@@ -1083,7 +694,7 @@ textElement.setAttribute("fill", "white");
 
         </script>
 
-        <footer class="footer-section bg_img" style="background: url(assets/images/footer/bg.jpg) center;">
+        <footer id="poker-footer" class="footer-section bg_img" style="background: url(assets/images/footer/bg.jpg) center;">
             <div class="footer-top">
                 <div class="container">
                     <div class="footer-wrapper d-flex flex-wrap align-items-center justify-content-md-between justify-content-center">

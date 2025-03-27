@@ -1,0 +1,472 @@
+:root {
+    --primary-color: #e91e63;
+    --background-color: #f7f7f7;
+    --chip-gradient: linear-gradient(145deg, #ff80ab, #f50057);
+    --chip-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body{
+background: linear-gradient(45deg, #da9100, #ffcc00, #f4c430, #ffff00, #da9100, #ffdf00, 
+#ffd700, #f4c430, #ffff00, #fcc200 );
+}
+/* Balance Display */
+#image-roulette #balance-display {
+font-size: 1.75rem;
+font-weight: bold;
+color: #ffffff;
+/* margin-top: 6rem; */
+text-align: center;
+/* margin-left: 2rem; */
+}
+#navbar-header.header {
+position: relative; /* Establishes positioning context for the overlay */
+}
+
+#navbar-header.header::before {
+content: "";
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.3); /* Adjust opacity as needed */
+z-index: 1; /* Ensure overlay appears above the header background but below any text/content */
+}
+
+
+#image-roulette #coin-container {
+    margin-bottom: 25px;
+}
+
+
+#image-roulette .coin:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+#image-roulette .coin.selected {
+    outline: 3px solid var(--primary-color);
+    transform: scale(1.1);
+}
+
+/* Main Container */
+#image-roulette #main-container {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    flex-direction: row-reverse;
+}
+
+/* Wheel Container (350x350) */
+#image-roulette #wheel-container {
+    position: relative;
+    width: 350px;
+    height: 350px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Rotating Wheel */
+#image-roulette #wheel {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+    z-index: 10;
+}
+
+/* SVG layers */
+#image-roulette #segments-svg,
+#image-roulette #lines-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+#image-roulette #lines-svg {
+    z-index: 15;
+}
+
+/* Card wrapper */
+#image-roulette .card-wrapper {
+    position: absolute;
+    transform-origin: center;
+}
+
+/* Card */
+#image-roulette .card {
+    width: 55px;
+    height: 75px;
+    display: block;
+    box-shadow: var(--card-shadow);
+    transform-origin: center;
+}
+
+/* Center Circle */
+#image-roulette #center-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #890e0e, #0b164bfa);
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 25;
+    
+}
+
+/* Marker */
+#image-roulette #marker {
+    position: absolute;
+    top: -38px;
+    left: 52%;
+    transform: translateX(-50%);
+    width: 13px;
+    height: 94px;
+    z-index: 11;
+    filter: drop-shadow(0 13px 9px rgba(0, 0, 0, 0.3));
+}
+
+/* Bottom triangle (pointing down) */
+#image-roulette #marker::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 75px;
+    width: 0;
+    height: 0;
+    border-left: 20px solid #bf0f0f00;
+    border-right: 20px solid #99151500;
+    border-top: 38px solid green;
+}
+
+/* Top triangle (pointing up) */
+#image-roulette #marker::after {
+    content: '';
+    position: absolute;
+    left: -20px;
+    bottom: 19px;
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 38px solid var(--primary-color);
+}
+
+
+
+
+#image-roulette .grid-card {
+    position: relative;
+    width: 80px;
+    height: 110px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#image-roulette .grid-card:hover {
+    transform: scale(1.05);
+}
+
+#image-roulette .grid-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.8;
+}
+
+/* Bet Overlay */
+#image-roulette .bet-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1rem;
+    font-weight: bold;
+    background: rgba(233, 30, 99, 0.9);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    pointer-events: none;
+}
+
+/* Winner Animation */
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+#image-roulette .winner {
+    animation: blink 1s infinite;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+}
+
+/* Spin Button */
+#image-roulette #spinBtn {
+    padding: 12px 25px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 50px;
+    background: var(--primary-color);
+    color: #fff;
+    box-shadow: var(--chip-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#image-roulette #spinBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* History Box */
+#image-roulette #history-box {
+    margin-top: 30px;
+    max-width: 550px;
+    height: 88px;
+    border: 2px solid var(--primary-color);
+    padding: 10px;
+    background: #ffffff00;
+    margin-bottom: 30px;
+    width: 550px;
+}
+
+#image-roulette #history-box h3 {
+    margin: 0 0 10px 0;
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+#image-roulette #history-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+}
+
+#image-roulette .history-card {
+    width: 55px;
+    height: 67px;
+    box-shadow: var(--card-shadow);
+    object-fit: cover;
+}
+
+#image-roulette .custom-alert {
+    padding: 15px;
+    border-radius: 5px;
+    font-size: 18px;
+    margin: 10px 0;
+    display: none;
+    font-weight: bold;
+}
+
+#image-roulette .alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+#image-roulette .alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+#image-roulette .alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+#image-roulette .alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+#image-roulette .close-btn {
+    margin-left: 15px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#image-roulette #wheel-container {
+    position: relative;
+    width: 400px;  /* increased from 350px */
+    height: 400px; /* increased from 350px */
+    border-radius: 50%;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Update the SVG dimensions accordingly */
+#image-roulette #segments-svg,
+#image-roulette #lines-svg {
+    width: 400px;
+    height: 400px;
+}
+.container-chip-child {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .coin {
+            height: 100px;
+            width: 100px;
+            border-radius: 50%;
+            border: 7px dashed white;
+            transition: all 1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: 'Lato', sans-serif;
+            font-size: 26px;
+            margin: 0px 8px;
+            opacity: 0; /* Start with hidden state */
+        }
+
+        .coin span {
+            border: 3px dashed white;
+            height: 80px;
+            width: 80px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 78px;
+        }
+        /* Card Grid Container */
+        #image-roulette #card-grid {
+            display: grid;
+            grid-template-columns: auto repeat(4, 1fr);
+            gap: 15px;
+            max-width: 800px;
+            align-items: center;
+            justify-items: center;
+            margin: auto;
+          
+        }
+
+/* Header cells at the top */
+#image-roulette .grid-header {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    border: 3px solid white;
+    border-radius: 5px;
+    padding: 0px 22px;
+    width: 130px;
+}
+
+/* The top left empty cell */
+#image-roulette .grid-header.empty {
+background: transparent;
+}
+
+/* Left column labels (K, Q, J) */
+#image-roulette .grid-label {
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 40px;
+    border: 3px solid white;
+    border-radius: 5px;
+    background: #d19e1d;
+    background: -webkit-linear-gradient(to right, #d19e1d, #ffd86e, #e3a812);
+    background: linear-gradient(to right, #d19e1d, #ffd86e, #e3a812);
+    border-radius: 7px;
+}
+
+/* Existing card styles */
+#image-roulette .grid-card {
+position: relative;
+width: 80px;
+height: 110px;
+overflow: hidden;
+box-shadow: var(--card-shadow);
+cursor: pointer;
+transition: transform 0.2s;
+}
+
+#image-roulette .grid-card:hover {
+transform: scale(1.05);
+}
+
+#image-roulette .grid-card img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+opacity: 0.8;
+}
+#image-roulette .grid-header.empty {
+    height: 86px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#grid-outer{
+    max-width: 800px;
+    align-items: center;
+    justify-items: center;
+    margin: auto;
+
+
+}
+#grid-outer {
+    position: relative;
+    background: linear-gradient(45deg, #da9100, #ffcc00, #f4c430, #ffff00, #da9100, #ffdf00, 
+        #ffd700, #da9100, #ffff00, #fcc200 );
+}
+
+/* Increase border width from 2px to 4px */
+#grid-outer:before, 
+#grid-outer:after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: -8px;
+    background: linear-gradient(45deg, #da9100, #ffcc00, #e2e2e1, #ffff00, #da9100, #ffdf00, 
+        #ffd700, #f4c430, #f7f7ed, #fcc200 );
+    background-size: 400%;
+    width: calc(100% + 16px);
+    height: calc(100% + 16px);
+    z-index: -1;
+    animation: steam 100s linear infinite;
+}
+
+@keyframes steam {
+    0% {
+        background-position: 0 0;
+    }
+    50% {
+        background-position: 400% 0;
+    }
+    100% {
+        background-position: 0 0;
+    }
+}
