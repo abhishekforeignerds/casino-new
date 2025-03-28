@@ -109,24 +109,29 @@ z-index: 1; /* Ensure overlay appears above the header background but below any 
     display: block;
     box-shadow: var(--card-shadow);
     transform-origin: center;
+    background-color: #d19e1d;
 }
 
 /* Center Circle */
-#image-roulette #center-circle {
-    position: absolute;
+#image-roulette #center-circle
+
+ {
+    position: relative;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 60px;
-    height: 60px;
+    width: 140px;
+    height: 140px;
     border-radius: 50%;
     background: linear-gradient(45deg, #890e0e, #0b164bfa);
     border: 3px solid var(--primary-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 25;
-    
-}
-
+    display: flex
+;
+    align-items: center;
+    justify-content: center;
+ }
 /* Marker */
 #image-roulette #marker {
     position: absolute;
@@ -470,3 +475,74 @@ opacity: 0.8;
         background-position: 0 0;
     }
 }
+/* ... existing CSS ... */
+
+/* Suit Ring Container */
+#image-roulette #suit-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100px;
+    height: 100px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 30;
+  }
+  
+  /* Suit Segments SVG positioned behind the icons */
+  #image-roulette #suit-segments-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+  }
+  
+  /* Each Suit Icon Container */
+  #image-roulette .suit-segment {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    /* Transition so counter rotation looks smooth */
+    transition: transform 0.4s;
+  }
+  /* Adjust container if needed */
+#wheel-container {
+    position: relative;
+    width: 400px; /* increased width if necessary */
+    height: 400px; /* increased height if necessary */
+    margin: auto;
+    overflow: visible; /* allows sticks to extend outside */
+  }
+  
+  /* The wheel itself (if you need it centered within a larger container) */
+  #wheel {
+    position: absolute;
+    top: 25px; /* adjust if container is larger */
+    left: 25px; /* adjust if container is larger */
+    width: 350px;
+    height: 350px;
+  }
+ /* Stick container styled as a circle with a border (outer circle) */
+#stick-container {
+  position: absolute;
+  top: 19.2rem;
+  right: 5.5rem;
+  z-index: 100;
+  width: 400px;
+  height: 400px;
+  pointer-events: none;
+  border: 2px solid #000;  /* Outer circle border */
+  border-radius: 50%;
+}
+
+/* Style for each stick */
+.stick {
+  position: absolute;
+  width: 17px;       /* Stick width */
+  background: #dc9600;
+  transform-origin: center top; /* Rotate around the top edge */
+}
+
+    

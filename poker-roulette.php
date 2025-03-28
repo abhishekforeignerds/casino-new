@@ -181,6 +181,7 @@ if (!isset($_SESSION['user_id'])) {
 
         <!-- Main Container: Wheel and Grid -->
         <div id="main-container">
+            <div id="stick-container"></div>
             <!-- Wheel Container -->
             <div id="wheel-container">
                 <div id="wheel">
@@ -190,120 +191,125 @@ if (!isset($_SESSION['user_id'])) {
                     <!-- Card wrappers -->
                     <!-- Kings Row -->
                     <div class="card-wrapper" style="left: 166px;top: 0px;" data-initial-rotation="171">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/KS.png" alt="King of Spades" style="transform: rotate(171deg);">
+                        <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Spades" style="transform: rotate(171deg);">
                     </div>
                     <div class="card-wrapper" style="left: 249px;top: 22px;" data-initial-rotation="205">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/KD.png" alt="King of Diamonds" style="transform: rotate(205deg);">
+                        <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Diamonds" style="transform: rotate(205deg);">
                     </div>
                     <div class="card-wrapper" style="left: 312px;top: 82px;" data-initial-rotation="245">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/KC.png" alt="King of Clubs" style="transform: rotate(245deg);">
+                        <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Clubs" style="transform: rotate(245deg);">
                     </div>
                     <div class="card-wrapper" style="left: 335px;top: 161px;" data-initial-rotation="272">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/KH.png" alt="King of Hearts" style="transform: rotate(272deg);">
+                        <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Hearts" style="transform: rotate(272deg);">
                     </div>
                     <!-- Queens Row -->
                     <div class="card-wrapper" style="left: 313px;top: 242px;" data-initial-rotation="298">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/QS.png" alt="Queen of Spades" style="transform: rotate(298deg);">
+                        <img class="card" src="/assets-normal/img/q.png" alt="Queen of Spades" style="transform: rotate(298deg);">
                     </div>
                     <div class="card-wrapper" style="left: 255px;top: 301px;" data-initial-rotation="327">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/QD.png" alt="Queen of Diamonds" style="transform: rotate(327deg);">
+                        <img class="card" src="/assets-normal/img/q.png" alt="Queen of Diamonds" style="transform: rotate(327deg);">
                     </div>
                     <div class="card-wrapper" style="left: 174px;top: 325px;" data-initial-rotation="3">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/QC.png" alt="Queen of Clubs" style="transform: rotate(3deg);">
+                        <img class="card" src="/assets-normal/img/q.png" alt="Queen of Clubs" style="transform: rotate(3deg);">
                     </div>
                     <div class="card-wrapper" style="left: 94px;top: 303px;" data-initial-rotation="30">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/QH.png" alt="Queen of Hearts" style="transform: rotate(30deg);">
+                        <img class="card" src="/assets-normal/img/q.png" alt="Queen of Hearts" style="transform: rotate(30deg);">
                     </div>
                     <!-- Jacks Row -->
                     <div class="card-wrapper" style="left: 32px;top: 242px;" data-initial-rotation="61">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/JS.png" alt="Jack of Spades" style="transform: rotate(61deg);">
+                        <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Spades" style="transform: rotate(61deg);">
                     </div>
                     <div class="card-wrapper" style="left: 10px;top: 159px;" data-initial-rotation="98">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/JD.png" alt="Jack of Diamonds" style="transform: rotate(98deg);">
+                        <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Diamonds" style="transform: rotate(98deg);">
                     </div>
                     <div class="card-wrapper" style="left: 33px;top: 82px;" data-initial-rotation="116">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/JC.png" alt="Jack of Clubs" style="transform: rotate(116deg);">
+                        <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Clubs" style="transform: rotate(116deg);">
                     </div>
                     <div class="card-wrapper" style="left: 94px;top:22px;" data-initial-rotation="153">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/JH.png" alt="Jack of Hearts" style="transform: rotate(153deg);">
+                        <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Hearts" style="transform: rotate(153deg);">
                     </div>
                 </div>
+        
                 <!-- Center Circle -->
                 <div id="center-circle"></div>
+                
+                <!-- Suit Ring -->
+                <div id="suit-ring"></div>
+                
                 <!-- Marker -->
-                <div id="marker"></div>
-               
-            </div>
+                <!-- <div id="marker"></div> -->
+        </div>
+
             
           
 
             <div id="grid-outer">
                
-            <div id="card-grid">
-                <!-- Top header row -->
-                <div class="grid-header empty">  <div id="withdraw-time" style="font-size: 15px;"></div></div>
-                <div class="grid-header" style="color:black">♠</div>
-                <div class="grid-header" style="color:red">♦</div>
-                <div class="grid-header" style="color:black">♣</div>
-                <div class="grid-header" style="color:red">♥</div>
+                <div id="card-grid">
+                    <!-- Top header row -->
+                    <div class="grid-header empty">  <div id="withdraw-time" style="font-size: 15px;"></div></div>
+                    <div class="grid-header" style="color:black">♠</div>
+                    <div class="grid-header" style="color:red">♦</div>
+                    <div class="grid-header" style="color:black">♣</div>
+                    <div class="grid-header" style="color:red">♥</div>
 
-                <!-- King Row -->
-                <div class="grid-label">K</div>
-                <div class="grid-card" data-index="0">
-                    <img src="https://deckofcardsapi.com/static/img/KS.png" alt="King of Spades">
-                </div>
-                <div class="grid-card" data-index="1">
-                    <img src="https://deckofcardsapi.com/static/img/KD.png" alt="King of Diamonds">
-                </div>
-                <div class="grid-card" data-index="2">
-                    <img src="https://deckofcardsapi.com/static/img/KC.png" alt="King of Clubs">
-                </div>
-                <div class="grid-card" data-index="3">
-                    <img src="https://deckofcardsapi.com/static/img/KH.png" alt="King of Hearts">
-                </div>
+                    <!-- King Row -->
+                    <div class="grid-label">K</div>
+                    <div class="grid-card" data-index="0">
+                        <img src="https://deckofcardsapi.com/static/img/KS.png" alt="King of Spades">
+                    </div>
+                    <div class="grid-card" data-index="1">
+                        <img src="https://deckofcardsapi.com/static/img/KD.png" alt="King of Diamonds">
+                    </div>
+                    <div class="grid-card" data-index="2">
+                        <img src="https://deckofcardsapi.com/static/img/KC.png" alt="King of Clubs">
+                    </div>
+                    <div class="grid-card" data-index="3">
+                        <img src="https://deckofcardsapi.com/static/img/KH.png" alt="King of Hearts">
+                    </div>
 
-                <!-- Queen Row -->
-                <div class="grid-label">Q</div>
-                <div class="grid-card" data-index="4">
-                    <img src="https://deckofcardsapi.com/static/img/QS.png" alt="Queen of Spades">
-                </div>
-                <div class="grid-card" data-index="5">
-                    <img src="https://deckofcardsapi.com/static/img/QD.png" alt="Queen of Diamonds">
-                </div>
-                <div class="grid-card" data-index="6">
-                    <img src="https://deckofcardsapi.com/static/img/QC.png" alt="Queen of Clubs">
-                </div>
-                <div class="grid-card" data-index="7">
-                    <img src="https://deckofcardsapi.com/static/img/QH.png" alt="Queen of Hearts">
-                </div>
+                    <!-- Queen Row -->
+                    <div class="grid-label">Q</div>
+                    <div class="grid-card" data-index="4">
+                        <img src="https://deckofcardsapi.com/static/img/QS.png" alt="Queen of Spades">
+                    </div>
+                    <div class="grid-card" data-index="5">
+                        <img src="https://deckofcardsapi.com/static/img/QD.png" alt="Queen of Diamonds">
+                    </div>
+                    <div class="grid-card" data-index="6">
+                        <img src="https://deckofcardsapi.com/static/img/QC.png" alt="Queen of Clubs">
+                    </div>
+                    <div class="grid-card" data-index="7">
+                        <img src="https://deckofcardsapi.com/static/img/QH.png" alt="Queen of Hearts">
+                    </div>
 
-                <!-- Jack Row -->
-                <div class="grid-label">J</div>
-                <div class="grid-card" data-index="8">
-                    <img src="https://deckofcardsapi.com/static/img/JS.png" alt="Jack of Spades">
-                </div>
-                <div class="grid-card" data-index="9">
-                    <img src="https://deckofcardsapi.com/static/img/JD.png" alt="Jack of Diamonds">
-                </div>
-                <div class="grid-card" data-index="10">
-                    <img src="https://deckofcardsapi.com/static/img/JC.png" alt="Jack of Clubs">
-                </div>
-                <div class="grid-card" data-index="11">
-                    <img src="https://deckofcardsapi.com/static/img/JH.png" alt="Jack of Hearts">
-                </div>
-                </div>
+                    <!-- Jack Row -->
+                    <div class="grid-label">J</div>
+                    <div class="grid-card" data-index="8">
+                        <img src="https://deckofcardsapi.com/static/img/JS.png" alt="Jack of Spades">
+                    </div>
+                    <div class="grid-card" data-index="9">
+                        <img src="https://deckofcardsapi.com/static/img/JD.png" alt="Jack of Diamonds">
+                    </div>
+                    <div class="grid-card" data-index="10">
+                        <img src="https://deckofcardsapi.com/static/img/JC.png" alt="Jack of Clubs">
+                    </div>
+                    <div class="grid-card" data-index="11">
+                        <img src="https://deckofcardsapi.com/static/img/JH.png" alt="Jack of Hearts">
+                    </div>
+                    </div>
 
-                
+                    
+                </div>
             </div>
-        </div>
         <div id="main-container">
             <!-- Wheel Container -->
             
             <button id="spinBtn">Spin</button>
 
             <div id="auto-spin-countdown" style="font-size: 18px; text-align: center;">
-  <svg id="circular-timer" width="200" height="200" viewBox="0 0 200 200"></svg>
-</div>
+                <svg id="circular-timer" width="200" height="200" viewBox="0 0 200 200"></svg>
+            </div>
 
           
                 <div>
@@ -324,241 +330,415 @@ if (!isset($_SESSION['user_id'])) {
         </div>
 
         <script>
-            // CONFIGURABLE VARIABLES
-            // CONFIGURABLE VARIABLES
-            const segmentCount = 12;
-            const segmentAngle = 360 / segmentCount; // 30° each
-            let segmentOffset = -15; // Adjust segment boundaries
+document.addEventListener("DOMContentLoaded", function() {
+  const stickContainer = document.getElementById('stick-container');
+  const containerSize = 400; // Container width and height
+  const centerX = containerSize / 2;
+  const centerY = containerSize / 2;
 
-            // For the 400px wheel container: update center and outer radius
-            const centerX = 200, centerY = 200, outerRadius = 200, innerRadius = 28;
+  // Container's border represents the outer circle (radius 200)
+  const outerCircleRadius = (containerSize / 2) + 100; // 200px
+  
+  // Set inner circle radius so that the stick's top touches this circle.
+  // For a bigger stick, we choose a smaller inner circle radius.
+  const innerCircleRadius = 205; // adjust this value for more gap
 
-            // Define three colors for the segments
-            const segmentColors = ["#dc9600", "#ffdc00", "#f5cd28","d19e1d"]; // Change these values as desired
+  // The stick's length equals the difference between the outer and inner circles.
+  const stickHeight = outerCircleRadius - innerCircleRadius; // 200 - 160 = 40px
+  
+  // Double the number of sticks.
+  const numberOfSticks = 72;
+  const stickWidth = 17;  // stick width (should match your CSS)
 
-            // Draw alternating segments with three colors
-            function drawSegments() {
-                const svg = document.getElementById("segments-svg");
-                svg.innerHTML = '';
-                for (let i = 0; i < segmentCount; i++) {
-                    const startDeg = segmentOffset + i * segmentAngle;
-                    const endDeg = startDeg + segmentAngle;
-                    const startRad = startDeg * Math.PI / 180;
-                    const endRad = endDeg * Math.PI / 180;
-                    const x1 = centerX + outerRadius * Math.cos(startRad);
-                    const y1 = centerY + outerRadius * Math.sin(startRad);
-                    const x2 = centerX + outerRadius * Math.cos(endRad);
-                    const y2 = centerY + outerRadius * Math.sin(endRad);
-                    const d = `M ${centerX} ${centerY} L ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 0 1 ${x2} ${y2} Z`;
-                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    // Use three different colors by cycling through the segmentColors array
-                    path.setAttribute("fill", segmentColors[i % 3]);
-                    path.setAttribute("d", d);
-                    svg.appendChild(path);
-                }
-            }
+  // Clear any previous sticks.
+  stickContainer.innerHTML = '';
+
+  for (let i = 0; i < numberOfSticks; i++) {
+    const stick = document.createElement('div');
+    stick.classList.add('stick');
+
+    // Calculate the angle (in degrees) for this stick.
+    const angle = (360 / numberOfSticks) * i;
+    const radian = angle * Math.PI / 180;
+
+    // Position the stick so that its top edge sits on the inner circle.
+    // Subtract half the stick's width to center it horizontally.
+    const x = centerX + innerCircleRadius * Math.cos(radian) - (stickWidth / 2);
+    const y = centerY + innerCircleRadius * Math.sin(radian);
+
+    stick.style.left = `${x}px`;
+    stick.style.top = `${y}px`;
+    // Set the stick's height (its length)
+    stick.style.height = `${stickHeight}px`;
+    // Rotate the stick so that it points radially outward.
+    stick.style.transform = `rotate(${angle}deg)`;
+
+    stickContainer.appendChild(stick);
+  }
+});
+</script>
 
 
-            // Draw radial boundary lines
-            function drawLines() {
-                const svg = document.getElementById("lines-svg");
-                svg.innerHTML = '';
-                for (let i = 0; i < segmentCount; i++) {
-                    const angleDeg = segmentOffset + i * segmentAngle;
-                    const angleRad = angleDeg * Math.PI / 180;
-                    const x1 = centerX + innerRadius * Math.cos(angleRad);
-                    const y1 = centerY + innerRadius * Math.sin(angleRad);
-                    const x2 = centerX + outerRadius * Math.cos(angleRad);
-                    const y2 = centerY + outerRadius * Math.sin(angleRad);
-                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    line.setAttribute("x1", x1);
-                    line.setAttribute("y1", y1);
-                    line.setAttribute("x2", x2);
-                    line.setAttribute("y2", y2);
-                    line.setAttribute("stroke", "rgba(0,0,0,0.5)");
-                    line.setAttribute("stroke-width", "2");
-                    svg.appendChild(line);
-                }
-            }
-            drawSegments();
-            drawLines();
+        <script>
+     
 
-            // Calculate winning index based on current rotation
-            function getWinningIndex(rotationAngle) {
-                const r = rotationAngle % 360;
-                const effectiveAngle = (360 - r + segmentAngle / 2 - segmentOffset) % 360;
-                return Math.floor(effectiveAngle / segmentAngle);
-            }
 
-            let currentRotation = 0;
-            let balance = <?php echo htmlspecialchars($_SESSION['points']); ?>;
-            let selectedCoin = null;
-            // bets object will map grid card indexes to bet amounts
-            const bets = {};
+  // CONFIGURABLE VARIABLES
+  const segmentCount = 12;
+  const segmentAngle = 360 / segmentCount; // 30° each
+  // Each segment is considered centered at multiples of 30°; we add half a segment (15°) when calculating the winner.
+  const halfSegment = segmentAngle / 2; // 15°
 
-            const balanceDisplay = document.getElementById("balance-display");
-            const resultDisplay = document.getElementById("result-display");
+  // For the 400px wheel container: update center and outer radius
+  const centerX = 200, centerY = 200, outerRadius = 200, innerRadius = 28;
 
-            function updateBalanceDisplay() {
-                balanceDisplay.textContent = "Balance: " + balance;
-            }
-            updateBalanceDisplay();
+  // Define colors for segments
+  const segmentColors = ["#dc9600", "#ffdc00", "#f5cd28"];
 
-            // Helper: Update bank value on server via AJAX using update_bank.php
-            function updateBankValue() {
-                fetch('../../api/update_bank.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `bankValue=${encodeURIComponent(balance)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        console.log("Bank value updated:", data.message);
-                    } else {
-                        console.error("Error updating bank value:", data.message);
-                    }
-                })
-                .catch(error => console.error('AJAX request failed:', error));
-            }
+  // Draw segments (each segment spans from (i*30° -15°) to (i*30° +15°))
+  function drawSegments() {
+    const svg = document.getElementById("segments-svg");
+    svg.innerHTML = '';
+    for (let i = 0; i < segmentCount; i++) {
+      const startDeg = i * segmentAngle - 15;
+      const endDeg = i * segmentAngle + 15;
+      const startRad = startDeg * Math.PI / 180;
+      const endRad = endDeg * Math.PI / 180;
+      const x1 = centerX + outerRadius * Math.cos(startRad);
+      const y1 = centerY + outerRadius * Math.sin(startRad);
+      const x2 = centerX + outerRadius * Math.cos(endRad);
+      const y2 = centerY + outerRadius * Math.sin(endRad);
+      const d = `M ${centerX} ${centerY} L ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 0 1 ${x2} ${y2} Z`;
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("fill", segmentColors[i % segmentColors.length]);
+      path.setAttribute("d", d);
+      svg.appendChild(path);
+    }
+  }
 
-            // Coin selection
-            document.querySelectorAll(".coin").forEach(btn => {
-                btn.addEventListener("click", function () {
-                    document.querySelectorAll(".coin").forEach(b => b.classList.remove("selected"));
-                    this.classList.add("selected");
-                    selectedCoin = parseInt(this.getAttribute("data-value"));
-                });
-            });
+  // Draw radial boundary lines at (i*30° + 15°)
+  function drawLines() {
+    const svg = document.getElementById("lines-svg");
+    svg.innerHTML = '';
+    for (let i = 0; i < segmentCount; i++) {
+      const angleDeg = 15 + i * segmentAngle;
+      const angleRad = angleDeg * Math.PI / 180;
+      const x1 = centerX + innerRadius * Math.cos(angleRad);
+      const y1 = centerY + innerRadius * Math.sin(angleRad);
+      const x2 = centerX + outerRadius * Math.cos(angleRad);
+      const y2 = centerY + outerRadius * Math.sin(angleRad);
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", x1);
+      line.setAttribute("y1", y1);
+      line.setAttribute("x2", x2);
+      line.setAttribute("y2", y2);
+      line.setAttribute("stroke", "rgba(0,0,0,0.5)");
+      line.setAttribute("stroke-width", "2");
+      svg.appendChild(line);
+    }
+  }
 
-            // Place bet on grid cell when clicked
-            document.querySelectorAll(".grid-card").forEach(card => {
-                card.addEventListener("click", function () {
-                    const index = this.getAttribute("data-index");
-                    if (bets[index] !== undefined) return;
-                    if (selectedCoin === null) return;
-                    if (balance < selectedCoin) return;
-                    balance -= selectedCoin;
-                    updateBalanceDisplay();
-                    bets[index] = selectedCoin;
-                    const overlay = document.createElement("div");
-                    overlay.className = "bet-overlay";
-                    overlay.textContent = selectedCoin;
-                    this.appendChild(overlay);
-                });
-            });
+  drawSegments();
+  drawLines();
 
-            // Helper: Add winning card image to history (max 12)
-            function addHistoryCard(src) {
-                const historyContainer = document.getElementById("history-container");
-                const img = document.createElement("img");
-                img.src = src;
-                img.classList.add("history-card");
-                historyContainer.appendChild(img);
-                if (historyContainer.childNodes.length > 12) {
-                    historyContainer.removeChild(historyContainer.firstChild);
-                }
-            }
+  // Winning index is determined from the main wheel’s final rotation.
+  // The marker is assumed at the top (0°). We compute the effective angle
+  // as (360 - (rotation % 360) + halfSegment) mod 360,
+  // then the winning index is Math.floor(effectiveAngle/segmentAngle)
+  function getWinningIndex(rotationAngle) {
+    const r = rotationAngle % 360;
+    const effectiveAngle = (360 - r + halfSegment) % 360;
+    return Math.floor(effectiveAngle / segmentAngle);
+  }
 
-            // Record game result via AJAX (game_id is set in the API to 2)
-            function recordGameResult(winningSpin, betTotal, winValue = 0) {
-                // Build URL-encoded form data string
-                let formData = `winningSpin=${encodeURIComponent(winningSpin)}&betTotal=${encodeURIComponent(betTotal)}`;
-                if (winValue > 0) {
-                    formData += `&winValue=${encodeURIComponent(winValue)}`;
-                }
-                fetch('../../api/record_game.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        console.log("Game result stored:", data.message);
-                    } else {
-                        console.error("Error storing game result:", data.message);
-                    }
-                })
-                .catch(error => console.error('AJAX request failed:', error));
-            }
+  let currentRotation = 0;
+  let balance = <?php echo htmlspecialchars($_SESSION['points']); ?>;
+  let selectedCoin = null;
+  const bets = {};
 
-            // Spin event listener
-            document.getElementById("spinBtn").addEventListener("click", function () {
-                // Clear previous result message
-                resultDisplay.textContent = "";
+  const balanceDisplay = document.getElementById("balance-display");
+  const resultDisplay = document.getElementById("result-display");
 
-                // Remove winner highlight from grid cards
-                document.querySelectorAll(".grid-card").forEach(card => card.classList.remove("winner"));
+  function updateBalanceDisplay() {
+    balanceDisplay.textContent = "Balance: " + balance;
+  }
+  updateBalanceDisplay();
 
-                const wheel = document.getElementById("wheel");
+  // AJAX helper to update bank value on server
+  function updateBankValue() {
+    fetch('../../api/update_bank.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `bankValue=${encodeURIComponent(balance)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) { console.log("Bank value updated:", data.message); }
+      else { console.error("Error updating bank value:", data.message); }
+    })
+    .catch(error => console.error('AJAX request failed:', error));
+  }
 
-                // Calculate total bet amount (sum of all bets placed)
-                let betTotal = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
+  // Coin selection
+  document.querySelectorAll(".coin").forEach(btn => {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".coin").forEach(b => b.classList.remove("selected"));
+      this.classList.add("selected");
+      selectedCoin = parseInt(this.getAttribute("data-value"));
+    });
+  });
 
-                const deltaAngle = 3600 + Math.floor(Math.random() * 360);
-                currentRotation += deltaAngle;
-                wheel.style.transform = "rotate(" + currentRotation + "deg)";
+  // Place bet on grid cell when clicked
+  document.querySelectorAll(".grid-card").forEach(card => {
+    card.addEventListener("click", function () {
+      const index = this.getAttribute("data-index");
+      if (bets[index] !== undefined) return;
+      if (selectedCoin === null) return;
+      if (balance < selectedCoin) return;
+      balance -= selectedCoin;
+      updateBalanceDisplay();
+      bets[index] = selectedCoin;
+      const overlay = document.createElement("div");
+      overlay.className = "bet-overlay";
+      overlay.textContent = selectedCoin;
+      this.appendChild(overlay);
+    });
+  });
 
-                // After spin animation (4 seconds)
-                setTimeout(() => {
-                    // Update each card's counter rotation if needed
-                    document.querySelectorAll(".card-wrapper").forEach(wrapper => {
-                        const initial = parseFloat(wrapper.dataset.initialRotation);
-                        let cardRotation = initial - (currentRotation % 360);
-                        cardRotation = ((cardRotation % 360) + 360) % 360;
-                        // Uncomment below to update card image rotation if desired:
-                        // wrapper.querySelector(".card").style.transform = "rotate(" + cardRotation + "deg)";
-                    });
+  // Add winning card image and suit icon to history (limit 12)
+  function addHistoryCard(src, suit) {
+    const historyContainer = document.getElementById("history-container");
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("history-item");
+    const img = document.createElement("img");
+    img.src = src;
+    img.classList.add("history-card");
+    const suitSpan = document.createElement("span");
+    suitSpan.textContent = suit;
+    suitSpan.style.fontSize = "20px";
+    suitSpan.style.marginLeft = "5px";
+    wrapper.appendChild(img);
+    wrapper.appendChild(suitSpan);
+    historyContainer.appendChild(wrapper);
+    if (historyContainer.childNodes.length > 12) {
+      historyContainer.removeChild(historyContainer.firstChild);
+    }
+  }
 
-                    // Determine the winning card/index (using our getWinningIndex function)
-                    const winningIndex = getWinningIndex(currentRotation);
-                    const winningCardEl = document.querySelector(`.grid-card[data-index="${winningIndex}"]`);
-                    winningCardEl.classList.add("winner");
+  // Show winning card's image and suit icon in the center circle.
+  function showCenterCard(src, suit) {
+    const centerCircle = document.getElementById("center-circle");
+    centerCircle.innerHTML = "";
+    const img = document.createElement("img");
+    img.src = src;
+    img.style.width = "60px";
+    img.style.height = "auto";
+    const suitSpan = document.createElement("span");
+    suitSpan.textContent = suit;
+    suitSpan.style.fontSize = "40px";
+    suitSpan.style.display = "block";
+    suitSpan.style.textAlign = "center";
+    centerCircle.appendChild(img);
+    centerCircle.appendChild(suitSpan);
+  }
 
-                    // For our purposes, we use winningIndex as the winningSpin value.
-                    const winningSpin = winningIndex;
+  // Draw suit ring with icons positioned at segment centers.
+  // Their positions are fixed (based on 0°, 30°, 60°, etc.)
+  function drawSuitRing() {
+    const suitRing = document.getElementById("suit-ring");
+    suitRing.innerHTML = "";
+    suitRing.style.position = "absolute";
+    suitRing.style.width = "100px";
+    suitRing.style.height = "100px";
+    suitRing.style.top = "50%";
+    suitRing.style.left = "50%";
+    suitRing.style.transformOrigin = "50% 50%";
+    suitRing.style.marginLeft = "-50px";
+    suitRing.style.marginTop = "-50px";
+    // Initially, no rotation is applied.
+    suitRing.style.transform = "rotate(0deg)";
+    suitRing.style.transition = "none";
 
-                    // Determine if user won on the winning card
-                    let userWon = false;
-                    let winValue = 0;
-                    if (bets[winningIndex] !== undefined) {
-                        const betAmount = bets[winningIndex];
-                        winValue = betAmount * 2;
-                        balance += winValue;
-                        userWon = true;
-                    }
-                    updateBalanceDisplay();
+    const suits = ["♠", "♥", "♣", "♦"];
+    const ringRadius = 80; // distance from center to icon center
+    for (let i = 0; i < segmentCount; i++) {
+      const angleDeg = i * segmentAngle - 90;
+      const angleRad = angleDeg * Math.PI / 180;
+      const x = ringRadius * Math.cos(angleRad) + 50 - 10;
+      const y = ringRadius * Math.sin(angleRad) + 50 - 10;
+      const span = document.createElement("span");
+      span.className = "suit-segment";
+      span.style.position = "absolute";
+      span.style.left = x + "px";
+      span.style.top = y + "px";
+      span.style.fontSize = "30px";
+      // The suit for each segment is defined cyclically:
+      span.textContent = suits[i % suits.length];
+      span.style.color = (suits[i % suits.length] === "♦" || suits[i % suits.length] === "♥") ? "red" : "black";
+      suitRing.appendChild(span);
+    }
+  }
+  drawSuitRing();
 
-                    // Display result message
-                    if (userWon) {
-                        resultDisplay.textContent = "You win " + winValue + "!";
-                    } else if (betTotal === 0) {
-                        resultDisplay.textContent = "No bet was placed.";
-                    } else {
-                        resultDisplay.textContent = "You lose.";
-                    }
 
-                    // Add winning card image to history box
-                    const winningCardImgSrc = winningCardEl.querySelector("img").src;
-                    addHistoryCard(winningCardImgSrc);
+document.getElementById("spinBtn").addEventListener("click", function () {
+  resultDisplay.textContent = "";
+  document.querySelectorAll(".grid-card").forEach(card => card.classList.remove("winner"));
+  
+  // Get the stick container element.
+  const stickContainer = document.getElementById("stick-container");
+  // Set top to 19.2rem when the spin starts.
+  stickContainer.style.top = "19.2rem";
+  
+  const wheel = document.getElementById("wheel");
+  const suitRing = document.getElementById("suit-ring");
+  let betTotal = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
+  
+  // Calculate a large delta rotation.
+  const deltaAngle = 3600 + Math.floor(Math.random() * 360);
+  currentRotation += deltaAngle;
+  
+  // Animate the spin.
+  wheel.style.transition = "transform 4s ease-out";
+  wheel.style.transform = "rotate(" + currentRotation + "deg)";
+  
+  suitRing.style.transition = "transform 4s ease-out";
+  suitRing.style.transform = "rotate(" + (-currentRotation) + "deg)";
+  
+  // After the spin stops (4 seconds), update positions.
+  setTimeout(() => {
+  // Change the stick container top so that it jumps to 21.2rem.
+  stickContainer.style.top = "21.2rem";
+  
+  // Normalize the rotation so that currentRotation is within 0-359°.
+  currentRotation = currentRotation % 360;
+  // Remove transition so the final position is locked.
+  wheel.style.transition = "none";
+  wheel.style.transform = "rotate(" + currentRotation + "deg)";
+  suitRing.style.transition = "none";
+  suitRing.style.transform = "rotate(" + (-currentRotation) + "deg)";
+  
+  // Determine winning segment index based on rotation.
+  const winningIndex = getWinningIndex(currentRotation);
+  
+  // Remove previous winner highlights.
+  document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => el.classList.remove("winner"));
+  
+  // Get the winning card from the wheel card wrappers.
+  const wheelCards = document.querySelectorAll(".card-wrapper");
+  const winningWheelCard = wheelCards[winningIndex];
+  winningWheelCard.classList.add("winner"); // blink/highlight this wheel segment
+  
+  // Retrieve winning card details from the wheel image.
+  const imgEl = winningWheelCard.querySelector("img");
+  const winningSrc = imgEl.getAttribute("src");
+  const altText = imgEl.getAttribute("alt") || "";
+  
+  // Determine card type based on image source.
+  let cardType = "";
+  if (winningSrc.indexOf("k-removebg-preview.png") !== -1) {
+    cardType = "King";
+  } else if (winningSrc.indexOf("q.png") !== -1) {
+    cardType = "Queen";
+  } else if (winningSrc.indexOf("j-removebg-preview.png") !== -1) {
+    cardType = "Jack";
+  }
+  
+  // Extract suit from alt text (assumes format "King of Spades", etc.)
+  let suitName = "";
+  if (altText.indexOf("Spades") !== -1) {
+    suitName = "Spades";
+  } else if (altText.indexOf("Diamonds") !== -1) {
+    suitName = "Diamonds";
+  } else if (altText.indexOf("Clubs") !== -1) {
+    suitName = "Clubs";
+  } else if (altText.indexOf("Hearts") !== -1) {
+    suitName = "Hearts";
+  }
+  
+  // Define suit order matching the grid columns (♠, ♦, ♣, ♥)
+  const suitOrder = { "Spades": 0, "Diamonds": 1, "Clubs": 2, "Hearts": 3 };
+  
+  // Compute grid cell index:
+  // King row starts at index 0, Queen row at index 4, Jack row at index 8.
+  let baseIndex = 0;
+  if (cardType === "Queen") {
+    baseIndex = 4;
+  } else if (cardType === "Jack") {
+    baseIndex = 8;
+  }
+  
+  // Determine offset based on suit.
+  const suitOffset = suitOrder[suitName] !== undefined ? suitOrder[suitName] : 0;
+  const gridIndex = baseIndex + suitOffset;
+  
+  // Highlight the matching grid cell.
+  const winningGridCard = document.querySelector(`.grid-card[data-index="${gridIndex}"]`);
+  if (winningGridCard) {
+    winningGridCard.classList.add("winner");
+  }
+  
+  // If there is a bet on the winning grid cell, update winnings.
+  let userWon = false;
+  let winValue = 0;
+  if (bets[gridIndex] !== undefined) {
+    const betAmount = bets[gridIndex];
+    winValue = betAmount * 2;
+    balance += winValue;
+    userWon = true;
+  }
+  
+  updateBalanceDisplay();
+  resultDisplay.textContent = userWon
+    ? "You win " + winValue + "!"
+    : (Object.keys(bets).length === 0 ? "No bet was placed." : "You lose.");
+  
+  // Show winning card in center circle.
+  // (Also using suit icon from the suit ring for consistency.)
+  let suitIcon = "";
+  // Find the suit ring span corresponding to the wheel winning segment.
+  const suitEl = suitRing.children[winningIndex];
+  if (suitEl) {
+    suitIcon = suitEl.textContent.trim();
+  }
+  
+  addHistoryCard(winningSrc, suitIcon);
+  showCenterCard(winningSrc, suitIcon);
+  
+  recordGameResult(winningIndex, Object.values(bets).reduce((sum, amt) => sum + amt, 0), winValue);
+  updateBankValue();
+  
+  // Clear bets.
+  document.querySelectorAll(".bet-overlay").forEach(overlay => overlay.remove());
+  for (let key in bets) delete bets[key];
+  
+}, 4000);
 
-                    // Record game result in the database
-                    // If win, send winValue; if lose, omit winValue (defaults to 0)
-                    recordGameResult(winningSpin, betTotal, winValue);
+});
 
-                    // Update bank value on server with the new balance
-                    updateBankValue();
 
-                    // Remove bet overlays and reset bets
-                    document.querySelectorAll(".bet-overlay").forEach(overlay => overlay.remove());
-                    for (let key in bets) delete bets[key];
+  // Record game result via AJAX.
+  function recordGameResult(winningSpin, betTotal, winValue = 0) {
+    let formData = `winningSpin=${encodeURIComponent(winningSpin)}&betTotal=${encodeURIComponent(betTotal)}`;
+    if (winValue > 0) {
+      formData += `&winValue=${encodeURIComponent(winValue)}`;
+    }
+    fetch('../../api/record_game.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) { console.log("Game result stored:", data.message); }
+      else { console.error("Error storing game result:", data.message); }
+    })
+    .catch(error => console.error('AJAX request failed:', error));
+  }
+</script>
 
-                }, 4000);
-            });
-        </script>
+
+        
         <script>
 
      // Timer and time display variables

@@ -3,388 +3,199 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Modern Roulette Betting Game (Counter-Rotated Cards)</title>
+    <title>Animated Wheel with Independent Text & Icons</title>
     <style>
-        :root {
-            --primary-color: #e91e63;
-            --background-color: #f7f7f7;
-            --chip-gradient: linear-gradient(145deg, #ff80ab, #f50057);
-            --chip-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-            --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-
-        /* Balance Display */
-        #image-roulette #balance-display {
-            font-size: 1.75rem;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
-        }
-
-
-
-        #image-roulette #coin-container {
-            margin-bottom: 25px;
-        }
-
-        #image-roulette .coin {
-            font-size: 1.2rem;
-            padding: 12px 20px;
-            margin: 0 8px;
-            cursor: pointer;
-            border: none;
-            border-radius: 50px;
-            background: var(--chip-gradient);
-            box-shadow: var(--chip-shadow);
-            color: #fff;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        #image-roulette .coin:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        #image-roulette .coin.selected {
-            outline: 3px solid var(--primary-color);
-            transform: scale(1.1);
-        }
-
-        /* Main Container */
-        #image-roulette #main-container {
-            display: flex;
-            gap: 40px;
-            align-items: flex-start;
-            margin-bottom: 30px;
-        }
-
-        /* Wheel Container (350x350) */
-        #image-roulette #wheel-container {
+        /* ---------- Container & Background ---------- */
+        #wheel-container {
             position: relative;
-            width: 350px;
-            height: 350px;
+            width: 400px;
+            height: 400px;
+            margin: 40px auto;
             border-radius: 50%;
             overflow: hidden;
             background: #fff;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
 
-        /* Rotating Wheel */
-        #image-roulette #wheel {
+        /* Spinning background (SVG segments & lines) */
+        #wheel {
+            position: absolute;
             width: 100%;
             height: 100%;
-            position: absolute;
             top: 0;
             left: 0;
+            transform-origin: center;
             transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
             z-index: 10;
         }
 
         /* SVG layers */
-        #image-roulette #segments-svg,
-        #image-roulette #lines-svg {
+        #segments-svg,
+        #lines-svg {
             position: absolute;
             top: 0;
             left: 0;
             pointer-events: none;
         }
 
-        #image-roulette #lines-svg {
+        #lines-svg {
             z-index: 15;
         }
 
-        /* Card wrapper */
-        #image-roulette .card-wrapper {
+        /* ---------- Independent Layers for Icons & Texts ---------- */
+        /* Icons container rotates with the wheel (clockwise) and uses a 4s transition */
+        #icons-container {
             position: absolute;
-            transform-origin: center;
-        }
-
-        /* Card */
-        #image-roulette .card {
-            width: 40px;
-            height: 50px;
-            display: block;
-            box-shadow: var(--card-shadow);
-            transform-origin: center;
-        }
-
-        /* Center Circle */
-        #image-roulette #center-circle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #fff;
-            border: 3px solid var(--primary-color);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 25;
-        }
-
-        /* Marker */
-        #image-roulette #marker {
-            position: absolute;
-            top: -35px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 21px solid transparent;
-            border-right: 21px solid transparent;
-            border-bottom: 28px solid var(--primary-color);
-            z-index: 30;
-            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-        }
-
-        /* Card Grid */
-        #image-roulette #card-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            max-width: 300px;
-        }
-
-        #image-roulette .grid-card {
-            position: relative;
-            width: 60px;
-            height: 90px;
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        #image-roulette .grid-card:hover {
-            transform: scale(1.05);
-        }
-
-        #image-roulette .grid-card img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            opacity: 0.8;
+            top: 0;
+            left: 0;
+            transform-origin: center;
+            transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+            z-index: 20;
         }
 
-        /* Bet Overlay */
-        #image-roulette .bet-overlay {
+        /* Each icon now has a colored circular background */
+        .icon-bg {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1rem;
-            font-weight: bold;
-            background: rgba(233, 30, 99, 0.9);
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 12px;
-            pointer-events: none;
-        }
-
-        /* Winner Animation */
-        @keyframes blink {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        #image-roulette .winner {
-            animation: blink 1s infinite;
-            border: 2px solid var(--primary-color);
-            border-radius: 8px;
-        }
-
-        /* Spin Button */
-        #image-roulette #spinBtn {
-            padding: 12px 25px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            border: none;
-            border-radius: 50px;
-            background: var(--primary-color);
-            color: #fff;
-            box-shadow: var(--chip-shadow);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        #image-roulette #spinBtn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        /* History Box */
-        #image-roulette #history-box {
-            margin-top: 30px;
-            max-width: 350px;
-            border: 2px solid var(--primary-color);
-            padding: 10px;
-            background: #fff;
-        }
-
-        #image-roulette #history-box h3 {
-            margin: 0 0 10px 0;
-            text-align: center;
-            font-size: 1.2rem;
-        }
-
-        #image-roulette #history-container {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
+            align-items: center;
             justify-content: center;
         }
 
-        #image-roulette .history-card {
-            width: 40px;
-            height: 50px;
-            box-shadow: var(--card-shadow);
-            object-fit: cover;
+        .icon {
+            font-size: 20px;
+            color: #b00;
+        }
+
+        /* Text container rotates opposite the wheel (anticlockwise) with a 2s transition */
+        #texts-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            transform-origin: center;
+            transition: transform 2s cubic-bezier(0.33, 1, 0.68, 1);
+            z-index: 30;
+        }
+
+        .text {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* ---------- Center Circle & Marker ---------- */
+        #center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #890e0e, #0b164bfa);
+            border: 3px solid #ffdc00;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Marker – assumed the tip is exactly at top (0°) */
+        #marker {
+            position: absolute;
+            top: -38px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 13px;
+            height: 94px;
+            z-index: 50;
+            filter: drop-shadow(0 13px 9px rgba(0, 0, 0, 0.3));
+        }
+
+        #marker::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 75px;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 38px solid green;
+        }
+
+        #marker::after {
+            content: '';
+            position: absolute;
+            left: -20px;
+            bottom: 19px;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 38px solid var(--primary-color);
+        }
+
+        /* ---------- Spin Button ---------- */
+        #spinBtn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Optional: Highlight winning segment */
+        .winner {
+            outline: 3px solid red;
+            border-radius: 50%;
         }
     </style>
 </head>
 
 <body>
-    <div id="image-roulette">
-        <!-- Balance Display -->
-        <div id="balance-display">Balance: 1000</div>
-        <!-- Coin Buttons -->
-        <div id="coin-container">
-            <button class="coin" data-value="10">10</button>
-            <button class="coin" data-value="20">20</button>
-            <button class="coin" data-value="100">100</button>
+    <div id="wheel-container">
+        <!-- Spinning background: SVG segments & lines -->
+        <div id="wheel">
+            <svg id="segments-svg" width="400" height="400"></svg>
+            <svg id="lines-svg" width="400" height="400"></svg>
         </div>
-        <!-- Main Container: Wheel and Grid -->
-        <div id="main-container">
-            <!-- Wheel Container -->
-            <div id="wheel-container">
-                <div id="wheel">
-                    <!-- SVG segments and lines -->
-                    <svg id="segments-svg" width="350" height="350"></svg>
-                    <svg id="lines-svg" width="350" height="350"></svg>
-                    <!-- Card wrappers -->
-                    <!-- Each wrapper is positioned absolutely.
-             The card inside has its inline counter-rotation. -->
-                    <div class="card-wrapper" style="left:154px; top:4px;" data-initial-rotation="171">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/AS.png" alt="Ace of Spades"
-                            style="transform: rotate(171deg);">
-                    </div>
-                    <div class="card-wrapper" style="left:224px; top:22px;" data-initial-rotation="205">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/KH.png" alt="King of Hearts"
-                            style="transform: rotate(205deg);">
-                    </div>
-                    <div class="card-wrapper" style="left:275px; top:74px;" data-initial-rotation="245">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/QC.png" alt="Queen of Clubs"
-                            style="transform: rotate(245deg);">
-                    </div>
-                    <div class="card-wrapper" style="left:294px; top:144px;" data-initial-rotation="272">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/JD.png" alt="Jack of Diamonds"
-                            style="transform: rotate(272deg);">
-                    </div>
-                    <div class="card-wrapper" style="left:275px; top:214px;" data-initial-rotation="298">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/0S.png" alt="Ten of Spades"
-                            style="transform: rotate(298deg);">
-                    </div>
-                    <div class="card-wrapper" style="left:224px; top:265px;" data-initial-rotation="327">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/2C.png" alt="Two of Clubs"
-                            style="transform: rotate(327deg);">
-                    </div>
-                    <div class="card-wrapper" style="left:154px; top:284px;" data-initial-rotation="3">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/3D.png" alt="Three of Diamonds"
-                            style="transform: rotate(3deg);">
-                    </div>
-                    <div class="card-wrapper" style="left:84px; top:265px;" data-initial-rotation="30">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/4H.png" alt="Four of Hearts"
-                            style="transform: rotate(30deg);">
-                    </div>
-                    <div class="card-wrapper" style="left:33px; top:214px;" data-initial-rotation="61">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/5S.png" alt="Five of Spades"
-                            style="transform: rotate(61deg);">
-                    </div>
-                    <div class="card-wrapper" style="left:14px; top:144px;" data-initial-rotation="98">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/6C.png" alt="Six of Clubs"
-                            style="transform: rotate(98deg);">
-                    </div>
-                    <div class="card-wrapper" style="left:33px; top:74px;" data-initial-rotation="116">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/7D.png" alt="Seven of Diamonds"
-                            style="transform: rotate(116deg);">
-                    </div>
-                    <div class="card-wrapper" style="left:84px; top:22px;" data-initial-rotation="153">
-                        <img class="card" src="https://deckofcardsapi.com/static/img/8H.png" alt="Eight of Hearts"
-                            style="transform: rotate(153deg);">
-                    </div>
-                </div>
-                <!-- Center Circle -->
-                <div id="center-circle"></div>
-                <!-- Marker -->
-                <div id="marker"></div>
-            </div>
-            <!-- Card Grid -->
-            <div id="card-grid">
-                <div class="grid-card" data-index="0">
-                    <img src="https://deckofcardsapi.com/static/img/AS.png" alt="Ace of Spades">
-                </div>
-                <div class="grid-card" data-index="1">
-                    <img src="https://deckofcardsapi.com/static/img/KH.png" alt="King of Hearts">
-                </div>
-                <div class="grid-card" data-index="2">
-                    <img src="https://deckofcardsapi.com/static/img/QC.png" alt="Queen of Clubs">
-                </div>
-                <div class="grid-card" data-index="3">
-                    <img src="https://deckofcardsapi.com/static/img/JD.png" alt="Jack of Diamonds">
-                </div>
-                <div class="grid-card" data-index="4">
-                    <img src="https://deckofcardsapi.com/static/img/0S.png" alt="Ten of Spades">
-                </div>
-                <div class="grid-card" data-index="5">
-                    <img src="https://deckofcardsapi.com/static/img/2C.png" alt="Two of Clubs">
-                </div>
-                <div class="grid-card" data-index="6">
-                    <img src="https://deckofcardsapi.com/static/img/3D.png" alt="Three of Diamonds">
-                </div>
-                <div class="grid-card" data-index="7">
-                    <img src="https://deckofcardsapi.com/static/img/4H.png" alt="Four of Hearts">
-                </div>
-                <div class="grid-card" data-index="8">
-                    <img src="https://deckofcardsapi.com/static/img/5S.png" alt="Five of Spades">
-                </div>
-                <div class="grid-card" data-index="9">
-                    <img src="https://deckofcardsapi.com/static/img/6C.png" alt="Six of Clubs">
-                </div>
-                <div class="grid-card" data-index="10">
-                    <img src="https://deckofcardsapi.com/static/img/7D.png" alt="Seven of Diamonds">
-                </div>
-                <div class="grid-card" data-index="11">
-                    <img src="https://deckofcardsapi.com/static/img/8H.png" alt="Eight of Hearts">
-                </div>
-            </div>
-        </div>
-        <button id="spinBtn">Spin</button>
-
-        <!-- History Box: Last 12 cards that landed on the marker -->
-        <div id="history-box">
-            <h3>Last 12 Winning Cards</h3>
-            <div id="history-container"></div>
-        </div>
+        <!-- Independent containers for suit icons and rank texts -->
+        <div id="icons-container"></div>
+        <div id="texts-container"></div>
+        <!-- Center circle shows the winning result -->
+        <div id="center-circle">?</div>
+        <!-- Marker -->
+        <div id="marker"></div>
     </div>
+    <button id="spinBtn">Spin</button>
+
     <script>
-        // CONFIGURABLE VARIABLES
+        // ---------- CONFIGURABLE VARIABLES ----------
         const segmentCount = 12;
-        const segmentAngle = 360 / segmentCount; // 30° each
-        let segmentOffset = -15; // Adjust segment boundaries
+        const segmentAngle = 360 / segmentCount;  // 30° per segment
+        const segmentOffset = -15; // With this, midpoint of segment 0 is at 0°.
+        const centerX = 200, centerY = 200; // Center of a 400x400 container
+        const outerRadius = 200;  // For SVG segments
+        const innerRadius = 28;   // For radial lines
 
-        // For the 350px wheel container:
-        const centerX = 175, centerY = 175, outerRadius = 175, innerRadius = 28;
+        // Colors for background segments (cycling)
+        const segmentColors = ["#dc9600", "#ffdc00", "#f5cd28"];
+        // Colors for icon backgrounds (cycling)
+        const iconBgColors = ["#ffcccc", "#ccffcc", "#ccccff", "#ffffcc"];
 
-        // Draw alternating segments
+        // ---------- DRAW BACKGROUND SEGMENTS & LINES ----------
         function drawSegments() {
             const svg = document.getElementById("segments-svg");
             svg.innerHTML = '';
@@ -399,13 +210,12 @@
                 const y2 = centerY + outerRadius * Math.sin(endRad);
                 const d = `M ${centerX} ${centerY} L ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 0 1 ${x2} ${y2} Z`;
                 const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                path.setAttribute("fill", i % 2 === 0 ? "red" : "black");
+                path.setAttribute("fill", segmentColors[i % segmentColors.length]);
                 path.setAttribute("d", d);
                 svg.appendChild(path);
             }
         }
 
-        // Draw radial boundary lines
         function drawLines() {
             const svg = document.getElementById("lines-svg");
             svg.innerHTML = '';
@@ -429,104 +239,110 @@
         drawSegments();
         drawLines();
 
-        // Calculate winning index based on current rotation
+        // ---------- CREATE INDEPENDENT ICONS & TEXTS ----------
+        // Ranks: segments 0-3: K, 4-7: Q, 8-11: J.
+        // Suits: cycle: ♠, ♦, ♣, ♥ (repeat 3 times)
+        function createIndependentElements() {
+            const iconsContainer = document.getElementById("icons-container");
+            const textsContainer = document.getElementById("texts-container");
+            iconsContainer.innerHTML = '';
+            textsContainer.innerHTML = '';
+
+            const suits = ['♠', '♦', '♣', '♥'];
+            for (let i = 0; i < segmentCount; i++) {
+                // Calculate the middle angle for this segment.
+                // With segmentOffset = -15, the center of segment 0 is at 0°.
+                const angle = i * segmentAngle + segmentOffset + segmentAngle / 2;
+                const angleRad = angle * Math.PI / 180;
+
+                // ----- Create suit icon element with its background -----
+                // Create a container for icon background.
+                const iconBg = document.createElement("div");
+                iconBg.className = "icon-bg";
+                iconBg.style.backgroundColor = iconBgColors[i % iconBgColors.length];
+                // Position this container (centered on computed coordinates).
+                const iconRadius = 80;
+                const iconX = centerX + iconRadius * Math.cos(angleRad);
+                const iconY = centerY + iconRadius * Math.sin(angleRad);
+                iconBg.style.position = "absolute";
+                iconBg.style.left = (iconX - 20) + "px"; // 40px width /2
+                iconBg.style.top = (iconY - 20) + "px";
+                // Now create the suit icon text inside.
+                const icon = document.createElement("div");
+                icon.className = "icon";
+                icon.textContent = suits[i % suits.length];
+                // Center the icon inside its background.
+                iconBg.appendChild(icon);
+                iconsContainer.appendChild(iconBg);
+
+                // ----- Create rank text element -----
+                const text = document.createElement("div");
+                text.className = "text";
+                let rank;
+                if (i < 4) {
+                    rank = 'K';
+                } else if (i < 8) {
+                    rank = 'Q';
+                } else {
+                    rank = 'J';
+                }
+                text.textContent = rank;
+                // Position the text farther out (radius 140 for a bit more separation)
+                const textRadius = 140;
+                const textX = centerX + textRadius * Math.cos(angleRad);
+                const textY = centerY + textRadius * Math.sin(angleRad);
+                text.style.left = (textX - 15) + "px";
+                text.style.top = (textY - 15) + "px";
+                textsContainer.appendChild(text);
+            }
+        }
+        createIndependentElements();
+
+        // ---------- SPIN FUNCTIONALITY & WINNING SEGMENT CALCULATION ----------
+        let currentRotation = 0;
+        /*  
+            With segmentOffset = -15, the midpoint of segment 0 is at 0°.
+            Thus, if no rotation, marker (at 0°) lies on segment 0.
+            We calculate the effective angle at marker as:
+              effectiveAngle = (360 - (currentRotation mod 360) + 15) mod 360,
+            and the winning index = floor(effectiveAngle / segmentAngle).
+        */
         function getWinningIndex(rotationAngle) {
             const r = rotationAngle % 360;
-            const effectiveAngle = (360 - r + segmentAngle / 2 - segmentOffset) % 360;
+            const effectiveAngle = (360 - r + 0) % 360;
             return Math.floor(effectiveAngle / segmentAngle);
         }
 
-        let currentRotation = 0;
-        let balance = 1000;
-        let selectedCoin = null;
-        const bets = {};
+        // Get element references.
+        const wheelElem = document.getElementById("wheel");
+        const iconsContainerElem = document.getElementById("icons-container");
+        const textsContainerElem = document.getElementById("texts-container");
 
-        const balanceDisplay = document.getElementById("balance-display");
-        function updateBalanceDisplay() {
-            balanceDisplay.textContent = "Balance: " + balance;
-        }
-        updateBalanceDisplay();
-
-        // Coin selection
-        document.querySelectorAll(".coin").forEach(btn => {
-            btn.addEventListener("click", function () {
-                document.querySelectorAll(".coin").forEach(b => b.classList.remove("selected"));
-                this.classList.add("selected");
-                selectedCoin = parseInt(this.getAttribute("data-value"));
-            });
-        });
-
-        // Place bet on grid cell when clicked
-        document.querySelectorAll(".grid-card").forEach(card => {
-            card.addEventListener("click", function () {
-                const index = this.getAttribute("data-index");
-                if (bets[index] !== undefined) return;
-                if (selectedCoin === null) return;
-                if (balance < selectedCoin) return;
-                balance -= selectedCoin;
-                updateBalanceDisplay();
-                bets[index] = selectedCoin;
-                const overlay = document.createElement("div");
-                overlay.className = "bet-overlay";
-                overlay.textContent = selectedCoin;
-                this.appendChild(overlay);
-            });
-        });
-
-        // Helper: Add winning card to history box (keep max 12)
-        function addHistoryCard(src) {
-            const historyContainer = document.getElementById("history-container");
-            const img = document.createElement("img");
-            img.src = src;
-            img.classList.add("history-card");
-            historyContainer.appendChild(img);
-            if (historyContainer.childNodes.length > 12) {
-                historyContainer.removeChild(historyContainer.firstChild);
-            }
-        }
-
-        // Spin event: rotate the entire wheel.
-        // Because each card is in a wrapper, we update the wheel's transform.
-        // In the card wrapper, we also update the counter-rotation so the card's net rotation remains as originally set.
         document.getElementById("spinBtn").addEventListener("click", function () {
-            const wheel = document.getElementById("wheel");
-            // Remove blinking class from all grid cards
-            document.querySelectorAll(".grid-card").forEach(card => card.classList.remove("winner"));
+            // Spin: add many full rotations plus a random extra angle.
             const deltaAngle = 3600 + Math.floor(Math.random() * 360);
             currentRotation += deltaAngle;
-            wheel.style.transform = "rotate(" + currentRotation + "deg)";
 
-            // When the spin completes (after 4 seconds), update winning bets and history.
+            // Rotate background and suit icons (with a 4s transition).
+            wheelElem.style.transform = `rotate(${currentRotation}deg)`;
+            iconsContainerElem.style.transform = `rotate(${currentRotation}deg)`;
+            // Rotate texts container (with a faster 2s transition) to stop first.
+            textsContainerElem.style.transform = `rotate(${-currentRotation}deg)`;
+
+            // After the longer animation (4 seconds), determine the winning segment.
             setTimeout(() => {
-                // Update each card's counter rotation (if needed)
-                document.querySelectorAll(".card-wrapper").forEach(wrapper => {
-                    const initial = parseFloat(wrapper.dataset.initialRotation);
-                    let cardRotation = initial - (currentRotation % 360);
-                    cardRotation = ((cardRotation % 360) + 360) % 360;
-                    // Uncomment below if you wish to update the card image transform:
-                    // wrapper.querySelector(".card").style.transform = "rotate(" + cardRotation + "deg)";
-                });
-
                 const winningIndex = getWinningIndex(currentRotation);
-                const winningCardEl = document.querySelector(`.grid-card[data-index="${winningIndex}"]`);
-                // Always blink the winning card
-                winningCardEl.classList.add("winner");
-
-                // If the user placed a bet on this winning card, calculate and add winnings.
-                if (bets[winningIndex] !== undefined) {
-                    const betAmount = bets[winningIndex];
-                    const winnings = betAmount * 2;
-                    balance += winnings;
+                let winningRank;
+                if (winningIndex < 4) {
+                    winningRank = 'K';
+                } else if (winningIndex < 8) {
+                    winningRank = 'Q';
+                } else {
+                    winningRank = 'J';
                 }
-                updateBalanceDisplay();
-
-                // Add the winning card image to the history box.
-                const winningCardImgSrc = winningCardEl.querySelector("img").src;
-                addHistoryCard(winningCardImgSrc);
-
-                // Remove all bet overlays and reset bets
-                document.querySelectorAll(".bet-overlay").forEach(overlay => overlay.remove());
-                for (let key in bets) delete bets[key];
+                const suits = ['♠', '♦', '♣', '♥'];
+                const winningSuit = suits[winningIndex % suits.length];
+                document.getElementById("center-circle").textContent = `${winningRank} ${winningSuit}`;
             }, 4000);
         });
     </script>
