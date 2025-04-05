@@ -19,6 +19,7 @@ if (!isset($_POST['winningSpin']) || !isset($_POST['betTotal'])) {
 
 $winningSpin = $_POST['winningSpin'];
 $betTotal = $_POST['betTotal'];
+$winValue = $_POST['winValue'];
 
 // Make sure the values are numeric
 if (!is_numeric($winningSpin) || !is_numeric($betTotal)) {
@@ -31,15 +32,17 @@ if (!is_numeric($winningSpin) || !is_numeric($betTotal)) {
 if (isset($_POST['winValue']) && is_numeric($_POST['winValue']) && $_POST['winValue'] > 0) {
     // Win scenario: store winningSpin in winning_number and leave lose_number as NULL
     $winning_number = $winningSpin;
+    $win_value = $winValue;
     $lose_number = NULL;
 } else {
     // Loss scenario: store winningSpin in lose_number and leave winning_number as NULL
     $winning_number = NULL;
     $lose_number = $winningSpin;
+    $win_value = NULL;
 }
 
 // Prepare the insert query
-$query = "INSERT INTO game_results (user_id, game_id, winning_number, lose_number, bet) VALUES (?, ?, ?, ?, ?)";
+$query = "INSERT INTO game_results (user_id, game_id, winning_number, lose_number, bet, win_value) VALUES (?, ?, ?, ?, ?, ?)";
 if ($stmt = mysqli_prepare($conn, $query)) {
     /*
       Bind parameters:
@@ -52,7 +55,7 @@ if ($stmt = mysqli_prepare($conn, $query)) {
     
     // Using "iiidi" as type string: i=user_id, i=game_id, i=winning_number, i=lose_number, d=betTotal
     // For NULL values, mysqli will bind them correctly.
-    mysqli_stmt_bind_param($stmt, "iiidi", $user_id, $game_id, $winning_number, $lose_number, $betTotal);
+    mysqli_stmt_bind_param($stmt, "iiiidd", $user_id, $game_id, $winning_number, $lose_number, $betTotal, $win_value);
 
     if (mysqli_stmt_execute($stmt)) {
         echo json_encode(["success" => true, "message" => "Game result recorded successfully."]);

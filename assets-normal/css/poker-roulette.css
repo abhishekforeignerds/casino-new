@@ -32,7 +32,7 @@ left: 0;
 width: 100%;
 height: 100%;
 background: rgba(0, 0, 0, 0.3); /* Adjust opacity as needed */
-z-index: 1; /* Ensure overlay appears above the header background but below any text/content */
+z-index: 0; /* Ensure overlay appears above the header background but below any text/content */
 }
 
 
@@ -55,8 +55,8 @@ z-index: 1; /* Ensure overlay appears above the header background but below any 
 #image-roulette #main-container {
     display: flex;
     gap: 40px;
-    align-items: flex-start;
-    justify-content: space-between;
+    align-items: baseline;
+    justify-content: space-around;
     margin-bottom: 30px;
     flex-direction: row-reverse;
 }
@@ -135,40 +135,48 @@ z-index: 1; /* Ensure overlay appears above the header background but below any 
 /* Marker */
 #image-roulette #marker {
     position: absolute;
-    top: -38px;
-    left: 52%;
+    top: 1px; /* adjust as needed */
+    left: 50%;
     transform: translateX(-50%);
-    width: 13px;
-    height: 94px;
-    z-index: 11;
-    filter: drop-shadow(0 13px 9px rgba(0, 0, 0, 0.3));
-}
-
-/* Bottom triangle (pointing down) */
-#image-roulette #marker::before {
-    content: '';
-    position: absolute;
-    left: -20px;
-    top: 75px;
     width: 0;
     height: 0;
-    border-left: 20px solid #bf0f0f00;
-    border-right: 20px solid #99151500;
-    border-top: 38px solid green;
-}
+    border-left: 0px solid transparent;
+    border-right: 0px solid transparent;
+    border-bottom: 20px solid #b60909; /* marker color */
+    z-index: 10;
+  }
+  /* Bottom triangle (pointing down) */
+#image-roulette #marker::before {
 
-/* Top triangle (pointing up) */
-#image-roulette #marker::after {
-    content: '';
     position: absolute;
-    left: -20px;
-    bottom: 19px;
+    left: -32px;
+    top: 38px;
     width: 0;
     height: 0;
     border-left: 20px solid transparent;
     border-right: 20px solid transparent;
-    border-bottom: 38px solid var(--primary-color);
+    border-top: 38px solid #013220; /* Single dark green color */
+    /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); */
+    transform: perspective(200px) rotateX(5deg);
 }
+
+/* Top triangle (pointing up) */
+#image-roulette #marker::after {
+
+    position: absolute;
+    left: -32px;
+    bottom: -38px;
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 38px solid #013220; /* Same dark green color */
+    /* box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.4); */
+    transform: perspective(200px) rotateX(5deg);
+}
+
+/* Gemstone reflective overlay effect */
+
 
 
 
@@ -224,8 +232,7 @@ z-index: 1; /* Ensure overlay appears above the header background but below any 
 
 #image-roulette .winner {
     animation: blink 1s infinite;
-    border: 2px solid var(--primary-color);
-    border-radius: 8px;
+  
 }
 
 /* Spin Button */
@@ -249,13 +256,13 @@ z-index: 1; /* Ensure overlay appears above the header background but below any 
 /* History Box */
 #image-roulette #history-box {
     margin-top: 30px;
-    max-width: 550px;
-    height: 88px;
+    max-width: 800px;
+    height: 161px;
     border: 2px solid var(--primary-color);
     padding: 10px;
     background: #ffffff00;
     margin-bottom: 30px;
-    width: 550px;
+    width: 800px;
 }
 
 #image-roulette #history-box h3 {
@@ -272,8 +279,9 @@ z-index: 1; /* Ensure overlay appears above the header background but below any 
 }
 
 #image-roulette .history-card {
-    width: 55px;
-    height: 67px;
+    width: 65px;
+    height: 80px;
+    /* margin-bottom: 34px; */
     box-shadow: var(--card-shadow);
     object-fit: cover;
 }
@@ -321,8 +329,10 @@ z-index: 1; /* Ensure overlay appears above the header background but below any 
     position: relative;
     width: 400px;  /* increased from 350px */
     height: 400px; /* increased from 350px */
+    top: 2px;
     border-radius: 50%;
     overflow: hidden;
+    left: -60px;
     background: #fff;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
@@ -527,14 +537,15 @@ opacity: 0.8;
  /* Stick container styled as a circle with a border (outer circle) */
 #stick-container {
   position: absolute;
-  top: 19.2rem;
-  right: 5.5rem;
+  top: 18.2rem;
+  right: 145px;
   z-index: 100;
   width: 400px;
   height: 400px;
   pointer-events: none;
   border: 2px solid #000;  /* Outer circle border */
   border-radius: 50%;
+  transform-origin: 50% 50%;
 }
 
 /* Style for each stick */
@@ -545,4 +556,48 @@ opacity: 0.8;
   transform-origin: center top; /* Rotate around the top edge */
 }
 
-    
+
+
+
+  /* Marker stays fixed at the top center of the wheel container */
+#marker {
+    position: absolute;
+    top: -20px;  /* Adjust as needed relative to the wheel */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 0px solid transparent;
+    border-right: 0px solid transparent;
+    border-bottom: 20px solid red; /* Marker color */
+    z-index: 10;
+  }
+  
+  /* Blinking animation for the winning suit icon */
+  @keyframes blinkAnimation {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  
+  .suit-segment.blink {
+    animation: blinkAnimation 1s ease-in-out infinite;
+  }
+  
+
+  img.card {background: linear-gradient(45deg, #890e0e, #0b164bfa);}
+
+.history-item img.history-card {background: linear-gradient(45deg, #890e0e, #0b164bfa);height:60px;width:50px;}
+
+#marker img.gem-marker {
+    width: 40px;
+    position: absolute;
+    right: 0px;
+    top: -8px;
+}
+
+div#result-display {
+    position: absolute;
+    top: 50%;
+    left: 45%;
+}

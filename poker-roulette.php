@@ -136,7 +136,8 @@ if (!isset($_SESSION['user_id'])) {
                     const fullscreenBtn = document.getElementById("fullscreenBtn");
                     const navbar = document.getElementById("navbar-header");
                     const footer = document.getElementById("poker-footer");
-
+                    const stickContainer = document.getElementById("stick-container");
+                    
                     fullscreenBtn.addEventListener("click", function() {
                         if (!document.fullscreenElement) {
                             
@@ -154,10 +155,12 @@ if (!isset($_SESSION['user_id'])) {
                         fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
                         navbar.style.display= 'block';
                         footer.style.display= 'block';
+                        stickContainer.style.top = "22.2rem";
                         } else {
                         fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
                         navbar.style.display= 'none';
                         footer.style.display= 'none';
+                        stickContainer.style.top = "22.2rem";
                         }
                     });
                     </script>
@@ -237,7 +240,7 @@ if (!isset($_SESSION['user_id'])) {
                 <div id="suit-ring"></div>
                 
                 <!-- Marker -->
-                <!-- <div id="marker"></div> -->
+                <div id="marker"> <img class="gem-marker" src="/assets-normal/img/gem-new.png"></div>
         </div>
 
             
@@ -254,7 +257,9 @@ if (!isset($_SESSION['user_id'])) {
                     <div class="grid-header" style="color:red">♥</div>
 
                     <!-- King Row -->
-                    <div class="grid-label">K</div>
+                    <div class="grid-label"> 
+                    <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Spades" >
+                        </div>
                     <div class="grid-card" data-index="0">
                         <img src="https://deckofcardsapi.com/static/img/KS.png" alt="King of Spades">
                     </div>
@@ -269,7 +274,7 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
 
                     <!-- Queen Row -->
-                    <div class="grid-label">Q</div>
+                    <div class="grid-label"><img class="card" src="/assets-normal/img/q.png" alt="Queen of Diamonds"></div>
                     <div class="grid-card" data-index="4">
                         <img src="https://deckofcardsapi.com/static/img/QS.png" alt="Queen of Spades">
                     </div>
@@ -284,7 +289,7 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
 
                     <!-- Jack Row -->
-                    <div class="grid-label">J</div>
+                    <div class="grid-label"><img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Diamonds" ></div>
                     <div class="grid-card" data-index="8">
                         <img src="https://deckofcardsapi.com/static/img/JS.png" alt="Jack of Spades">
                     </div>
@@ -305,7 +310,7 @@ if (!isset($_SESSION['user_id'])) {
         <div id="main-container">
             <!-- Wheel Container -->
             
-            <button id="spinBtn">Spin</button>
+            <button id="spinBtn" hidden>Spin</button>
 
             <div id="auto-spin-countdown" style="font-size: 18px; text-align: center;">
                 <svg id="circular-timer" width="200" height="200" viewBox="0 0 200 200"></svg>
@@ -313,7 +318,7 @@ if (!isset($_SESSION['user_id'])) {
 
           
                 <div>
-                <h3>Last 12 Winning Cards</h3>
+                <h3>Last 12  Cards</h3>
                 <div id="history-box">
                     <div id="history-container"></div>
                 </div>
@@ -379,363 +384,473 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
 
-        <script>
-     
+<script>
+// CONFIGURABLE VARIABLES
+const segmentCount = 12;
+const segmentAngle = 360 / segmentCount; // 30° each
+const halfSegment = segmentAngle / 2; // 15°
 
+// For the 400px wheel container: update center and outer radius
+const centerX = 200, centerY = 200, outerRadius = 200, innerRadius = 28;
 
-  // CONFIGURABLE VARIABLES
-  const segmentCount = 12;
-  const segmentAngle = 360 / segmentCount; // 30° each
-  // Each segment is considered centered at multiples of 30°; we add half a segment (15°) when calculating the winner.
-  const halfSegment = segmentAngle / 2; // 15°
+// Define colors for segments
+const segmentColors = ["#dc9600", "#ffdc00", "#f5cd28"];
 
-  // For the 400px wheel container: update center and outer radius
-  const centerX = 200, centerY = 200, outerRadius = 200, innerRadius = 28;
-
-  // Define colors for segments
-  const segmentColors = ["#dc9600", "#ffdc00", "#f5cd28"];
-
-  // Draw segments (each segment spans from (i*30° -15°) to (i*30° +15°))
-  function drawSegments() {
-    const svg = document.getElementById("segments-svg");
-    svg.innerHTML = '';
-    for (let i = 0; i < segmentCount; i++) {
-      const startDeg = i * segmentAngle - 15;
-      const endDeg = i * segmentAngle + 15;
-      const startRad = startDeg * Math.PI / 180;
-      const endRad = endDeg * Math.PI / 180;
-      const x1 = centerX + outerRadius * Math.cos(startRad);
-      const y1 = centerY + outerRadius * Math.sin(startRad);
-      const x2 = centerX + outerRadius * Math.cos(endRad);
-      const y2 = centerY + outerRadius * Math.sin(endRad);
-      const d = `M ${centerX} ${centerY} L ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 0 1 ${x2} ${y2} Z`;
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("fill", segmentColors[i % segmentColors.length]);
-      path.setAttribute("d", d);
-      svg.appendChild(path);
-    }
+// Draw segments (each segment spans from (i*30° -15°) to (i*30° +15°))
+function drawSegments() {
+  const svg = document.getElementById("segments-svg");
+  svg.innerHTML = '';
+  for (let i = 0; i < segmentCount; i++) {
+    const startDeg = i * segmentAngle - 15;
+    const endDeg = i * segmentAngle + 15;
+    const startRad = startDeg * Math.PI / 180;
+    const endRad = endDeg * Math.PI / 180;
+    const x1 = centerX + outerRadius * Math.cos(startRad);
+    const y1 = centerY + outerRadius * Math.sin(startRad);
+    const x2 = centerX + outerRadius * Math.cos(endRad);
+    const y2 = centerY + outerRadius * Math.sin(endRad);
+    const d = `M ${centerX} ${centerY} L ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 0 1 ${x2} ${y2} Z`;
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("fill", segmentColors[i % segmentColors.length]);
+    path.setAttribute("d", d);
+    svg.appendChild(path);
   }
+}
 
-  // Draw radial boundary lines at (i*30° + 15°)
-  function drawLines() {
-    const svg = document.getElementById("lines-svg");
-    svg.innerHTML = '';
-    for (let i = 0; i < segmentCount; i++) {
-      const angleDeg = 15 + i * segmentAngle;
-      const angleRad = angleDeg * Math.PI / 180;
-      const x1 = centerX + innerRadius * Math.cos(angleRad);
-      const y1 = centerY + innerRadius * Math.sin(angleRad);
-      const x2 = centerX + outerRadius * Math.cos(angleRad);
-      const y2 = centerY + outerRadius * Math.sin(angleRad);
-      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      line.setAttribute("x1", x1);
-      line.setAttribute("y1", y1);
-      line.setAttribute("x2", x2);
-      line.setAttribute("y2", y2);
-      line.setAttribute("stroke", "rgba(0,0,0,0.5)");
-      line.setAttribute("stroke-width", "2");
-      svg.appendChild(line);
-    }
+// Draw radial boundary lines at (i*30° + 15°)
+function drawLines() {
+  const svg = document.getElementById("lines-svg");
+  svg.innerHTML = '';
+  for (let i = 0; i < segmentCount; i++) {
+    const angleDeg = 15 + i * segmentAngle;
+    const angleRad = angleDeg * Math.PI / 180;
+    const x1 = centerX + innerRadius * Math.cos(angleRad);
+    const y1 = centerY + innerRadius * Math.sin(angleRad);
+    const x2 = centerX + outerRadius * Math.cos(angleRad);
+    const y2 = centerY + outerRadius * Math.sin(angleRad);
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", x1);
+    line.setAttribute("y1", y1);
+    line.setAttribute("x2", x2);
+    line.setAttribute("y2", y2);
+    line.setAttribute("stroke", "rgba(0,0,0,0.5)");
+    line.setAttribute("stroke-width", "2");
+    svg.appendChild(line);
   }
+}
 
-  drawSegments();
-  drawLines();
+drawSegments();
+drawLines();
 
-  // Winning index is determined from the main wheel’s final rotation.
-  // The marker is assumed at the top (0°). We compute the effective angle
-  // as (360 - (rotation % 360) + halfSegment) mod 360,
-  // then the winning index is Math.floor(effectiveAngle/segmentAngle)
-  function getWinningIndex(rotationAngle) {
-    const r = rotationAngle % 360;
-    const effectiveAngle = (360 - r + halfSegment) % 360;
-    return Math.floor(effectiveAngle / segmentAngle);
-  }
+// Winning index is determined from the main wheel’s final rotation.
+function getWinningIndex(rotationAngle) {
+  const r = rotationAngle % 360;
+  const effectiveAngle = (360 - r + halfSegment) % 360;
+  return Math.floor(effectiveAngle / segmentAngle);
+}
 
-  let currentRotation = 0;
-  let balance = <?php echo htmlspecialchars($_SESSION['points']); ?>;
-  let selectedCoin = null;
-  const bets = {};
+let currentRotation = 0;
+let balance = <?php echo htmlspecialchars($_SESSION['points']); ?>;
+let selectedCoin = null;
+const bets = {};
 
-  const balanceDisplay = document.getElementById("balance-display");
-  const resultDisplay = document.getElementById("result-display");
+const balanceDisplay = document.getElementById("balance-display");
+const resultDisplay = document.getElementById("result-display");
 
-  function updateBalanceDisplay() {
-    balanceDisplay.textContent = "Balance: " + balance;
-  }
-  updateBalanceDisplay();
+function updateBalanceDisplay() {
+  balanceDisplay.textContent = "Balance: " + balance;
+}
+updateBalanceDisplay();
 
-  // AJAX helper to update bank value on server
-  function updateBankValue() {
-    fetch('../../api/update_bank.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `bankValue=${encodeURIComponent(balance)}`
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) { console.log("Bank value updated:", data.message); }
-      else { console.error("Error updating bank value:", data.message); }
-    })
-    .catch(error => console.error('AJAX request failed:', error));
-  }
+// AJAX helper to update bank value on server
+function updateBankValue() {
+  fetch('../../api/update_bank.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `bankValue=${encodeURIComponent(balance)}`
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) { console.log("Bank value updated:", data.message); }
+    else { console.error("Error updating bank value:", data.message); }
+  })
+  .catch(error => console.error('AJAX request failed:', error));
+}
 
-  // Coin selection
-  document.querySelectorAll(".coin").forEach(btn => {
-    btn.addEventListener("click", function () {
-      document.querySelectorAll(".coin").forEach(b => b.classList.remove("selected"));
-      this.classList.add("selected");
-      selectedCoin = parseInt(this.getAttribute("data-value"));
-    });
+// Coin selection
+document.querySelectorAll(".coin").forEach(btn => {
+  btn.addEventListener("click", function () {
+    document.querySelectorAll(".coin").forEach(b => b.classList.remove("selected"));
+    this.classList.add("selected");
+    selectedCoin = parseInt(this.getAttribute("data-value"));
   });
+});
 
-  // Place bet on grid cell when clicked
-  document.querySelectorAll(".grid-card").forEach(card => {
-    card.addEventListener("click", function () {
-      const index = this.getAttribute("data-index");
-      if (bets[index] !== undefined) return;
-      if (selectedCoin === null) return;
-      if (balance < selectedCoin) return;
-      balance -= selectedCoin;
-      updateBalanceDisplay();
-      bets[index] = selectedCoin;
-      const overlay = document.createElement("div");
-      overlay.className = "bet-overlay";
-      overlay.textContent = selectedCoin;
-      this.appendChild(overlay);
-    });
+// Place bet on grid cell when clicked
+document.querySelectorAll(".grid-card").forEach(card => {
+  card.addEventListener("click", function () {
+    // Disallow bets if less than 5 seconds have elapsed in the current round
+    const resultDisplay = document.getElementById("result-display");
+    console.log('resultDisplay')
+    console.log(resultDisplay)
+
+    if (countdown <= 5) {
+      resultDisplay.textContent = "Betting time is over.";
+      return;
+    }
+    const index = this.getAttribute("data-index");
+    if (bets[index] !== undefined) return;
+    if (selectedCoin === null) return;
+    if (balance < selectedCoin) return;
+    balance -= selectedCoin;
+    updateBalanceDisplay();
+    bets[index] = selectedCoin;
+    const overlay = document.createElement("div");
+    overlay.className = "bet-overlay";
+    overlay.textContent = selectedCoin;
+    this.appendChild(overlay);
   });
+});
 
-  // Add winning card image and suit icon to history (limit 12)
-  function addHistoryCard(src, suit) {
-    const historyContainer = document.getElementById("history-container");
-    const wrapper = document.createElement("div");
-    wrapper.classList.add("history-item");
-    const img = document.createElement("img");
-    img.src = src;
-    img.classList.add("history-card");
-    const suitSpan = document.createElement("span");
-    suitSpan.textContent = suit;
-    suitSpan.style.fontSize = "20px";
-    suitSpan.style.marginLeft = "5px";
-    wrapper.appendChild(img);
-    wrapper.appendChild(suitSpan);
-    historyContainer.appendChild(wrapper);
-    if (historyContainer.childNodes.length > 12) {
-      historyContainer.removeChild(historyContainer.firstChild);
+// Add winning card image and suit icon to history (limit 12)
+function addHistoryCard(src, suit) {
+  const historyContainer = document.getElementById("history-container");
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("history-item");
+
+  const img = document.createElement("img");
+  img.src = src;
+  img.classList.add("history-card");
+
+  const suitSpan = document.createElement("span");
+  suitSpan.textContent = suit;
+  suitSpan.style.fontSize = "40px";
+  suitSpan.style.marginLeft = "5px";
+
+  // Set color based on suit
+  if (suit === "♥" || suit === "♦") {
+    suitSpan.style.color = "red";
+  } else {
+    suitSpan.style.color = "black";
+  }
+
+  wrapper.appendChild(img);
+  wrapper.appendChild(suitSpan);
+  historyContainer.appendChild(wrapper);
+
+  if (historyContainer.childNodes.length > 12) {
+    historyContainer.removeChild(historyContainer.firstChild);
+  }
+}
+
+// Show winning card's image and suit icon in the center circle.
+function showCenterCard(src, suit) {
+  const centerCircle = document.getElementById("center-circle");
+  centerCircle.innerHTML = "";
+  const img = document.createElement("img");
+  img.src = src;
+  img.style.width = "60px";
+  img.style.height = "auto";
+  const suitSpan = document.createElement("span");
+  suitSpan.textContent = suit;
+  suitSpan.style.fontSize = "40px";
+  suitSpan.style.display = "block";
+  suitSpan.style.textAlign = "center";
+  centerCircle.appendChild(img);
+  centerCircle.appendChild(suitSpan);
+}
+
+// Draw suit ring with icons positioned at segment centers.
+function drawSuitRing() {
+  const suitRing = document.getElementById("suit-ring");
+  suitRing.innerHTML = "";
+  
+  // Assuming the container is a 100x100 box centered in the parent.
+  const containerSize = 100;
+  const center = containerSize / 2; // 50px
+  suitRing.style.position = "absolute";
+  suitRing.style.width = containerSize + "px";
+  suitRing.style.height = containerSize + "px";
+  suitRing.style.top = "50%";
+  suitRing.style.left = "50%";
+  suitRing.style.transformOrigin = "50% 50%";
+  suitRing.style.marginLeft = `-${center}px`;
+  suitRing.style.marginTop = `-${center}px`;
+  suitRing.style.transform = "rotate(0deg)";
+  suitRing.style.transition = "none";
+
+  // Adjust this value to change how far icons are from the center.
+  const ringRadius = 100;
+  // Angular offset to rotate the entire suit ring if needed.
+  const baseAngleOffset = 10;
+
+  // The suit order to be repeated over the segments.
+  const suits = ["♠", "♦", "♣", "♥"];
+
+  for (let i = 0; i < segmentCount; i++) {
+    const angleDeg = i * segmentAngle + halfSegment + baseAngleOffset;
+    const angleRad = angleDeg * Math.PI / 180;
+    const x = ringRadius * Math.cos(angleRad) + center - 10;
+    const y = ringRadius * Math.sin(angleRad) + center - 10;
+
+    const span = document.createElement("span");
+    span.className = "suit-segment";
+    span.style.position = "absolute";
+    span.style.left = x + "px";
+    span.style.top = y + "px";
+    span.style.fontSize = "30px";
+    span.textContent = suits[i % suits.length];
+    span.style.color = (suits[i % suits.length] === "♦" || suits[i % suits.length] === "♥") ? "red" : "black";
+    span.style.transform = `rotate(${angleDeg}deg)`;
+    
+    suitRing.appendChild(span);
+  }
+}
+
+drawSuitRing();
+
+// ---- Timer Setup for Rotating Wheel ----
+const spinTimerDuration = 15; // Change this value to modify the timer duration for the wheel (in seconds)
+let countdown = spinTimerDuration;
+let timerInterval;
+
+// Create circular timer sticks
+const svg = document.getElementById("circular-timer");
+const segmentCountTimer = 60;
+const centerXTimer = 100, centerYTimer = 100;
+const radiusTimer = 70;
+const stickLength = 10;
+const timerSticks = [];
+
+for (let i = 0; i < segmentCountTimer; i++) {
+  const angle = i * (360 / segmentCountTimer);
+  const rad = angle * Math.PI / 180;
+  const x1 = centerXTimer + radiusTimer * Math.cos(rad);
+  const y1 = centerYTimer + radiusTimer * Math.sin(rad);
+  const x2 = centerXTimer + (radiusTimer + stickLength) * Math.cos(rad);
+  const y2 = centerYTimer + (radiusTimer + stickLength) * Math.sin(rad);
+  
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.setAttribute("x1", x1);
+  line.setAttribute("y1", y1);
+  line.setAttribute("x2", x2);
+  line.setAttribute("y2", y2);
+  line.setAttribute("stroke-width", "4");
+  line.setAttribute("stroke", "white");
+  svg.appendChild(line);
+  timerSticks.push(line);
+}
+
+const countdownText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+countdownText.setAttribute("x", centerXTimer);
+countdownText.setAttribute("y", centerYTimer);
+countdownText.setAttribute("text-anchor", "middle");
+countdownText.setAttribute("dominant-baseline", "middle");
+countdownText.setAttribute("font-size", "24");
+countdownText.setAttribute("fill", "#333");
+countdownText.textContent = spinTimerDuration;
+svg.appendChild(countdownText);
+
+// Timer functions
+function updateTimerSticks() {
+  const fractionPassed = (spinTimerDuration - countdown) / spinTimerDuration;
+  const greenSegments = Math.round(fractionPassed * segmentCountTimer);
+  timerSticks.forEach((stick, index) => {
+    if (index < greenSegments) {
+      stick.setAttribute("stroke", "green");
+    } else {
+      stick.setAttribute("stroke", "white");
     }
-  }
+  });
+}
 
-  // Show winning card's image and suit icon in the center circle.
-  function showCenterCard(src, suit) {
-    const centerCircle = document.getElementById("center-circle");
-    centerCircle.innerHTML = "";
-    const img = document.createElement("img");
-    img.src = src;
-    img.style.width = "60px";
-    img.style.height = "auto";
-    const suitSpan = document.createElement("span");
-    suitSpan.textContent = suit;
-    suitSpan.style.fontSize = "40px";
-    suitSpan.style.display = "block";
-    suitSpan.style.textAlign = "center";
-    centerCircle.appendChild(img);
-    centerCircle.appendChild(suitSpan);
-  }
+function updateTimeDisplay() {
+  const now = new Date();
+  const currentTime = now.toLocaleTimeString();
+  const withdrawTime = new Date(now.getTime() + countdown * 1000)
+    .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
+  document.getElementById('current-time').textContent = `Current Time: ${currentTime}`;
+  document.getElementById('withdraw-time').textContent = `Withdraw Time: ${withdrawTime}`;
+  
+  updateTimerSticks();
+  countdownText.textContent = countdown;
+}
 
-  // Draw suit ring with icons positioned at segment centers.
-  // Their positions are fixed (based on 0°, 30°, 60°, etc.)
-  function drawSuitRing() {
-    const suitRing = document.getElementById("suit-ring");
-    suitRing.innerHTML = "";
-    suitRing.style.position = "absolute";
-    suitRing.style.width = "100px";
-    suitRing.style.height = "100px";
-    suitRing.style.top = "50%";
-    suitRing.style.left = "50%";
-    suitRing.style.transformOrigin = "50% 50%";
-    suitRing.style.marginLeft = "-50px";
-    suitRing.style.marginTop = "-50px";
-    // Initially, no rotation is applied.
-    suitRing.style.transform = "rotate(0deg)";
-    suitRing.style.transition = "none";
-
-    const suits = ["♠", "♥", "♣", "♦"];
-    const ringRadius = 80; // distance from center to icon center
-    for (let i = 0; i < segmentCount; i++) {
-      const angleDeg = i * segmentAngle - 90;
-      const angleRad = angleDeg * Math.PI / 180;
-      const x = ringRadius * Math.cos(angleRad) + 50 - 10;
-      const y = ringRadius * Math.sin(angleRad) + 50 - 10;
-      const span = document.createElement("span");
-      span.className = "suit-segment";
-      span.style.position = "absolute";
-      span.style.left = x + "px";
-      span.style.top = y + "px";
-      span.style.fontSize = "30px";
-      // The suit for each segment is defined cyclically:
-      span.textContent = suits[i % suits.length];
-      span.style.color = (suits[i % suits.length] === "♦" || suits[i % suits.length] === "♥") ? "red" : "black";
-      suitRing.appendChild(span);
+function startTimer() {
+  // Clear any existing interval first
+  stopTimer();
+  countdown = spinTimerDuration;
+  updateTimeDisplay();
+  timerInterval = setInterval(() => {
+    if (countdown <= 0) {
+      // Auto-trigger the spin if timer runs out
+      document.getElementById("spinBtn").click();
+      countdown = spinTimerDuration;
+    } else {
+      countdown--;
     }
-  }
-  drawSuitRing();
+    updateTimeDisplay();
+  }, 1000);
+}
 
+function stopTimer() {
+  clearInterval(timerInterval);
+}
 
+// Start timer initially
+startTimer();
+
+// ---- Spin Button and Wheel Rotation ----
 document.getElementById("spinBtn").addEventListener("click", function () {
+  // Stop timer when wheel starts spinning
+  stopTimer();
   resultDisplay.textContent = "";
   document.querySelectorAll(".grid-card").forEach(card => card.classList.remove("winner"));
-  
-  // Get the stick container element.
+
   const stickContainer = document.getElementById("stick-container");
-  // Set top to 19.2rem when the spin starts.
-  stickContainer.style.top = "19.2rem";
-  
+  // stickContainer.style.top = "19.2rem";
+
   const wheel = document.getElementById("wheel");
   const suitRing = document.getElementById("suit-ring");
   let betTotal = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
-  
-  // Calculate a large delta rotation.
-  const deltaAngle = 3600 + Math.floor(Math.random() * 360);
+
+  // Calculate rotation so that a segment is centered at the marker
+  const chosenIndex = Math.floor(Math.random() * segmentCount);
+  const targetRotationMod = (360 + halfSegment - (chosenIndex * segmentAngle)) + 7.5;
+  let currentMod = currentRotation % 360;
+  let adjustment = targetRotationMod - currentMod;
+  if (adjustment < 0) adjustment += 360;
+  const deltaAngle = 3600 + adjustment;
   currentRotation += deltaAngle;
-  
-  // Animate the spin.
+
   wheel.style.transition = "transform 4s ease-out";
   wheel.style.transform = "rotate(" + currentRotation + "deg)";
-  
+
   suitRing.style.transition = "transform 4s ease-out";
   suitRing.style.transform = "rotate(" + (-currentRotation) + "deg)";
-  
-  // After the spin stops (4 seconds), update positions.
-  setTimeout(() => {
-  // Change the stick container top so that it jumps to 21.2rem.
-  stickContainer.style.top = "21.2rem";
-  
-  // Normalize the rotation so that currentRotation is within 0-359°.
-  currentRotation = currentRotation % 360;
-  // Remove transition so the final position is locked.
-  wheel.style.transition = "none";
-  wheel.style.transform = "rotate(" + currentRotation + "deg)";
-  suitRing.style.transition = "none";
-  suitRing.style.transform = "rotate(" + (-currentRotation) + "deg)";
-  
-  // Determine winning segment index based on rotation.
-  const winningIndex = getWinningIndex(currentRotation);
-  
-  // Remove previous winner highlights.
-  document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => el.classList.remove("winner"));
-  
-  // Get the winning card from the wheel card wrappers.
-  const wheelCards = document.querySelectorAll(".card-wrapper");
-  const winningWheelCard = wheelCards[winningIndex];
-  winningWheelCard.classList.add("winner"); // blink/highlight this wheel segment
-  
-  // Retrieve winning card details from the wheel image.
-  const imgEl = winningWheelCard.querySelector("img");
-  const winningSrc = imgEl.getAttribute("src");
-  const altText = imgEl.getAttribute("alt") || "";
-  
-  // Determine card type based on image source.
-  let cardType = "";
-  if (winningSrc.indexOf("k-removebg-preview.png") !== -1) {
-    cardType = "King";
-  } else if (winningSrc.indexOf("q.png") !== -1) {
-    cardType = "Queen";
-  } else if (winningSrc.indexOf("j-removebg-preview.png") !== -1) {
-    cardType = "Jack";
-  }
-  
-  // Extract suit from alt text (assumes format "King of Spades", etc.)
-  let suitName = "";
-  if (altText.indexOf("Spades") !== -1) {
-    suitName = "Spades";
-  } else if (altText.indexOf("Diamonds") !== -1) {
-    suitName = "Diamonds";
-  } else if (altText.indexOf("Clubs") !== -1) {
-    suitName = "Clubs";
-  } else if (altText.indexOf("Hearts") !== -1) {
-    suitName = "Hearts";
-  }
-  
-  // Define suit order matching the grid columns (♠, ♦, ♣, ♥)
-  const suitOrder = { "Spades": 0, "Diamonds": 1, "Clubs": 2, "Hearts": 3 };
-  
-  // Compute grid cell index:
-  // King row starts at index 0, Queen row at index 4, Jack row at index 8.
-  let baseIndex = 0;
-  if (cardType === "Queen") {
-    baseIndex = 4;
-  } else if (cardType === "Jack") {
-    baseIndex = 8;
-  }
-  
-  // Determine offset based on suit.
-  const suitOffset = suitOrder[suitName] !== undefined ? suitOrder[suitName] : 0;
-  const gridIndex = baseIndex + suitOffset;
-  
-  // Highlight the matching grid cell.
-  const winningGridCard = document.querySelector(`.grid-card[data-index="${gridIndex}"]`);
-  if (winningGridCard) {
-    winningGridCard.classList.add("winner");
-  }
-  
-  // If there is a bet on the winning grid cell, update winnings.
-  let userWon = false;
-  let winValue = 0;
-  if (bets[gridIndex] !== undefined) {
-    const betAmount = bets[gridIndex];
-    winValue = betAmount * 2;
-    balance += winValue;
-    userWon = true;
-  }
-  
-  updateBalanceDisplay();
-  resultDisplay.textContent = userWon
-    ? "You win " + winValue + "!"
-    : (Object.keys(bets).length === 0 ? "No bet was placed." : "You lose.");
-  
-  // Show winning card in center circle.
-  // (Also using suit icon from the suit ring for consistency.)
-  let suitIcon = "";
-  // Find the suit ring span corresponding to the wheel winning segment.
-  const suitEl = suitRing.children[winningIndex];
-  if (suitEl) {
-    suitIcon = suitEl.textContent.trim();
-  }
-  
-  addHistoryCard(winningSrc, suitIcon);
-  showCenterCard(winningSrc, suitIcon);
-  
-  recordGameResult(winningIndex, Object.values(bets).reduce((sum, amt) => sum + amt, 0), winValue);
-  updateBankValue();
-  
-  // Clear bets.
-  document.querySelectorAll(".bet-overlay").forEach(overlay => overlay.remove());
-  for (let key in bets) delete bets[key];
-  
-}, 4000);
 
+  stickContainer.style.transition = "transform 4s ease-out";
+  stickContainer.style.transform = "rotate(" + currentRotation + "deg)";
+
+  setTimeout(() => {
+    // stickContainer.style.top = "21.2rem";
+    currentRotation = currentRotation % 360;
+    wheel.style.transition = "none";
+    wheel.style.transform = "rotate(" + currentRotation + "deg)";
+    suitRing.style.transition = "none";
+    suitRing.style.transform = "rotate(" + (-currentRotation) + "deg)";
+    stickContainer.style.transition = "none";
+    stickContainer.style.transform = "rotate(" + currentRotation + "deg)";
+
+    const winningIndex = getWinningIndex(currentRotation);
+
+    document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => el.classList.remove("winner"));
+    const markerSegments = document.querySelectorAll("#segments-svg path");
+    markerSegments.forEach(seg => seg.classList.remove("blink"));
+    const winningSegment = markerSegments[winningIndex];
+    if (winningSegment) {
+      winningSegment.classList.add("blink");
+    }
+
+    let cardType = "";
+    if (winningIndex < 4) {
+      cardType = "King";
+    } else if (winningIndex < 8) {
+      cardType = "Queen";
+    } else {
+      cardType = "Jack";
+    }
+
+    const suits = ["♠", "♥", "♣", "♦"];
+    const suitIcon = suits[winningIndex % suits.length];
+    const suitMapping = { "♠": "Spades", "♦": "Diamonds", "♣": "Clubs", "♥": "Hearts" };
+    const suitName = suitMapping[suitIcon];
+
+    const suitOrder = { "Spades": 0, "Diamonds": 1, "Clubs": 2, "Hearts": 3 };
+    const baseIndex = (cardType === "King") ? 0 : (cardType === "Queen") ? 4 : 8;
+    const gridIndex = baseIndex + suitOrder[suitName];
+
+    const winningGridCard = document.querySelector(`.grid-card[data-index="${gridIndex}"]`);
+    if (winningGridCard) {
+      winningGridCard.classList.add("winner");
+    }
+
+    const wheelCards = document.querySelectorAll(".card-wrapper");
+    const winningWheelCard = wheelCards[winningIndex];
+    winningWheelCard.classList.add("winner");
+    const imgEl = winningWheelCard.querySelector("img");
+    const winningSrc = imgEl.getAttribute("src");
+
+    let userWon = false;
+    let winValue = 0;
+    if (bets[gridIndex] !== undefined) {
+      const betAmount = bets[gridIndex];
+      winValue = betAmount * 2;
+      balance += winValue;
+      userWon = true;
+    }
+    updateBalanceDisplay();
+    resultDisplay.textContent = userWon
+      ? "You win " + winValue + "!"
+      : (Object.keys(bets).length === 0 ? "No bet was placed." : "You lose.");
+
+    showCenterCard(winningSrc, suitIcon);
+    addHistoryCard(winningSrc, suitIcon);
+    recordGameResult(winningIndex, Object.values(bets).reduce((sum, amt) => sum + amt, 0), winValue);
+    updateBankValue();
+
+    document.querySelectorAll(".bet-overlay").forEach(overlay => overlay.remove());
+    for (let key in bets) delete bets[key];
+
+    // Restart timer when wheel stops spinning
+    startTimer();
+  }, 4000);
 });
 
-
-  // Record game result via AJAX.
-  function recordGameResult(winningSpin, betTotal, winValue = 0) {
-    let formData = `winningSpin=${encodeURIComponent(winningSpin)}&betTotal=${encodeURIComponent(betTotal)}`;
-    if (winValue > 0) {
-      formData += `&winValue=${encodeURIComponent(winValue)}`;
-    }
-    fetch('../../api/record_game.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) { console.log("Game result stored:", data.message); }
-      else { console.error("Error storing game result:", data.message); }
-    })
-    .catch(error => console.error('AJAX request failed:', error));
+// Record game result via AJAX.
+function recordGameResult(winningSpin, betTotal, winValue = 0) {
+  let formData = `winValue=${encodeURIComponent(winValue)}&winningSpin=${encodeURIComponent(winningSpin)}&betTotal=${encodeURIComponent(betTotal)}`;
+  if (winValue > 0) {
+    formData += `&winValue=${encodeURIComponent(winValue)}`;
   }
+  fetch('../../api/record_game.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) { console.log("Game result stored:", data.message); }
+    else { console.error("Error storing game result:", data.message); }
+  })
+  .catch(error => console.error('AJAX request failed:', error));
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".coin").forEach((coin, index) => {
+    const color = coin.id; 
+    if (color.startsWith("#") || color === "orange") {
+      coin.style.backgroundColor = color;
+    }
+    setTimeout(() => {
+      coin.style.opacity = 1;
+      coin.style.transition = "opacity 1s ease-in-out";
+    }, index * 200);
+  });
+
+  document.querySelectorAll(".coin").forEach(coin => {
+    coin.addEventListener("mouseenter", function () {
+      this.classList.add("spin");
+    });
+    coin.addEventListener("mouseleave", function () {
+      this.classList.remove("spin");
+    });
+  });
+});
 </script>
+
+
 
 
         
@@ -780,19 +895,19 @@ countdownText.setAttribute("text-anchor", "middle");
 countdownText.setAttribute("dominant-baseline", "middle"); // centers text vertically
 countdownText.setAttribute("font-size", "24");
 countdownText.setAttribute("fill", "#333");
-countdownText.textContent = 120;  // initial countdown value
+countdownText.textContent = 10;  // initial countdown value
 svg.appendChild(countdownText);
 
 
 // --- Timer and Display Code ---
 const currentTimeEl = document.getElementById('current-time');
 const withdrawTimeEl = document.getElementById('withdraw-time');
-let countdown = 120; // 120 seconds for auto spin
+let countdown = 10; // 10 seconds for auto spin
 
 // Update the circular timer sticks based on the time passed
 function updateTimerSticks() {
-    // Calculate fraction of time passed (0 when countdown is 120, 1 when countdown is 0)
-    const fractionPassed = (120 - countdown) / 120;
+    // Calculate fraction of time passed (0 when countdown is 10, 1 when countdown is 0)
+    const fractionPassed = (10 - countdown) / 10;
     const greenSegments = Math.round(fractionPassed * segmentCountTimer);
     
     // Update each stick: if its index is less than greenSegments, color it green, else white
@@ -832,7 +947,7 @@ const timerInterval = setInterval(() => {
         // Auto-trigger the spin
         document.getElementById("spinBtn").click();
         // Reset countdown after auto spin
-        countdown = 120;
+        countdown = 10;
     } else {
         countdown--;
     }
