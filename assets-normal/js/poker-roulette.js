@@ -148,31 +148,111 @@ document.querySelectorAll(".coin").forEach(btn => {
 });
 
 // Place bet on grid cell when clicked
+let lastBet = null; // To store the last bet info
+
 document.querySelectorAll(".grid-card").forEach(card => {
   card.addEventListener("click", function () {
-    // Disallow bets if less than 5 seconds have elapsed in the current round
     const resultDisplay = document.getElementById("result-display");
-    console.log('resultDisplay')
-    console.log(resultDisplay)
 
     if (countdown <= 5) {
       resultDisplay.style.display = 'block';
       resultDisplay.textContent = "Betting time is over.";
       return;
     }
+
     const index = this.getAttribute("data-index");
     if (bets[index] !== undefined) return;
     if (selectedCoin === null) return;
     if (balance < selectedCoin) return;
+
     balance -= selectedCoin;
     updateBalanceDisplay();
     bets[index] = selectedCoin;
+
+    // Create and add overlay
     const overlay = document.createElement("div");
     overlay.className = "bet-overlay";
     overlay.textContent = selectedCoin;
     this.appendChild(overlay);
+
+    // Store last bet
+    lastBet = {
+      index: index,
+      amount: selectedCoin
+    };
   });
 });
+
+// Clear all bets
+document.getElementById("clear-bets").addEventListener("click", function () {
+  Object.keys(bets).forEach(index => {
+    const card = document.querySelector(`.grid-card[data-index="${index}"]`);
+    if (card) {
+      const overlay = card.querySelector(".bet-overlay");
+      if (overlay) card.removeChild(overlay);
+    }
+    balance += bets[index]; // Refund bet
+  });
+
+  bets = {}; // Clear bets
+  updateBalanceDisplay();
+});
+
+// Double all bets
+document.getElementById("double-bets").addEventListener("click", function () {
+  let totalExtra = 0;
+
+  // Calculate total additional balance needed
+  Object.keys(bets).forEach(index => {
+    totalExtra += bets[index]; // Need to double each bet
+  });
+
+  if (balance < totalExtra) return; // Not enough balance to double
+
+  // Apply doubling
+  Object.keys(bets).forEach(index => {
+    const card = document.querySelector(`.grid-card[data-index="${index}"]`);
+    if (card) {
+      const overlay = card.querySelector(".bet-overlay");
+      if (overlay) {
+        bets[index] *= 2;
+        overlay.textContent = bets[index]; // Update overlay
+      }
+    }
+  });
+
+  balance -= totalExtra;
+  updateBalanceDisplay();
+});
+
+// Repeat bet logic
+document.getElementById("repeat-bet").addEventListener("click", function () {
+  const resultDisplay = document.getElementById("result-display");
+
+  if (!lastBet) return; // No previous bet
+
+  if (countdown <= 5) {
+    resultDisplay.style.display = 'block';
+    resultDisplay.textContent = "Betting time is over.";
+    return;
+  }
+
+  if (bets[lastBet.index] !== undefined) return;
+  if (balance < lastBet.amount) return;
+
+  const targetCard = document.querySelector(`.grid-card[data-index="${lastBet.index}"]`);
+  if (!targetCard) return;
+
+  balance -= lastBet.amount;
+  updateBalanceDisplay();
+  bets[lastBet.index] = lastBet.amount;
+
+  const overlay = document.createElement("div");
+  overlay.className = "bet-overlay";
+  overlay.textContent = lastBet.amount;
+  targetCard.appendChild(overlay);
+});
+
 
 // Add winning card image and suit icon to history (limit 12)
 function addHistoryCard(src, suit) {

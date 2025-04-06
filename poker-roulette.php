@@ -145,172 +145,187 @@ if (!isset($_SESSION['user_id'])) {
     <!-- Result Message Display -->
     <div id="result-display" class="custom-alert" style="font-size:18px; margin:10px 0;"></div>
 
-    <div id="image-roulette">
-  
+<div id="image-roulette">
 
-        <!-- Balance Display -->
-    
 
-        <!-- Main Container: Wheel and Grid -->
-        <div id="main-container">
-            <div id="stick-container"></div>
-            <!-- Wheel Container -->
-            <div id="wheel-container">
-                <div id="wheel">
-                    <!-- SVG segments and lines -->
-                    <svg id="segments-svg" width="350" height="350"></svg>
-                    <svg id="lines-svg" width="350" height="350"></svg>
-                    <!-- Card wrappers -->
-                    <!-- Kings Row -->
-                    <div class="card-wrapper" style="left: 166px;top: 0px;" data-initial-rotation="171">
-                        <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Spades" style="transform: rotate(171deg);">
-                    </div>
-                    <div class="card-wrapper" style="left: 249px;top: 22px;" data-initial-rotation="205">
-                        <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Diamonds" style="transform: rotate(205deg);">
-                    </div>
-                    <div class="card-wrapper" style="left: 312px;top: 82px;" data-initial-rotation="245">
-                        <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Clubs" style="transform: rotate(245deg);">
-                    </div>
-                    <div class="card-wrapper" style="left: 335px;top: 161px;" data-initial-rotation="272">
-                        <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Hearts" style="transform: rotate(272deg);">
-                    </div>
-                    <!-- Queens Row -->
-                    <div class="card-wrapper" style="left: 313px;top: 242px;" data-initial-rotation="298">
-                        <img class="card" src="/assets-normal/img/q.png" alt="Queen of Spades" style="transform: rotate(298deg);">
-                    </div>
-                    <div class="card-wrapper" style="left: 255px;top: 301px;" data-initial-rotation="327">
-                        <img class="card" src="/assets-normal/img/q.png" alt="Queen of Diamonds" style="transform: rotate(327deg);">
-                    </div>
-                    <div class="card-wrapper" style="left: 174px;top: 325px;" data-initial-rotation="3">
-                        <img class="card" src="/assets-normal/img/q.png" alt="Queen of Clubs" style="transform: rotate(3deg);">
-                    </div>
-                    <div class="card-wrapper" style="left: 94px;top: 303px;" data-initial-rotation="30">
-                        <img class="card" src="/assets-normal/img/q.png" alt="Queen of Hearts" style="transform: rotate(30deg);">
-                    </div>
-                    <!-- Jacks Row -->
-                    <div class="card-wrapper" style="left: 32px;top: 242px;" data-initial-rotation="61">
-                        <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Spades" style="transform: rotate(61deg);">
-                    </div>
-                    <div class="card-wrapper" style="left: 10px;top: 159px;" data-initial-rotation="98">
-                        <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Diamonds" style="transform: rotate(98deg);">
-                    </div>
-                    <div class="card-wrapper" style="left: 33px;top: 82px;" data-initial-rotation="116">
-                        <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Clubs" style="transform: rotate(116deg);">
-                    </div>
-                    <div class="card-wrapper" style="left: 94px;top:22px;" data-initial-rotation="153">
-                        <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Hearts" style="transform: rotate(153deg);">
-                    </div>
+    <!-- Balance Display -->
+
+
+    <!-- Main Container: Wheel and Grid -->
+    <div id="main-container">
+        <div id="stick-container"></div>
+        <!-- Wheel Container -->
+        <div id="wheel-container">
+            <div id="wheel">
+                <!-- SVG segments and lines -->
+                <svg id="segments-svg" width="350" height="350"></svg>
+                <svg id="lines-svg" width="350" height="350"></svg>
+                <!-- Card wrappers -->
+                <!-- Kings Row -->
+                <div class="card-wrapper" style="left: 166px;top: 0px;" data-initial-rotation="171">
+                    <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Spades"
+                        style="transform: rotate(171deg);">
                 </div>
-        
-                <!-- Center Circle -->
-                <div id="center-circle"></div>
-                
-                <!-- Suit Ring -->
-                <div id="suit-ring"></div>
-                
-                <!-- Marker -->
-                <div id="marker"> <img class="gem-marker" src="/assets-normal/img/gem-new.png"></div>
+                <div class="card-wrapper" style="left: 249px;top: 22px;" data-initial-rotation="205">
+                    <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Diamonds"
+                        style="transform: rotate(205deg);">
+                </div>
+                <div class="card-wrapper" style="left: 312px;top: 82px;" data-initial-rotation="245">
+                    <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Clubs"
+                        style="transform: rotate(245deg);">
+                </div>
+                <div class="card-wrapper" style="left: 335px;top: 161px;" data-initial-rotation="272">
+                    <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Hearts"
+                        style="transform: rotate(272deg);">
+                </div>
+                <!-- Queens Row -->
+                <div class="card-wrapper" style="left: 313px;top: 242px;" data-initial-rotation="298">
+                    <img class="card" src="/assets-normal/img/q.png" alt="Queen of Spades"
+                        style="transform: rotate(298deg);">
+                </div>
+                <div class="card-wrapper" style="left: 255px;top: 301px;" data-initial-rotation="327">
+                    <img class="card" src="/assets-normal/img/q.png" alt="Queen of Diamonds"
+                        style="transform: rotate(327deg);">
+                </div>
+                <div class="card-wrapper" style="left: 174px;top: 325px;" data-initial-rotation="3">
+                    <img class="card" src="/assets-normal/img/q.png" alt="Queen of Clubs"
+                        style="transform: rotate(3deg);">
+                </div>
+                <div class="card-wrapper" style="left: 94px;top: 303px;" data-initial-rotation="30">
+                    <img class="card" src="/assets-normal/img/q.png" alt="Queen of Hearts"
+                        style="transform: rotate(30deg);">
+                </div>
+                <!-- Jacks Row -->
+                <div class="card-wrapper" style="left: 32px;top: 242px;" data-initial-rotation="61">
+                    <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Spades"
+                        style="transform: rotate(61deg);">
+                </div>
+                <div class="card-wrapper" style="left: 10px;top: 159px;" data-initial-rotation="98">
+                    <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Diamonds"
+                        style="transform: rotate(98deg);">
+                </div>
+                <div class="card-wrapper" style="left: 33px;top: 82px;" data-initial-rotation="116">
+                    <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Clubs"
+                        style="transform: rotate(116deg);">
+                </div>
+                <div class="card-wrapper" style="left: 94px;top:22px;" data-initial-rotation="153">
+                    <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Hearts"
+                        style="transform: rotate(153deg);">
+                </div>
+            </div>
+
+            <!-- Center Circle -->
+            <div id="center-circle"></div>
+
+            <!-- Suit Ring -->
+            <div id="suit-ring"></div>
+
+            <!-- Marker -->
+            <div id="marker"> <img class="gem-marker" src="/assets-normal/img/gem-new.png"></div>
         </div>
 
-            
-          
 
-            <div id="grid-outer">
-               
-                <div id="card-grid">
-                    <!-- Top header row -->
-                    <div class="grid-header empty">  <div id="withdraw-time" style="font-size: 15px;"></div></div>
-                    <div class="grid-header" style="color:black">♠</div>
-                    <div class="grid-header" style="color:red">♦</div>
-                    <div class="grid-header" style="color:black">♣</div>
-                    <div class="grid-header" style="color:red">♥</div>
 
-                    <!-- King Row -->
-                    <div class="grid-label"> 
-                    <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Spades" >
-                        </div>
-                    <div class="grid-card" data-index="0">
-                        <img src="https://deckofcardsapi.com/static/img/KS.png" alt="King of Spades">
-                    </div>
-                    <div class="grid-card" data-index="1">
-                        <img src="https://deckofcardsapi.com/static/img/KD.png" alt="King of Diamonds">
-                    </div>
-                    <div class="grid-card" data-index="2">
-                        <img src="https://deckofcardsapi.com/static/img/KC.png" alt="King of Clubs">
-                    </div>
-                    <div class="grid-card" data-index="3">
-                        <img src="https://deckofcardsapi.com/static/img/KH.png" alt="King of Hearts">
-                    </div>
 
-                    <!-- Queen Row -->
-                    <div class="grid-label"><img class="card" src="/assets-normal/img/q.png" alt="Queen of Diamonds"></div>
-                    <div class="grid-card" data-index="4">
-                        <img src="https://deckofcardsapi.com/static/img/QS.png" alt="Queen of Spades">
-                    </div>
-                    <div class="grid-card" data-index="5">
-                        <img src="https://deckofcardsapi.com/static/img/QD.png" alt="Queen of Diamonds">
-                    </div>
-                    <div class="grid-card" data-index="6">
-                        <img src="https://deckofcardsapi.com/static/img/QC.png" alt="Queen of Clubs">
-                    </div>
-                    <div class="grid-card" data-index="7">
-                        <img src="https://deckofcardsapi.com/static/img/QH.png" alt="Queen of Hearts">
-                    </div>
+        <div id="grid-outer">
 
-                    <!-- Jack Row -->
-                    <div class="grid-label"><img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Diamonds" ></div>
-                    <div class="grid-card" data-index="8">
-                        <img src="https://deckofcardsapi.com/static/img/JS.png" alt="Jack of Spades">
-                    </div>
-                    <div class="grid-card" data-index="9">
-                        <img src="https://deckofcardsapi.com/static/img/JD.png" alt="Jack of Diamonds">
-                    </div>
-                    <div class="grid-card" data-index="10">
-                        <img src="https://deckofcardsapi.com/static/img/JC.png" alt="Jack of Clubs">
-                    </div>
-                    <div class="grid-card" data-index="11">
-                        <img src="https://deckofcardsapi.com/static/img/JH.png" alt="Jack of Hearts">
-                    </div>
-                    </div>
+            <div id="card-grid">
+                <!-- Top header row -->
+                <div class="grid-header empty" data-index="12">
+                    <div id="withdraw-time" style="font-size: 15px;"></div>
+                </div>
+                <div class="grid-header" style="color:black" data-index="13">♠</div>
+                <div class="grid-header" style="color:red" data-index="14">♦</div>
+                <div class="grid-header" style="color:black" data-index="15">♣</div>
+                <div class="grid-header" style="color:red" data-index="16">♥</div>
 
-                    
+                <!-- King Row -->
+                <div class="grid-label" data-index="17">
+                    <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Spades">
+                </div>
+                <div class="grid-card" data-index="0">
+                    <img src="https://deckofcardsapi.com/static/img/KS.png" alt="King of Spades">
+                </div>
+                <div class="grid-card" data-index="1">
+                    <img src="https://deckofcardsapi.com/static/img/KD.png" alt="King of Diamonds">
+                </div>
+                <div class="grid-card" data-index="2">
+                    <img src="https://deckofcardsapi.com/static/img/KC.png" alt="King of Clubs">
+                </div>
+                <div class="grid-card" data-index="3">
+                    <img src="https://deckofcardsapi.com/static/img/KH.png" alt="King of Hearts">
+                </div>
+
+                <!-- Queen Row -->
+                <div class="grid-label"data-index="21"><img class="card" src="/assets-normal/img/q.png" alt="Queen of Diamonds"></div>
+                <div class="grid-card" data-index="4">
+                    <img src="https://deckofcardsapi.com/static/img/QS.png" alt="Queen of Spades">
+                </div>
+                <div class="grid-card" data-index="5">
+                    <img src="https://deckofcardsapi.com/static/img/QD.png" alt="Queen of Diamonds">
+                </div>
+                <div class="grid-card" data-index="6">
+                    <img src="https://deckofcardsapi.com/static/img/QC.png" alt="Queen of Clubs">
+                </div>
+                <div class="grid-card" data-index="7">
+                    <img src="https://deckofcardsapi.com/static/img/QH.png" alt="Queen of Hearts">
+                </div>
+
+                <!-- Jack Row -->
+                <div class="grid-label"data-index="25"><img class="card" src="/assets-normal/img/j-removebg-preview.png"
+                        alt="Jack of Diamonds"></div>
+                <div class="grid-card" data-index="8">
+                    <img src="https://deckofcardsapi.com/static/img/JS.png" alt="Jack of Spades">
+                </div>
+                <div class="grid-card" data-index="9">
+                    <img src="https://deckofcardsapi.com/static/img/JD.png" alt="Jack of Diamonds">
+                </div>
+                <div class="grid-card" data-index="10">
+                    <img src="https://deckofcardsapi.com/static/img/JC.png" alt="Jack of Clubs">
+                </div>
+                <div class="grid-card" data-index="11">
+                    <img src="https://deckofcardsapi.com/static/img/JH.png" alt="Jack of Hearts">
                 </div>
             </div>
-        <div id="main-container">
-            <!-- Wheel Container -->
-            
-            <button id="spinBtn" hidden>Spin</button>
 
-            <div id="div-spin-btns">
+
+        </div>
+    </div>
+    <div id="main-container">
+        <!-- Wheel Container -->
+
+        <button id="spinBtn" hidden>Spin</button>
+
+        <div id="div-spin-btns">
             <div id="div-buttons">
-                <button id="clear-bets" >Clear</button>
-                <button id="clear-bets" >Double</button>
-                <button id="clear-bets" >Repeat</button>
-              </div>
-              <div id="auto-spin-countdown" style="font-size: 18px; text-align: center;">
-                  <svg id="circular-timer" width="200" height="200" viewBox="0 0 200 200"></svg>
-              </div>
-                
+                <button id="clear-bets">Clear</button>
+                <button id="double-bets">Double</button>
+                <button id="repeat-bet">Repeat</button>
+            </div>
+            <div id="auto-spin-countdown" style="font-size: 18px; text-align: center;">
+                <svg id="circular-timer" width="200" height="200" viewBox="0 0 200 200"></svg>
             </div>
 
-          
-                <div>
-                <div class="container-chip-child">
+        </div>
+
+
+        <div>
+            <div class="container-chip-child">
                 <div id="#073d91" class="coin" data-value="5"><span>5</span></div>
                 <div id="#32a9f1" class="coin" data-value="10"><span>10</span></div>
                 <div id="orange" class="coin" data-value="20"><span>20</span></div>
                 <div id="#315a97" class="coin" data-value="50"><span>50</span></div>
                 <div id="#ff9108" class="coin" data-value="100"><span>100</span></div>
                 <div id="#FFD700" class="coin" data-value="500"><span>500</span></div>
-                
+
             </div>
-                <h3 style="margin-top:4px;">Last 12  Cards</h3>
-                <div id="history-box">
-                    <div id="history-container"></div>
-                </div>
-                
+            <h3 style="margin-top:4px;">Last 12 Cards</h3>
+            <div id="history-box">
+                <div id="history-container"></div>
             </div>
+
         </div>
+    </div>
 
 
 
