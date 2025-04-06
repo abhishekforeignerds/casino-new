@@ -139,21 +139,25 @@ function updateBankValue() {
 }
 
 // Coin selection
+// Global mapping of bet overlays by their identifier.
+let betOverlays = {};
+
+// ----- COIN SELECTION -----
+let selectedCoinElement = null;
+
 document.querySelectorAll(".coin").forEach(btn => {
   btn.addEventListener("click", function () {
     document.querySelectorAll(".coin").forEach(b => b.classList.remove("selected"));
     this.classList.add("selected");
     selectedCoin = parseInt(this.getAttribute("data-value"));
+    selectedCoinElement = this; // Store reference to the selected coin design
   });
 });
 
-// Place bet on grid cell when clicked
-let lastBet = null; // To store the last bet info
-
+// ----- PLACE BET ON GRID CARD -----
 document.querySelectorAll(".grid-card").forEach(card => {
   card.addEventListener("click", function () {
     const resultDisplay = document.getElementById("result-display");
-
     if (countdown <= 5) {
       resultDisplay.style.display = 'block';
       resultDisplay.textContent = "Betting time is over.";
@@ -169,63 +173,184 @@ document.querySelectorAll(".grid-card").forEach(card => {
     updateBalanceDisplay();
     bets[index] = selectedCoin;
 
-    // Create and add overlay
+    // Create overlay with cloned coin design.
     const overlay = document.createElement("div");
     overlay.className = "bet-overlay";
-    overlay.textContent = selectedCoin;
-    this.appendChild(overlay);
 
-    // Store last bet
+    const coinClone = selectedCoinElement.cloneNode(true);
+    coinClone.classList.remove("selected");
+    coinClone.removeAttribute("id");
+
+    // Update the internal span with the bet amount.
+    const coinSpan = coinClone.querySelector("span");
+    if (coinSpan) {
+      coinSpan.textContent = selectedCoin;
+    }
+    overlay.appendChild(coinClone);
+
+    this.appendChild(overlay);
+    betOverlays[index] = overlay;
+
+    // Store last bet info (using 'identifier' for uniformity)
     lastBet = {
-      index: index,
-      amount: selectedCoin
+      identifier: index,
+      amount: selectedCoin,
+      element: this,
+      overlayHTML: overlay.outerHTML
     };
   });
 });
 
-// Clear all bets
-document.getElementById("clear-bets").addEventListener("click", function () {
-  Object.keys(bets).forEach(index => {
-    const card = document.querySelector(`.grid-card[data-index="${index}"]`);
-    if (card) {
-      const overlay = card.querySelector(".bet-overlay");
-      if (overlay) card.removeChild(overlay);
+// ----- PLACE BET ON GRID HEADER (for suit bets) -----
+document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
+  header.addEventListener("click", function () {
+    const resultDisplay = document.getElementById("result-display");
+    if (countdown <= 5) {
+      resultDisplay.style.display = 'block';
+      resultDisplay.textContent = "Betting time is over.";
+      return;
     }
-    balance += bets[index]; // Refund bet
-  });
 
-  bets = {}; // Clear bets
+    const suit = this.textContent.trim();
+    const betKey = "suit-" + suit;
+    if (bets[betKey] !== undefined) return;
+    if (selectedCoin === null) return;
+    if (balance < selectedCoin) return;
+
+    balance -= selectedCoin;
+    updateBalanceDisplay();
+    bets[betKey] = selectedCoin;
+
+    const overlay = document.createElement("div");
+    overlay.className = "bet-overlay";
+
+    const coinClone = selectedCoinElement.cloneNode(true);
+    coinClone.classList.remove("selected");
+    coinClone.removeAttribute("id");
+
+    const coinSpan = coinClone.querySelector("span");
+    if (coinSpan) {
+      coinSpan.textContent = selectedCoin;
+    }
+    overlay.appendChild(coinClone);
+
+    this.appendChild(overlay);
+    betOverlays[betKey] = overlay;
+
+    lastBet = {
+      identifier: betKey,
+      amount: selectedCoin,
+      element: this,
+      overlayHTML: overlay.outerHTML
+    };
+  });
+});
+
+// ----- PLACE BET ON GRID LABEL (for card type bets) -----
+document.querySelectorAll(".grid-label").forEach(label => {
+  label.addEventListener("click", function () {
+    const resultDisplay = document.getElementById("result-display");
+    if (countdown <= 5) {
+      resultDisplay.style.display = 'block';
+      resultDisplay.textContent = "Betting time is over.";
+      return;
+    }
+    
+    const img = this.querySelector("img");
+    if (!img) return;
+    const altText = img.getAttribute("alt");
+    const cardType = altText.split(" ")[0]; // Extracts "King", "Queen", or "Jack"
+    const betKey = "cardType-" + cardType;
+    if (bets[betKey] !== undefined) return;
+    if (selectedCoin === null) return;
+    if (balance < selectedCoin) return;
+
+    balance -= selectedCoin;
+    updateBalanceDisplay();
+    bets[betKey] = selectedCoin;
+
+    const overlay = document.createElement("div");
+    overlay.className = "bet-overlay";
+
+    const coinClone = selectedCoinElement.cloneNode(true);
+    coinClone.classList.remove("selected");
+    coinClone.removeAttribute("id");
+
+    const coinSpan = coinClone.querySelector("span");
+    if (coinSpan) {
+      coinSpan.textContent = selectedCoin;
+    }
+    overlay.appendChild(coinClone);
+
+    this.appendChild(overlay);
+    betOverlays[betKey] = overlay;
+
+    lastBet = {
+      identifier: betKey,
+      amount: selectedCoin,
+      element: this,
+      overlayHTML: overlay.outerHTML
+    };
+  });
+});
+
+// ----- CLEAR ALL BETS -----
+document.getElementById("clear-bets").addEventListener("click", function () {
+  console.log(bets)
+  // Query all bet overlays in the DOM
+  const overlays = document.querySelectorAll('.bet-overlay');
+
+  overlays.forEach(overlay => {
+    // Get the bet amount from the coin's inner span.
+    const coinSpan = overlay.querySelector('.coin span');
+    if (coinSpan) {
+      const betAmount = parseInt(coinSpan.textContent, 10);
+      balance += betAmount; // Refund bet amount
+    }
+    if (overlay.parentElement) {
+      overlay.parentElement.removeChild(overlay);
+    }
+  });
+  for (let key in bets) {
+    delete bets[key];
+  }
+  
   updateBalanceDisplay();
 });
 
-// Double all bets
+// ----- DOUBLE ALL BETS -----
 document.getElementById("double-bets").addEventListener("click", function () {
+  console.log(bets)
+  const overlays = document.querySelectorAll('.bet-overlay');
   let totalExtra = 0;
 
-  // Calculate total additional balance needed
-  Object.keys(bets).forEach(index => {
-    totalExtra += bets[index]; // Need to double each bet
+  overlays.forEach(overlay => {
+    // Query the coin's inner span.
+    const coinSpan = overlay.querySelector(':scope > .coin span');
+    if (coinSpan) {
+      const currentBet = parseInt(coinSpan.textContent, 10);
+      totalExtra += currentBet;
+    }
   });
 
   if (balance < totalExtra) return; // Not enough balance to double
 
-  // Apply doubling
-  Object.keys(bets).forEach(index => {
-    const card = document.querySelector(`.grid-card[data-index="${index}"]`);
-    if (card) {
-      const overlay = card.querySelector(".bet-overlay");
-      if (overlay) {
-        bets[index] *= 2;
-        overlay.textContent = bets[index]; // Update overlay
-      }
+  balance -= totalExtra;
+
+  overlays.forEach(overlay => {
+    const coinSpan = overlay.querySelector(':scope > .coin span');
+    if (coinSpan) {
+      const currentBet = parseInt(coinSpan.textContent, 10);
+      coinSpan.textContent = currentBet * 2;
     }
   });
-
-  balance -= totalExtra;
+  for (let key in bets) {
+    bets[key] *= 2;
+  }
   updateBalanceDisplay();
 });
 
-// Repeat bet logic
+// ----- REPEAT LAST BET -----
 document.getElementById("repeat-bet").addEventListener("click", function () {
   const resultDisplay = document.getElementById("result-display");
 
@@ -237,21 +362,21 @@ document.getElementById("repeat-bet").addEventListener("click", function () {
     return;
   }
 
-  if (bets[lastBet.index] !== undefined) return;
+  if (bets[lastBet.identifier] !== undefined) return;
   if (balance < lastBet.amount) return;
-
-  const targetCard = document.querySelector(`.grid-card[data-index="${lastBet.index}"]`);
-  if (!targetCard) return;
 
   balance -= lastBet.amount;
   updateBalanceDisplay();
-  bets[lastBet.index] = lastBet.amount;
+  bets[lastBet.identifier] = lastBet.amount;
 
   const overlay = document.createElement("div");
   overlay.className = "bet-overlay";
-  overlay.textContent = lastBet.amount;
-  targetCard.appendChild(overlay);
+  overlay.innerHTML = lastBet.overlayHTML;
+  lastBet.element.appendChild(overlay);
+  betOverlays[lastBet.identifier] = overlay;
 });
+
+
 
 
 // Add winning card image and suit icon to history (limit 12)
@@ -265,9 +390,13 @@ function addHistoryCard(src, suit) {
   img.classList.add("history-card");
 
   const suitSpan = document.createElement("span");
+  const wintimes = document.createElement("span");
   suitSpan.textContent = suit;
+  wintimes.textContent = 'N';
   suitSpan.style.fontSize = "40px";
+  wintimes.style.fontSize = "40px";
   suitSpan.style.marginLeft = "5px";
+  wintimes.style.marginLeft = "5px";
 
   // Set color based on suit
   if (suit === "♥" || suit === "♦") {
@@ -275,9 +404,10 @@ function addHistoryCard(src, suit) {
   } else {
     suitSpan.style.color = "black";
   }
-
+  wintimes.style.color = "black";
   wrapper.appendChild(img);
   wrapper.appendChild(suitSpan);
+  wrapper.appendChild(wintimes);
   historyContainer.appendChild(wrapper);
 
   if (historyContainer.childNodes.length > 12) {
@@ -353,7 +483,7 @@ function drawSuitRing() {
 drawSuitRing();
 
 // ---- Timer Setup for Rotating Wheel ----
-const spinTimerDuration = 15; // Change this value to modify the timer duration for the wheel (in seconds)
+const spinTimerDuration = 120; // Change this value to modify the timer duration for the wheel (in seconds)
 let countdown = spinTimerDuration;
 let timerInterval;
 
@@ -466,8 +596,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
   const wheel = document.getElementById("wheel");
   const suitRing = document.getElementById("suit-ring");
   let betTotal = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
-
-  // Calculate rotation so that a segment is centered at the marker
+  // Calculate rotation so that a segment is centered.
   const chosenIndex = Math.floor(Math.random() * segmentCount);
   const targetRotationMod = (360 + halfSegment - (chosenIndex * segmentAngle)) + 7.5;
   let currentMod = currentRotation % 360;
@@ -485,86 +614,144 @@ document.getElementById("spinBtn").addEventListener("click", function () {
   stickContainer.style.transition = "transform 4s ease-out";
   stickContainer.style.transform = "rotate(" + currentRotation + "deg)";
 
-  setTimeout(() => {
-    // stickContainer.style.top = "21.2rem";
-    currentRotation = currentRotation % 360;
-    wheel.style.transition = "none";
-    wheel.style.transform = "rotate(" + currentRotation + "deg)";
-    suitRing.style.transition = "none";
-    suitRing.style.transform = "rotate(" + (-currentRotation - 9 ) + "deg)";
-    stickContainer.style.transition = "none";
-    stickContainer.style.transform = "rotate(" + currentRotation + "deg)";
+  let centerInterval;
 
-    const winningIndex = getWinningIndex(currentRotation);
+// Function to start the center text animation
+function startCenterTextAnimation() {
+  const centerText = document.querySelector('#center-circle .center-text');
+  const texts = ["N", "1X", "2X", "3X"];
+  let index = 0;
+  
+  // Immediately update and trigger the animation
+  centerText.textContent = texts[index];
+  centerText.classList.remove("animate");
+  void centerText.offsetWidth; // Force reflow
+  centerText.classList.add("animate");
+  
+  index = (index + 1) % texts.length;
+  
+  // Update the text every 2 seconds (adjust the interval as needed)
+  centerInterval = setInterval(() => {
+    centerText.textContent = texts[index];
+    centerText.classList.remove("animate");
+    void centerText.offsetWidth; // Force reflow
+    centerText.classList.add("animate");
+    index = (index + 1) % texts.length;
+  }, 500);
+}
 
-    document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => el.classList.remove("winner"));
-    const markerSegments = document.querySelectorAll("#segments-svg path");
-    markerSegments.forEach(seg => seg.classList.remove("blink"));
-    const winningSegment = markerSegments[winningIndex];
-    if (winningSegment) {
-      winningSegment.classList.add("blink");
-    }
+// Function to stop the center text animation
+function stopCenterTextAnimation() {
+  clearInterval(centerInterval);
+  // Optionally remove the animation class to reset the text position
+  const centerText = document.querySelector('#center-circle .center-text');
+  centerText.classList.remove("animate");
+}
 
-    let cardType = "";
-    if (winningIndex < 4) {
+/* 
+Assume this is part of your wheel spin logic.
+We start the spin and the animation concurrently, 
+and then after 4 seconds (spin duration), we stop the animation and proceed with the result.
+*/
+
+// Start the center text animation when the spin begins
+startCenterTextAnimation();
+
+// Example spin logic (wheel rotation and other transforms)
+wheel.style.transition = "transform 4s ease-out";
+suitRing.style.transition = "transform 4s ease-out";
+stickContainer.style.transition = "transform 4s ease-out";
+
+// Start the spin rotation (example rotation value; adjust as needed)
+currentRotation += 720 + Math.floor(Math.random() * 360); // Example spin calculation
+
+wheel.style.transform = "rotate(" + currentRotation + "deg)";
+suitRing.style.transform = "rotate(" + (-currentRotation - 9) + "deg)";
+stickContainer.style.transform = "rotate(" + currentRotation + "deg)";
+
+setTimeout(() => {
+  currentRotation = currentRotation % 360;
+  wheel.style.transition = "none";
+  wheel.style.transform = "rotate(" + currentRotation + "deg)";
+  suitRing.style.transition = "none";
+  suitRing.style.transform = "rotate(" + (-currentRotation - 9) + "deg)";
+  stickContainer.style.transition = "none";
+  stickContainer.style.transform = "rotate(" + currentRotation + "deg)";
+  
+  // Stop the center text animation as the spin is complete.
+  stopCenterTextAnimation();
+
+  // Continue with determining the winning index, updating bets, and the rest of your logic
+  const winningIndex = getWinningIndex(currentRotation);
+  document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => el.classList.remove("winner"));
+  const markerSegments = document.querySelectorAll("#segments-svg path");
+  markerSegments.forEach(seg => seg.classList.remove("blink"));
+  const winningSegment = markerSegments[winningIndex];
+  if (winningSegment) {
+    winningSegment.classList.add("blink");
+  }
+  
+  let cardType = "";
+  if (winningIndex < 4) {
       cardType = "King";
-    } else if (winningIndex < 8) {
+  } else if (winningIndex < 8) {
       cardType = "Queen";
-    } else {
+  } else {
       cardType = "Jack";
-    }
-
-    const suits = ["♠", "♥", "♣", "♦"];
-    const suitIcon = suits[winningIndex % suits.length];
-    const suitMapping = { "♠": "Spades", "♦": "Diamonds", "♣": "Clubs", "♥": "Hearts" };
-    const suitName = suitMapping[suitIcon];
-
-    const suitOrder = { "Spades": 0, "Diamonds": 1, "Clubs": 2, "Hearts": 3 };
-    const baseIndex = (cardType === "King") ? 0 : (cardType === "Queen") ? 4 : 8;
-    const gridIndex = baseIndex + suitOrder[suitName];
-
-    const winningGridCard = document.querySelector(`.grid-card[data-index="${gridIndex}"]`);
-    if (winningGridCard) {
+  }
+  const suits = ["♠", "♥", "♣", "♦"];
+  const suitIcon = suits[winningIndex % suits.length];
+  const suitMapping = { "♠": "Spades", "♦": "Diamonds", "♣": "Clubs", "♥": "Hearts" };
+  const suitName = suitMapping[suitIcon];
+  const suitOrder = { "Spades": 0, "Diamonds": 1, "Clubs": 2, "Hearts": 3 };
+  const baseIndex = (cardType === "King") ? 0 : (cardType === "Queen") ? 4 : 8;
+  const gridIndex = baseIndex + suitOrder[suitName];
+  const winningGridCard = document.querySelector(`.grid-card[data-index="${gridIndex}"]`);
+  if (winningGridCard) {
       winningGridCard.classList.add("winner");
-    }
+  }
+  const wheelCards = document.querySelectorAll(".card-wrapper");
+  const winningWheelCard = wheelCards[winningIndex];
+  winningWheelCard.classList.add("winner");
+  const imgEl = winningWheelCard.querySelector("img");
+  const winningSrc = imgEl.getAttribute("src");
 
-    const wheelCards = document.querySelectorAll(".card-wrapper");
-    const winningWheelCard = wheelCards[winningIndex];
-    winningWheelCard.classList.add("winner");
-    const imgEl = winningWheelCard.querySelector("img");
-    const winningSrc = imgEl.getAttribute("src");
-
-    let userWon = false;
-    let winValue = 0;
-    if (bets[gridIndex] !== undefined) {
+  let winValue = 0;
+  let userWon = false;
+  if (bets[gridIndex] !== undefined) {
       const betAmount = bets[gridIndex];
-      winValue = betAmount * 2;
-      balance += winValue;
+      winValue += betAmount * 2;
+      balance += betAmount * 2;
       userWon = true;
-    }
-    updateBalanceDisplay();
-    resultDisplay.style.display = 'block';
-    resultDisplay.textContent = userWon
-      ? "You win " + winValue + "!"
-      : (Object.keys(bets).length === 0 ? "No bet was placed." : "You lose.");
-      var  suitIconcolor = '';
-      if (suitIcon == '♥' || suitIcon == '♦') {
-        suitIconcolor = 'red';
-      } else {
-        suitIconcolor = 'black';
-      }
-
-    showCenterCard(winningSrc, suitIcon, suitIconcolor);
-    addHistoryCard(winningSrc, suitIcon);
-    recordGameResult(winningIndex, Object.values(bets).reduce((sum, amt) => sum + amt, 0), winValue);
-    updateBankValue();
-
-    document.querySelectorAll(".bet-overlay").forEach(overlay => overlay.remove());
-    for (let key in bets) delete bets[key];
-
-    // Restart timer when wheel stops spinning
-    startTimer();
-  }, 4000);
+  }
+  const cardTypeKey = "cardType-" + cardType;
+  if (bets[cardTypeKey] !== undefined) {
+      const betAmount = bets[cardTypeKey];
+      winValue += betAmount * 2;
+      balance += betAmount * 2;
+      userWon = true;
+  }
+  const suitKey = "suit-" + suitIcon;
+  if (bets[suitKey] !== undefined) {
+      const betAmount = bets[suitKey];
+      winValue += betAmount * 2;
+      balance += betAmount * 2;
+      userWon = true;
+  }
+  updateBalanceDisplay();
+  resultDisplay.style.display = 'block';
+  resultDisplay.textContent = userWon ? "You win " + winValue + "!" : 
+      (Object.keys(bets).length === 0 ? "No bet was placed." : "You lose.");
+      
+  var suitIconcolor = (suitIcon === '♥' || suitIcon === '♦') ? 'red' : 'black';
+  showCenterCard(winningSrc, suitIcon, suitIconcolor);
+  addHistoryCard(winningSrc, suitIcon);
+  recordGameResult(winningIndex, Object.values(bets).reduce((sum, amt) => sum + amt, 0), winValue);
+  updateBankValue();
+  document.querySelectorAll(".bet-overlay").forEach(overlay => overlay.remove());
+  for (let key in bets) delete bets[key];
+  startTimer();
+}, 4000);
 });
 
 // Record game result via AJAX.

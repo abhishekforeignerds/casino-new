@@ -209,7 +209,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
     transform: translate(-50%, -50%);
     font-size: 1rem;
     font-weight: bold;
-    background: rgba(233, 30, 99, 0.9);
+    background: transparent;
     color: #fff;
     padding: 4px 8px;
     border-radius: 12px;
@@ -526,17 +526,17 @@ opacity: 0.8;
     height: 350px;
   }
  /* Stick container styled as a circle with a border (outer circle) */
-#stick-container {
-  position: absolute;
-  top: 12.2rem;
-  right: 145px;
-  z-index: 100;
-  width: 400px;
-  height: 400px;
-  pointer-events: none;
-  border: 2px solid #000;  /* Outer circle border */
-  border-radius: 50%;
-  transform-origin: 50% 50%;
+ #stick-container {
+    position: absolute;
+    top: 12.2rem;
+    right: 6.8rem;
+    z-index: 100;
+    width: 400px;
+    height: 400px;
+    pointer-events: none;
+    /* border: 2px solid #000; */
+    border-radius: 50%;
+    transform-origin: 50% 50%;
 }
 
 /* Style for each stick */
@@ -640,6 +640,117 @@ div#div-spin-btns {
     align-items: center;
     justify-content: space-between;
     gap: 50px;
+}
+
+
+#center-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;      /* Adjust as needed */
+    height: 100px;     /* Adjust as needed */
+    border-radius: 50%;
+    background: #fff;  /* Example background */
+    overflow: hidden;  /* Hide text outside the circle */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Base styling for the animated text */
+  .center-text {
+    position: relative;
+    font-size: 1.5rem; /* Adjust font size as needed */
+    white-space: nowrap;
+  }
+  
+  /* Animation class to trigger the slide */
+  .center-text.animate {
+    animation: slide 2s forwards;
+  }
+  
+  /* Keyframes for sliding text from left to right */
+  @keyframes slide {
+    0% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    20% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    80% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
+div#grid-label-1 .bet-overlay {
+    position: absolute;
+    top: 36%;
+    left: 10%;
+}
+div#grid-label-2 .bet-overlay {
+    position: absolute;
+    top: 63%;
+    left: 10%;
+}
+div#grid-label-3 .bet-overlay {
+    position: absolute;
+    top: 90%;
+    left: 10%;
+}
+
+div#suitIcon1  .bet-overlay {
+    position: absolute;
+    top: 10%;
+    left: 30%;
+}
+div#suitIcon2  .bet-overlay {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+}
+div#suitIcon3  .bet-overlay {
+    position: absolute;
+    top: 10%;
+    left: 70%;
+}
+div#suitIcon4  .bet-overlay {
+    position: absolute;
+    top: 10%;
+    left: 90%;
+}
+
+
+.bet-overlay .coin {
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    border: 7px dashed white;
+    transition: all 1s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'Lato', sans-serif;
+    font-size: 18px;
+    margin: 0px 8px;
+    opacity: 0; /* Start with hidden state */
+}
+
+.bet-overlay .coin span {
+    border: 3px dashed white;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 38px;
 }
 
 

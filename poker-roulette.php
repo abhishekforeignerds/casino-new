@@ -215,7 +215,7 @@ if (!isset($_SESSION['user_id'])) {
             </div>
 
             <!-- Center Circle -->
-            <div id="center-circle"></div>
+            <div id="center-circle"> <div class="center-text">N</div></div>
 
             <!-- Suit Ring -->
             <div id="suit-ring"></div>
@@ -234,13 +234,13 @@ if (!isset($_SESSION['user_id'])) {
                 <div class="grid-header empty" data-index="12">
                     <div id="withdraw-time" style="font-size: 15px;"></div>
                 </div>
-                <div class="grid-header" style="color:black" data-index="13">♠</div>
-                <div class="grid-header" style="color:red" data-index="14">♦</div>
-                <div class="grid-header" style="color:black" data-index="15">♣</div>
-                <div class="grid-header" style="color:red" data-index="16">♥</div>
+                <div class="grid-header" id="suitIcon1" style="color:black" data-index="13">♠</div>
+                <div class="grid-header" id="suitIcon2" style="color:red" data-index="14">♦</div>
+                <div class="grid-header" id="suitIcon3" style="color:black" data-index="15">♣</div>
+                <div class="grid-header" id="suitIcon4" style="color:red" data-index="16">♥</div>
 
                 <!-- King Row -->
-                <div class="grid-label" data-index="17">
+                <div class="grid-label" id="grid-label-1" data-index="17">
                     <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Spades">
                 </div>
                 <div class="grid-card" data-index="0">
@@ -257,7 +257,7 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
 
                 <!-- Queen Row -->
-                <div class="grid-label"data-index="21"><img class="card" src="/assets-normal/img/q.png" alt="Queen of Diamonds"></div>
+                <div class="grid-label" id="grid-label-2" data-index="21"><img class="card" src="/assets-normal/img/q.png" alt="Queen of Diamonds"></div>
                 <div class="grid-card" data-index="4">
                     <img src="https://deckofcardsapi.com/static/img/QS.png" alt="Queen of Spades">
                 </div>
@@ -272,7 +272,7 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
 
                 <!-- Jack Row -->
-                <div class="grid-label"data-index="25"><img class="card" src="/assets-normal/img/j-removebg-preview.png"
+                <div class="grid-label" id="grid-label-3" data-index="25"><img class="card" src="/assets-normal/img/j-removebg-preview.png"
                         alt="Jack of Diamonds"></div>
                 <div class="grid-card" data-index="8">
                     <img src="https://deckofcardsapi.com/static/img/JS.png" alt="Jack of Spades">
@@ -298,9 +298,9 @@ if (!isset($_SESSION['user_id'])) {
 
         <div id="div-spin-btns">
             <div id="div-buttons">
-                <button id="clear-bets">Clear</button>
-                <button id="double-bets">Double</button>
-                <button id="repeat-bet">Repeat</button>
+                <button id="clear-bets" class="cmn--btn active w-100 m-3" style="border: 2px solid white;">Clear</button>
+                <button id="double-bets" class="cmn--btn active w-100 m-3" style="border: 2px solid white;">Double</button>
+                <button id="repeat-bet" class="cmn--btn active w-100 m-3" style="border: 2px solid white;">Repeat</button>
             </div>
             <div id="auto-spin-countdown" style="font-size: 18px; text-align: center;">
                 <svg id="circular-timer" width="200" height="200" viewBox="0 0 200 200"></svg>
