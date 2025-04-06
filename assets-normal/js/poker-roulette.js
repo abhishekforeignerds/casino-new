@@ -1,50 +1,4 @@
 
-document.addEventListener("DOMContentLoaded", function() {
-  const stickContainer = document.getElementById('stick-container');
-  const containerSize = 400; // Container width and height
-  const centerX = containerSize / 2;
-  const centerY = containerSize / 2;
-
-  // Container's border represents the outer circle (radius 200)
-  const outerCircleRadius = (containerSize / 2) + 100; // 200px
-  
-  // Set inner circle radius so that the stick's top touches this circle.
-  // For a bigger stick, we choose a smaller inner circle radius.
-  const innerCircleRadius = 205; // adjust this value for more gap
-
-  // The stick's length equals the difference between the outer and inner circles.
-  const stickHeight = outerCircleRadius - innerCircleRadius; // 200 - 160 = 40px
-  
-  // Double the number of sticks.
-  const numberOfSticks = 72;
-  const stickWidth = 17;  // stick width (should match your CSS)
-
-  // Clear any previous sticks.
-  stickContainer.innerHTML = '';
-
-  for (let i = 0; i < numberOfSticks; i++) {
-    const stick = document.createElement('div');
-    stick.classList.add('stick');
-
-    // Calculate the angle (in degrees) for this stick.
-    const angle = (360 / numberOfSticks) * i;
-    const radian = angle * Math.PI / 180;
-
-    // Position the stick so that its top edge sits on the inner circle.
-    // Subtract half the stick's width to center it horizontally.
-    const x = centerX + innerCircleRadius * Math.cos(radian) - (stickWidth / 2);
-    const y = centerY + innerCircleRadius * Math.sin(radian);
-
-    stick.style.left = `${x}px`;
-    stick.style.top = `${y}px`;
-    // Set the stick's height (its length)
-    stick.style.height = `${stickHeight}px`;
-    // Rotate the stick so that it points radially outward.
-    stick.style.transform = `rotate(${angle}deg)`;
-
-    stickContainer.appendChild(stick);
-  }
-});
 
 const segmentCount = 12;
 const segmentAngle = 360 / segmentCount; // 30° each
@@ -115,13 +69,19 @@ let selectedCoin = null;
 const bets = {};
 
 const balanceDisplay = document.getElementById("balance-display");
+const winPointsDisplay = document.getElementById("winPoints-display");
 const resultDisplay = document.getElementById("result-display");
 
 function updateBalanceDisplay() {
   balanceDisplay.innerHTML = "Balance: <span style='color: gold;font-weight:800;'>" + balance + "</span>";
 
 }
+function updatewinPointsDisplay() {
+  winPointsDisplay.innerHTML = "Win Points: <span style='color: gold;font-weight:800;'>" + winningPoints + "</span>";
+
+}
 updateBalanceDisplay();
+updatewinPointsDisplay();
 
 // AJAX helper to update bank value on server
 function updateBankValue() {
@@ -171,6 +131,7 @@ document.querySelectorAll(".grid-card").forEach(card => {
 
     balance -= selectedCoin;
     updateBalanceDisplay();
+    updatewinPointsDisplay();
     bets[index] = selectedCoin;
 
     // Create overlay with cloned coin design.
@@ -219,6 +180,7 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
 
     balance -= selectedCoin;
     updateBalanceDisplay();
+    updatewinPointsDisplay();
     bets[betKey] = selectedCoin;
 
     const overlay = document.createElement("div");
@@ -267,6 +229,7 @@ document.querySelectorAll(".grid-label").forEach(label => {
 
     balance -= selectedCoin;
     updateBalanceDisplay();
+    updatewinPointsDisplay();
     bets[betKey] = selectedCoin;
 
     const overlay = document.createElement("div");
@@ -316,6 +279,7 @@ document.getElementById("clear-bets").addEventListener("click", function () {
   }
   
   updateBalanceDisplay();
+  updatewinPointsDisplay();
 });
 
 // ----- DOUBLE ALL BETS -----
@@ -348,6 +312,7 @@ document.getElementById("double-bets").addEventListener("click", function () {
     bets[key] *= 2;
   }
   updateBalanceDisplay();
+  updatewinPointsDisplay();
 });
 
 // ----- REPEAT LAST BET -----
@@ -367,6 +332,7 @@ document.getElementById("repeat-bet").addEventListener("click", function () {
 
   balance -= lastBet.amount;
   updateBalanceDisplay();
+  updatewinPointsDisplay();
   bets[lastBet.identifier] = lastBet.amount;
 
   const overlay = document.createElement("div");
@@ -390,30 +356,104 @@ function addHistoryCard(src, suit) {
   img.classList.add("history-card");
 
   const suitSpan = document.createElement("span");
-  const wintimes = document.createElement("span");
+  const wintimesSpan = document.createElement("span");
   suitSpan.textContent = suit;
-  wintimes.textContent = 'N';
-  suitSpan.style.fontSize = "40px";
-  wintimes.style.fontSize = "40px";
+  wintimesSpan.textContent = 'N'; // Use the appropriate win times value if needed
+  suitSpan.style.fontSize = "30px";
+  wintimesSpan.style.fontSize = "30px";
   suitSpan.style.marginLeft = "5px";
-  wintimes.style.marginLeft = "5px";
+  wintimesSpan.style.marginLeft = "5px";
 
   // Set color based on suit
-  if (suit === "♥" || suit === "♦") {
-    suitSpan.style.color = "red";
-  } else {
-    suitSpan.style.color = "black";
-  }
-  wintimes.style.color = "black";
+  suitSpan.style.color = (suit === "♥" || suit === "♦") ? "red" : "black";
+  wintimesSpan.style.color = "black";
+
   wrapper.appendChild(img);
   wrapper.appendChild(suitSpan);
-  wrapper.appendChild(wintimes);
+  wrapper.appendChild(wintimesSpan);
   historyContainer.appendChild(wrapper);
 
+  // Ensure the DOM displays only the last 12 items
+  if (historyContainer.childNodes.length > 12) {
+    historyContainer.removeChild(historyContainer.firstChild);
+  }
+
+  // Update the history in the database
+  updateHistory(src, suit, 'N');
+}
+
+// AJAX function to update the game history in the database
+function updateHistory(src, suit, wintimes) {
+  const formData = new FormData();
+  // You may set the game_id as needed
+  formData.append('game_id', 1);
+  formData.append('src', src);
+  formData.append('suiticon', suit);
+  formData.append('wintimes', wintimes);
+
+  fetch('../../api/updateHistory.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (!data.success) {
+      console.error('Error updating history:', data.message);
+    }
+  })
+  .catch(error => console.error("Fetch error:", error));
+}
+function displayHistoryCard(src, suit, wintimes) {
+  const historyContainer = document.getElementById("history-container");
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("history-item");
+
+  const img = document.createElement("img");
+  img.src = src;
+  img.classList.add("history-card");
+
+  const suitSpan = document.createElement("span");
+  suitSpan.textContent = suit;
+  suitSpan.style.fontSize = "30px";
+  suitSpan.style.marginLeft = "5px";
+  suitSpan.style.color = (suit === "♥" || suit === "♦") ? "red" : "black";
+
+  const wintimesSpan = document.createElement("span");
+  wintimesSpan.textContent = wintimes;
+  wintimesSpan.style.fontSize = "30px";
+  wintimesSpan.style.marginLeft = "5px";
+  wintimesSpan.style.color = "black";
+
+  wrapper.appendChild(img);
+  wrapper.appendChild(suitSpan);
+  wrapper.appendChild(wintimesSpan);
+  historyContainer.appendChild(wrapper);
+
+  // Ensure the DOM displays only the last 12 items
   if (historyContainer.childNodes.length > 12) {
     historyContainer.removeChild(historyContainer.firstChild);
   }
 }
+
+// Function to fetch history from the database via AJAX and populate the DOM
+function fetchHistoryFromDB() {
+  // Adjust the URL and game_id as needed
+  fetch('../../api/fetchHistory.php?game_id=1')
+    .then(response => response.json())
+    .then(historyArray => {
+      // Clear the current history container
+      const historyContainer = document.getElementById("history-container");
+      historyContainer.innerHTML = "";
+      // historyArray is expected to be an array of objects
+      historyArray.forEach(item => {
+        displayHistoryCard(item.src, item.suiticon, item.wintimes);
+      });
+    })
+    .catch(error => console.error("Error fetching history:", error));
+}
+
+// Call fetchHistoryFromDB on DOM load
+document.addEventListener("DOMContentLoaded", fetchHistoryFromDB);
 
 // Show winning card's image and suit icon in the center circle.
 function showCenterCard(src, suit, suitIconcolor) {
@@ -483,7 +523,7 @@ function drawSuitRing() {
 drawSuitRing();
 
 // ---- Timer Setup for Rotating Wheel ----
-const spinTimerDuration = 120; // Change this value to modify the timer duration for the wheel (in seconds)
+const spinTimerDuration = 10; // Change this value to modify the timer duration for the wheel (in seconds)
 let countdown = spinTimerDuration;
 let timerInterval;
 
@@ -581,30 +621,42 @@ function stopTimer() {
 
 // Start timer initially
 startTimer();
-
-// ---- Spin Button and Wheel Rotation ----
 document.getElementById("spinBtn").addEventListener("click", function () {
-  // Stop timer when wheel starts spinning
+  // Stop timer and reset display
   stopTimer();
   resultDisplay.textContent = "";
   resultDisplay.style.display = 'none';
   document.querySelectorAll(".grid-card").forEach(card => card.classList.remove("winner"));
 
   const stickContainer = document.getElementById("stick-container");
-  // stickContainer.style.top = "19.2rem";
-
   const wheel = document.getElementById("wheel");
   const suitRing = document.getElementById("suit-ring");
   let betTotal = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
-  // Calculate rotation so that a segment is centered.
+
+  // --- Calculate rotation so that the winning segment is centered ---
+  // Assume segmentCount is defined and each segment's angle is equal
+  const segmentAngle = 360 / segmentCount; 
+  // Choose a random segment index (0 to segmentCount-1)
   const chosenIndex = Math.floor(Math.random() * segmentCount);
-  const targetRotationMod = (360 + halfSegment - (chosenIndex * segmentAngle)) + 7.5;
+  
+  // If your marker is not exactly at the top, adjust markerOffset (in degrees) as needed.
+  const markerOffset = 0; // e.g., change to 7.5 if required
+  // Final rotation (in degrees) should place the center of the chosen segment at the marker.
+  // The center of segment i is located at: (i * segmentAngle + segmentAngle/2)
+  // To bring that center to the top, we need a final rotation mod 360 of:
+  const targetRotationMod = (360 - (chosenIndex * segmentAngle + segmentAngle / 2) + markerOffset) % 360;
+
+  // Determine the adjustment from the current rotation
   let currentMod = currentRotation % 360;
   let adjustment = targetRotationMod - currentMod;
   if (adjustment < 0) adjustment += 360;
-  const deltaAngle = 3600 + adjustment;
+
+  // Add a fixed number of full rotations (e.g., 10 full spins) to build suspense
+  const fullSpin = 10 * 360;
+  const deltaAngle = fullSpin + adjustment;
   currentRotation += deltaAngle;
 
+  // --- Apply the spin animation to wheel, suit ring, and stick container ---
   wheel.style.transition = "transform 4s ease-out";
   wheel.style.transform = "rotate(" + currentRotation + "deg)";
 
@@ -614,144 +666,136 @@ document.getElementById("spinBtn").addEventListener("click", function () {
   stickContainer.style.transition = "transform 4s ease-out";
   stickContainer.style.transform = "rotate(" + currentRotation + "deg)";
 
+  // --- Center text animation logic ---
   let centerInterval;
-
-// Function to start the center text animation
-function startCenterTextAnimation() {
-  const centerText = document.querySelector('#center-circle .center-text');
-  const texts = ["N", "1X", "2X", "3X"];
-  let index = 0;
-  
-  // Immediately update and trigger the animation
-  centerText.textContent = texts[index];
-  centerText.classList.remove("animate");
-  void centerText.offsetWidth; // Force reflow
-  centerText.classList.add("animate");
-  
-  index = (index + 1) % texts.length;
-  
-  // Update the text every 2 seconds (adjust the interval as needed)
-  centerInterval = setInterval(() => {
+  function startCenterTextAnimation() {
+    const centerCircle = document.getElementById('center-circle');
+    let centerText = centerCircle.querySelector('.center-text');
+    if (!centerText) {
+      centerCircle.innerHTML = "";
+      centerText = document.createElement("div");
+      centerText.className = "center-text";
+      centerCircle.appendChild(centerText);
+    }
+    const texts = ["N", "1X", "2X", "3X"];
+    let index = 0;
+    // Immediately trigger the animation
     centerText.textContent = texts[index];
     centerText.classList.remove("animate");
     void centerText.offsetWidth; // Force reflow
     centerText.classList.add("animate");
     index = (index + 1) % texts.length;
-  }, 500);
-}
-
-// Function to stop the center text animation
-function stopCenterTextAnimation() {
-  clearInterval(centerInterval);
-  // Optionally remove the animation class to reset the text position
-  const centerText = document.querySelector('#center-circle .center-text');
-  centerText.classList.remove("animate");
-}
-
-/* 
-Assume this is part of your wheel spin logic.
-We start the spin and the animation concurrently, 
-and then after 4 seconds (spin duration), we stop the animation and proceed with the result.
-*/
-
-// Start the center text animation when the spin begins
-startCenterTextAnimation();
-
-// Example spin logic (wheel rotation and other transforms)
-wheel.style.transition = "transform 4s ease-out";
-suitRing.style.transition = "transform 4s ease-out";
-stickContainer.style.transition = "transform 4s ease-out";
-
-// Start the spin rotation (example rotation value; adjust as needed)
-currentRotation += 720 + Math.floor(Math.random() * 360); // Example spin calculation
-
-wheel.style.transform = "rotate(" + currentRotation + "deg)";
-suitRing.style.transform = "rotate(" + (-currentRotation - 9) + "deg)";
-stickContainer.style.transform = "rotate(" + currentRotation + "deg)";
-
-setTimeout(() => {
-  currentRotation = currentRotation % 360;
-  wheel.style.transition = "none";
-  wheel.style.transform = "rotate(" + currentRotation + "deg)";
-  suitRing.style.transition = "none";
-  suitRing.style.transform = "rotate(" + (-currentRotation - 9) + "deg)";
-  stickContainer.style.transition = "none";
-  stickContainer.style.transform = "rotate(" + currentRotation + "deg)";
-  
-  // Stop the center text animation as the spin is complete.
-  stopCenterTextAnimation();
-
-  // Continue with determining the winning index, updating bets, and the rest of your logic
-  const winningIndex = getWinningIndex(currentRotation);
-  document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => el.classList.remove("winner"));
-  const markerSegments = document.querySelectorAll("#segments-svg path");
-  markerSegments.forEach(seg => seg.classList.remove("blink"));
-  const winningSegment = markerSegments[winningIndex];
-  if (winningSegment) {
-    winningSegment.classList.add("blink");
+    centerInterval = setInterval(() => {
+      centerText.textContent = texts[index];
+      centerText.classList.remove("animate");
+      void centerText.offsetWidth; // Force reflow
+      centerText.classList.add("animate");
+      index = (index + 1) % texts.length;
+    }, 500);
   }
   
-  let cardType = "";
-  if (winningIndex < 4) {
+  function stopCenterTextAnimation() {
+    clearInterval(centerInterval);
+    const centerText = document.querySelector('#center-circle .center-text');
+    if(centerText) {
+      centerText.classList.remove("animate");
+    }
+  }
+  
+  // Start center text animation when spin begins
+  startCenterTextAnimation();
+
+  // --- After spin duration, finalize and determine results ---
+  setTimeout(() => {
+    // Normalize currentRotation to within 0-359
+    currentRotation = currentRotation % 360;
+    wheel.style.transition = "none";
+    wheel.style.transform = "rotate(" + currentRotation + "deg)";
+    suitRing.style.transition = "none";
+    suitRing.style.transform = "rotate(" + (-currentRotation) + "deg)";
+    stickContainer.style.transition = "none";
+    stickContainer.style.transform = "rotate(" + currentRotation + "deg)";
+    
+    // Stop center text animation
+    stopCenterTextAnimation();
+
+    // Use chosenIndex as the winning index
+    const winningIndex = chosenIndex;
+    document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => el.classList.remove("winner"));
+    const markerSegments = document.querySelectorAll("#segments-svg path");
+    markerSegments.forEach(seg => seg.classList.remove("blink"));
+    const winningSegment = markerSegments[winningIndex];
+    if (winningSegment) {
+      winningSegment.classList.add("blink");
+    }
+    
+    // Determine card type based on winning index
+    let cardType = "";
+    if (winningIndex < 4) {
       cardType = "King";
-  } else if (winningIndex < 8) {
+    } else if (winningIndex < 8) {
       cardType = "Queen";
-  } else {
+    } else {
       cardType = "Jack";
-  }
-  const suits = ["♠", "♥", "♣", "♦"];
-  const suitIcon = suits[winningIndex % suits.length];
-  const suitMapping = { "♠": "Spades", "♦": "Diamonds", "♣": "Clubs", "♥": "Hearts" };
-  const suitName = suitMapping[suitIcon];
-  const suitOrder = { "Spades": 0, "Diamonds": 1, "Clubs": 2, "Hearts": 3 };
-  const baseIndex = (cardType === "King") ? 0 : (cardType === "Queen") ? 4 : 8;
-  const gridIndex = baseIndex + suitOrder[suitName];
-  const winningGridCard = document.querySelector(`.grid-card[data-index="${gridIndex}"]`);
-  if (winningGridCard) {
+    }
+    const suits = ["♥", "♣", "♦", "♠"];
+    const suitIcon = suits[winningIndex % suits.length];
+    const suitMapping = { "♠": "Spades", "♦": "Diamonds", "♣": "Clubs", "♥": "Hearts" };
+    const suitName = suitMapping[suitIcon];
+    const suitOrder = { "Spades": 0, "Diamonds": 1, "Clubs": 2, "Hearts": 3 };
+    const baseIndex = (cardType === "King") ? 0 : (cardType === "Queen") ? 4 : 8;
+    const gridIndex = baseIndex + suitOrder[suitName];
+    const winningGridCard = document.querySelector(`.grid-card[data-index="${gridIndex}"]`);
+    if (winningGridCard) {
       winningGridCard.classList.add("winner");
-  }
-  const wheelCards = document.querySelectorAll(".card-wrapper");
-  const winningWheelCard = wheelCards[winningIndex];
-  winningWheelCard.classList.add("winner");
-  const imgEl = winningWheelCard.querySelector("img");
-  const winningSrc = imgEl.getAttribute("src");
+    }
+    const wheelCards = document.querySelectorAll(".card-wrapper");
+    const winningWheelCard = wheelCards[winningIndex];
+    winningWheelCard.classList.add("winner");
+    const imgEl = winningWheelCard.querySelector("img");
+    const winningSrc = imgEl.getAttribute("src");
 
-  let winValue = 0;
-  let userWon = false;
-  if (bets[gridIndex] !== undefined) {
+    // Calculate win and update balance accordingly
+    let winValue = 0;
+    let userWon = false;
+    if (bets[gridIndex] !== undefined) {
       const betAmount = bets[gridIndex];
       winValue += betAmount * 2;
-      balance += betAmount * 2;
+      // balance += betAmount * 2;
+      winningPoints += betAmount * 2;
       userWon = true;
-  }
-  const cardTypeKey = "cardType-" + cardType;
-  if (bets[cardTypeKey] !== undefined) {
+    }
+    const cardTypeKey = "cardType-" + cardType;
+    if (bets[cardTypeKey] !== undefined) {
       const betAmount = bets[cardTypeKey];
       winValue += betAmount * 2;
-      balance += betAmount * 2;
+      // balance += betAmount * 2;
+      winningPoints += betAmount * 2;
       userWon = true;
-  }
-  const suitKey = "suit-" + suitIcon;
-  if (bets[suitKey] !== undefined) {
+    }
+    const suitKey = "suit-" + suitIcon;
+    if (bets[suitKey] !== undefined) {
       const betAmount = bets[suitKey];
       winValue += betAmount * 2;
-      balance += betAmount * 2;
+      // balance += betAmount * 2;
+      winningPoints += betAmount * 2;
       userWon = true;
-  }
-  updateBalanceDisplay();
-  resultDisplay.style.display = 'block';
-  resultDisplay.textContent = userWon ? "You win " + winValue + "!" : 
+    }
+    updateBalanceDisplay();
+    updatewinPointsDisplay();
+    resultDisplay.style.display = 'block';
+    resultDisplay.textContent = userWon ? "You win " + winValue + "!" : 
       (Object.keys(bets).length === 0 ? "No bet was placed." : "You lose.");
-      
-  var suitIconcolor = (suitIcon === '♥' || suitIcon === '♦') ? 'red' : 'black';
-  showCenterCard(winningSrc, suitIcon, suitIconcolor);
-  addHistoryCard(winningSrc, suitIcon);
-  recordGameResult(winningIndex, Object.values(bets).reduce((sum, amt) => sum + amt, 0), winValue);
-  updateBankValue();
-  document.querySelectorAll(".bet-overlay").forEach(overlay => overlay.remove());
-  for (let key in bets) delete bets[key];
-  startTimer();
-}, 4000);
+    
+    var suitIconcolor = (suitIcon === '♥' || suitIcon === '♦') ? 'red' : 'black';
+    showCenterCard(winningSrc, suitIcon, suitIconcolor);
+    addHistoryCard(winningSrc, suitIcon);
+    recordGameResult(winningIndex, Object.values(bets).reduce((sum, amt) => sum + amt, 0), winValue);
+    updateBankValue();
+    document.querySelectorAll(".bet-overlay").forEach(overlay => overlay.remove());
+    for (let key in bets) delete bets[key];
+    startTimer();
+  }, 4000);
 });
 
 // Record game result via AJAX.

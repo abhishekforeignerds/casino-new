@@ -23,11 +23,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $user = $result->fetch_assoc();
         // Verify the password against the hashed password in the database
         if (password_verify($password, $user['password'])) {
+            $stmt = $conn->prepare("SELECT SUM(win_value) AS total_win FROM game_results WHERE user_id = ?");
+            $stmt->bind_param("i", $user['id']);
+            $stmt->execute();
+            $stmt->bind_result($winningPoints);
+            $stmt->fetch();
+            $stmt->close();
+        
+            // Ensure $winningPoints is at least 0 if null
+            $winningPoints = $winningPoints ?? 0;
             // Valid credentials – set session variables and redirect
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['fname'] = $user['first_name'];
             $_SESSION['points'] = $user['points'];
+            $_SESSION['winningPoints'] = $winningPoints;
             header("Location: poker-roulette.php");
             exit();
         } else {

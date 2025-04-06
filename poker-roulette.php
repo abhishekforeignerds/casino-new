@@ -6,6 +6,33 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: sign-in.php");
     exit();
 }
+include 'db.php'; // Database connection
+
+
+$user_id = $_SESSION['user_id'];
+$game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 1; // Adjust as needed
+
+$stmt = $conn->prepare("SELECT SUM(win_value) AS total_win FROM game_results WHERE user_id = ?");
+$stmt->bind_param("i", $user_id);
+
+$stmt->execute();
+$stmt->bind_result($winningPoints);
+$stmt->fetch();
+$stmt->close();
+
+// Ensure $winningPoints is at least 0 if null
+$winningPoints = $winningPoints ?? 0;
+$userId = $_SESSION['user_id'];
+
+$stmt = $conn->prepare("SELECT points FROM users WHERE id = ?");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$stmt->bind_result($points);
+$stmt->fetch();
+$stmt->close();
+
+// Now $points contains the user's current points
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -108,8 +135,8 @@ if (!isset($_SESSION['user_id'])) {
 
                         </li>
                         <li>
-                            <a class="text-center mt-3">Welcome,
-                                <?php echo htmlspecialchars($_SESSION['user_id']); ?>!
+                            <a class="text-center mt-3 gold-box">Welcome,
+                                <?php echo htmlspecialchars($_SESSION['fname']); ?> !
                             </a>
 
                         </li>
@@ -132,7 +159,9 @@ if (!isset($_SESSION['user_id'])) {
         <button id="fullscreenBtn" style="color:white;font-size: 32px;border: none;background: none;z-index: 1000;cursor: pointer;">
           <i class="fas fa-expand"></i>
         </button>
-          <div id="balance-display">Balance: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($_SESSION['points']); ?></span></div>
+        <div id="winPoints-display">Win Points: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($winningPoints); ?></span></div>
+          <div id="balance-display">Balance: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($points); ?></span></div>
+          
                 <div id="time-info-container" >
                 <div id="current-time" style="font-size: 18px;"></div>
           </div>
@@ -331,7 +360,8 @@ if (!isset($_SESSION['user_id'])) {
 
 <script>
 // CONFIGURABLE VARIABLES
-let balance = <?php echo htmlspecialchars($_SESSION['points']); ?>;
+let balance = <?php echo htmlspecialchars($points); ?>;
+let winningPoints = <?php echo htmlspecialchars($winningPoints); ?>;
 </script>
 
 <script src="./assets-normal/js/poker-roulette.js"></script>
