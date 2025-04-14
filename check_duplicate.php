@@ -12,7 +12,7 @@ $allowedFields = ['email', 'username', 'phone'];
 
 if (in_array($field, $allowedFields) && !empty($value)) {
     // It's safe to include $field in the query because it's whitelisted.
-    $query = "SELECT id FROM users WHERE $field = ?";
+    $query = "SELECT id FROM user WHERE $field = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("s", $value);
     $stmt->execute();

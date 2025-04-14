@@ -216,11 +216,9 @@
                                                     class="form-label">Country</label>
                                                 <select name id
                                                     class="form-select form--select form--control style-two">
-                                                    <option
-                                                        value>Bangladesh</option>
+                                                  
                                                     <option value>India</option>
-                                                    <option
-                                                        value>English</option>
+                                                   
                                                 </select>
                                             </div>
                                         </div>

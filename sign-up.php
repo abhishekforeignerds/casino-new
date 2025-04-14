@@ -29,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $errors = [];
 
     // Check if email exists
-    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $stmt = $conn->prepare("SELECT id FROM user WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->store_result();
@@ -39,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->close();
 
     // Check if username exists
-    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
+    $stmt = $conn->prepare("SELECT id FROM user WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $stmt->store_result();
@@ -49,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->close();
 
     // Check if phone number exists
-    $stmt = $conn->prepare("SELECT id FROM users WHERE phone = ?");
+    $stmt = $conn->prepare("SELECT id FROM user WHERE phone = ?");
     $stmt->bind_param("s", $phone);
     $stmt->execute();
     $stmt->store_result();
@@ -70,14 +70,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // If no errors, hash the password and insert the new user
     $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-    $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, country, phone, email, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO user (first_name, last_name, country, phone, email, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("sssssss", $first_name, $last_name, $country, $phone, $email, $username, $hashed_password);
 
     if ($stmt->execute()) {
         // Auto-login: Set session variables and redirect
         $_SESSION['user_id'] = $stmt->insert_id;
-        $_SESSION['username'] = $username;
-        header("Location: dashboard.php");
+       
+
+        $_SESSION['fname'] = $user['first_name'];
+        header("Location: poker-roulette.php");
         exit();
     } else {
         echo "Error: " . $stmt->error;
@@ -256,7 +258,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="form-group">
             <div class="input-pre-icon"><i class="las la-globe"></i></div>
             <select name="country" class="form-select form--control style--two" required>
-                <option value="Bangladesh">Bangladesh</option>
+                <option value="">Select Country</option>
                 <option value="India">India</option>
                 <option value="Pakistan">Pakistan</option>
             </select>
@@ -264,7 +266,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
     <div class="col-xl-6 col-md-6">
         <div class="input-group">
-            <span class="input-group-text text--base style--two">+80</span>
+            <span class="input-group-text text--base style--two">+91</span>
             <input id="phone" type="text" name="phone" class="form--control form-control style--two" placeholder="Phone Number" required>
            
         </div>

@@ -494,6 +494,7 @@ opacity: 0.8;
     position: relative;
     background: linear-gradient(45deg, #da9100, #ffcc00, #f4c430, #ffff00, #da9100, #ffdf00, 
         #ffd700, #da9100, #ffff00, #fcc200 );
+        top:25px;
 }
 
 /* Increase border width from 2px to 4px */
@@ -828,4 +829,128 @@ border-right: 2px solid red;
     margin: 0 10px;
     vertical-align: middle;
   }
+  
+  /* For devices with a max-width of 1024px (e.g. tablets, smaller desktops) */
+@media screen and (max-width: 1024px) {
+    #image-roulette #main-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+     #image-roulette #card-grid {
+            display: grid;
+            grid-template-columns: auto repeat(4, 1fr);
+            gap: 0px;
+            max-width: 600px;
+            align-items: center;
+            justify-items: center;
+            margin: auto;
+        }
+          #image-roulette .grid-header.empty {
+    height: 63px;
+  }
+    div#withdraw-time {
+    font-size: 12px !important;
+}
+
+#image-roulette .grid-header {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    border: 3px solid white;
+    border-radius: 5px;
+    padding: 0px 22px;
+    width: 65px;
+}
+
+#image-roulette .grid-label .card {
+        width: 40px;
+        height: 40px;
+}
+    
+    
+    .container-chip-child {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+            /* width: auto; */
+            flex-wrap: wrap-reverse;
+        }
+
+svg#circular-timer {
+    width: 150px;
+    height: 150px;
+}
+#image-roulette .grid-card {position: relative;width: 64px;height: 90px;overflow: hidden;box-shadow: var(--card-shadow);cursor: pointer;transition: transform 0.2s;}
+
+/* History Box */
+#image-roulette #history-box {
+    margin-top: 0;
+    max-width: 800px;
+    height: auto;
+    border: 2px solid var(--primary-color);
+    padding: 10px;
+    background: #ffffff00;
+    margin-bottom: 30px;
+    width: auto;
+}
+
+
+#image-roulette #wheel-container {
+    position: relative;
+    width: 390px;  /* increased from 350px */
+    height: 400px; /* increased from 350px */
+    top: 2px;
+    border-radius: 50%;
+    overflow: hidden;
+    left: 0px;
+    background: #fff;
+    box-shadow: 
+    rgb(250,230,21) 0px 0px 0px 3px,
+    rgb(250,229,21) 0px 0px 0px 6px,
+    rgb(255,217,19) 0px 0px 0px 9px,
+    rgb(255,156,85) 0px 0px 0px 12px,
+    rgb(255,156,85) 0px 0px 0px 15px,
+    0 60px 80px #198754,
+       
+    0 45px 26px #ff9c19;
+    top:25px;
+}
+.btn, .cmn--btn {
+    font-size: 9px;
+}
+
+.btn, .cmn--btn {
+    color: #1f1f23;
+    padding: 0px 0px;
+    font-weight: 500;
+    font-family: "Josefin Sans", sans-serif;
+    cursor: pointer;
+    outline: none;
+    -webkit-transition: all ease .3s;
+    -moz-transition: all ease .3s;
+    transition: all ease .3s;
+    border-radius: 3px;
+    z-index: 1;
+    border: 0;
+}
+div#current-time {
+    font-size: 16px !important;
+    margin-left: 15px;
+}
+div#balance-display, div#winPoints-display{
+    font-size: 14px !important;
+    margin-left: 15px;
+}
+
+
+button#clear-bets, button#double-bets, button#repeat-bet {
+    width: 100% !important;
+    height: 30px !important;
+}
+
+
+
+}
+
   

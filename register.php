@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
         // Check for duplicate email
-        $stmt_check_email = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt_check_email = $conn->prepare("SELECT * FROM user WHERE email = ?");
         $stmt_check_email->bind_param("s", $email);
         $stmt_check_email->execute();
         $result_email = $stmt_check_email->get_result();
@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_check_email->close();
 
         // Check for duplicate phone
-        $stmt_check_phone = $conn->prepare("SELECT * FROM users WHERE phone = ?");
+        $stmt_check_phone = $conn->prepare("SELECT * FROM user WHERE phone = ?");
         $stmt_check_phone->bind_param("s", $phone);
         $stmt_check_phone->execute();
         $result_phone = $stmt_check_phone->get_result();
@@ -57,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // If no errors, proceed with insertion
     if (empty($errors)) {
-        $stmt_insert = $conn->prepare("INSERT INTO users (username, email, phone, password) VALUES (?, ?, ?, ?)");
+        $stmt_insert = $conn->prepare("INSERT INTO user (username, email, phone, password) VALUES (?, ?, ?, ?)");
         $stmt_insert->bind_param("ssss", $username, $email, $phone, $hashed_password);
 
         if ($stmt_insert->execute()) {

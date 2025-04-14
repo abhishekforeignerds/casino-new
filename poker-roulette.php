@@ -24,7 +24,7 @@ $stmt->close();
 $winningPoints = $winningPoints ?? 0;
 $userId = $_SESSION['user_id'];
 
-$stmt = $conn->prepare("SELECT points FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT points FROM user WHERE id = ?");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
 $stmt->bind_result($points);

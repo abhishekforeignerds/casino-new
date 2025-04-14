@@ -23,14 +23,14 @@ if (!is_numeric($bankValue)) {
 }
 
 // Update the user's points in the database using a prepared statement
-$query = "UPDATE users SET points = ? WHERE id = ?";
+$query = "UPDATE user SET points = ? WHERE id = ?";
 if ($stmt = mysqli_prepare($conn, $query)) {
     mysqli_stmt_bind_param($stmt, "di", $bankValue, $user_id);
     if (mysqli_stmt_execute($stmt)) {
         mysqli_stmt_close($stmt);
 
         // Retrieve the updated user record from the database
-        $query2 = "SELECT id, username, first_name, points FROM users WHERE id = ?";
+        $query2 = "SELECT id, username, first_name, points FROM user WHERE id = ?";
         if ($stmt2 = mysqli_prepare($conn, $query2)) {
             mysqli_stmt_bind_param($stmt2, "i", $user_id);
             mysqli_stmt_execute($stmt2);

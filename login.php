@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (empty($errors)) {
         // Check if the user exists
-        $stmt = $conn->prepare("SELECT id, username, email, password FROM users WHERE email = ?");
+        $stmt = $conn->prepare("SELECT id, username, email, password FROM user WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();

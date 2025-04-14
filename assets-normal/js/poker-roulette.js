@@ -113,6 +113,8 @@ document.querySelectorAll(".coin").forEach(btn => {
     selectedCoinElement = this; // Store reference to the selected coin design
   });
 });
+// Global variable to record all bets
+let totalBets = 0;
 
 // ----- PLACE BET ON GRID CARD -----
 document.querySelectorAll(".grid-card").forEach(card => {
@@ -129,10 +131,19 @@ document.querySelectorAll(".grid-card").forEach(card => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin) return;
 
+    // Check if adding this bet will exceed the max allowed bet amount.
+    if (totalBets + selectedCoin > 10000) {
+      alert("Max bet amount is 10000");
+      return;
+    }
+
     balance -= selectedCoin;
     updateBalanceDisplay();
     updatewinPointsDisplay();
     bets[index] = selectedCoin;
+
+    // Increase the total bets.
+    totalBets += selectedCoin;
 
     // Create overlay with cloned coin design.
     const overlay = document.createElement("div");
@@ -178,10 +189,19 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin) return;
 
+    // Check if adding this bet will exceed the max allowed bet amount.
+    if (totalBets + selectedCoin > 10000) {
+      alert("Max bet amount is 10000");
+      return;
+    }
+
     balance -= selectedCoin;
     updateBalanceDisplay();
     updatewinPointsDisplay();
     bets[betKey] = selectedCoin;
+
+    // Increase the total bets.
+    totalBets += selectedCoin;
 
     const overlay = document.createElement("div");
     overlay.className = "bet-overlay";
@@ -227,10 +247,19 @@ document.querySelectorAll(".grid-label").forEach(label => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin) return;
 
+    // Check if adding this bet will exceed the max allowed bet amount.
+    if (totalBets + selectedCoin > 10000) {
+      alert("Max bet amount is 10000");
+      return;
+    }
+
     balance -= selectedCoin;
     updateBalanceDisplay();
     updatewinPointsDisplay();
     bets[betKey] = selectedCoin;
+
+    // Increase the total bets.
+    totalBets += selectedCoin;
 
     const overlay = document.createElement("div");
     overlay.className = "bet-overlay";
@@ -256,6 +285,7 @@ document.querySelectorAll(".grid-label").forEach(label => {
     };
   });
 });
+
 
 // ----- CLEAR ALL BETS -----
 document.getElementById("clear-bets").addEventListener("click", function () {
@@ -297,9 +327,16 @@ document.getElementById("double-bets").addEventListener("click", function () {
     }
   });
 
+  // Check if doubling would exceed the max bet limit.
+  if (totalBets + totalExtra > 10000) {
+    alert("Max bet amount is 10000");
+    return; // Not enough remaining bet limit to double
+  }
+
   if (balance < totalExtra) return; // Not enough balance to double
 
   balance -= totalExtra;
+  totalBets += totalExtra; // Increase the total bet record
 
   overlays.forEach(overlay => {
     const coinSpan = overlay.querySelector(':scope > .coin span');
@@ -523,7 +560,7 @@ function drawSuitRing() {
 drawSuitRing();
 
 // ---- Timer Setup for Rotating Wheel ----
-const spinTimerDuration = 10; // Change this value to modify the timer duration for the wheel (in seconds)
+const spinTimerDuration = 12; // Change this value to modify the timer duration for the wheel (in seconds)
 let countdown = spinTimerDuration;
 let timerInterval;
 
@@ -623,6 +660,7 @@ function stopTimer() {
 startTimer();
 document.getElementById("spinBtn").addEventListener("click", function () {
   // Stop timer and reset display
+  totalBets = 0;
   stopTimer();
   resultDisplay.textContent = "";
   resultDisplay.style.display = 'none';
@@ -707,7 +745,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
 
   // --- After spin duration, finalize and determine results ---
   setTimeout(() => {
-    // Normalize currentRotation to within 0-359
+    // Normalize currentRotation, update transforms and stop center text animation
     currentRotation = currentRotation % 360;
     wheel.style.transition = "none";
     wheel.style.transform = "rotate(" + currentRotation + "deg)";
@@ -718,18 +756,14 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     
     // Stop center text animation
     stopCenterTextAnimation();
+  
 
     // Use chosenIndex as the winning index
     const winningIndex = chosenIndex;
-    document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => el.classList.remove("winner"));
-    const markerSegments = document.querySelectorAll("#segments-svg path");
-    markerSegments.forEach(seg => seg.classList.remove("blink"));
-    const winningSegment = markerSegments[winningIndex];
-    if (winningSegment) {
-      winningSegment.classList.add("blink");
-    }
+
     
     // Determine card type based on winning index
+    // Determine winning card type and suit based on winningIndex
     let cardType = "";
     if (winningIndex < 4) {
       cardType = "King";
@@ -745,6 +779,17 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     const suitOrder = { "Spades": 0, "Diamonds": 1, "Clubs": 2, "Hearts": 3 };
     const baseIndex = (cardType === "King") ? 0 : (cardType === "Queen") ? 4 : 8;
     const gridIndex = baseIndex + suitOrder[suitName];
+    const cardTypeKey = "cardType-" + cardType;
+    const suitKey = "suit-" + suitIcon;
+  
+    // Highlight winning segments and grid card as before
+    document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => el.classList.remove("winner"));
+    const markerSegments = document.querySelectorAll("#segments-svg path");
+    markerSegments.forEach(seg => seg.classList.remove("blink"));
+    const winningSegment = markerSegments[winningIndex];
+    if (winningSegment) {
+      winningSegment.classList.add("blink");
+    }
     const winningGridCard = document.querySelector(`.grid-card[data-index="${gridIndex}"]`);
     if (winningGridCard) {
       winningGridCard.classList.add("winner");
@@ -752,50 +797,67 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     const wheelCards = document.querySelectorAll(".card-wrapper");
     const winningWheelCard = wheelCards[winningIndex];
     winningWheelCard.classList.add("winner");
+  
+    // Get winning card image source
     const imgEl = winningWheelCard.querySelector("img");
     const winningSrc = imgEl.getAttribute("src");
-
-    // Calculate win and update balance accordingly
+  
+    // Now check only the last bet before spin
     let winValue = 0;
     let userWon = false;
-    if (bets[gridIndex] !== undefined) {
-      const betAmount = bets[gridIndex];
-      winValue += betAmount * 2;
-      // balance += betAmount * 2;
-      winningPoints += betAmount * 2;
-      userWon = true;
+    if (lastBet) {
+      // If the bet is placed on a specific grid card, lastBet.identifier will be a number (as a string)
+      if (!isNaN(lastBet.identifier)) {
+        if (parseInt(lastBet.identifier, 10) === gridIndex) {
+          winValue = lastBet.amount * 5;
+          userWon = true;
+        }
+      }
+      // For a card type bet
+      else if (lastBet.identifier.startsWith("cardType-")) {
+        if (lastBet.identifier === cardTypeKey) {
+          winValue = lastBet.amount * 5;
+          userWon = true;
+        }
+      }
+      // For a suit bet
+      else if (lastBet.identifier.startsWith("suit-")) {
+        if (lastBet.identifier === suitKey) {
+          winValue = lastBet.amount * 5;
+          userWon = true;
+        }
+      }
     }
-    const cardTypeKey = "cardType-" + cardType;
-    if (bets[cardTypeKey] !== undefined) {
-      const betAmount = bets[cardTypeKey];
-      winValue += betAmount * 2;
-      // balance += betAmount * 2;
-      winningPoints += betAmount * 2;
-      userWon = true;
-    }
-    const suitKey = "suit-" + suitIcon;
-    if (bets[suitKey] !== undefined) {
-      const betAmount = bets[suitKey];
-      winValue += betAmount * 2;
-      // balance += betAmount * 2;
-      winningPoints += betAmount * 2;
-      userWon = true;
+  
+    // If user won, update winning points accordingly
+    if (userWon) {
+      winningPoints += winValue;
     }
     updateBalanceDisplay();
     updatewinPointsDisplay();
     resultDisplay.style.display = 'block';
-    resultDisplay.textContent = userWon ? "You win " + winValue + "!" : 
-      (Object.keys(bets).length === 0 ? "No bet was placed." : "You lose.");
-    
-    var suitIconcolor = (suitIcon === '♥' || suitIcon === '♦') ? 'red' : 'black';
+    resultDisplay.textContent = userWon
+      ? "You win " + winValue + "!"
+      : (lastBet ? "You lose." : "No bet was placed.");
+  
+    // Update center card display and history
+    const suitIconcolor = (suitIcon === '♥' || suitIcon === '♦') ? 'red' : 'black';
     showCenterCard(winningSrc, suitIcon, suitIconcolor);
     addHistoryCard(winningSrc, suitIcon);
+  
+    // Record the game result via AJAX (assuming recordGameResult still uses overall betTotal)
     recordGameResult(winningIndex, Object.values(bets).reduce((sum, amt) => sum + amt, 0), winValue);
     updateBankValue();
+  
+    // Remove all bet overlays and clear bets object
     document.querySelectorAll(".bet-overlay").forEach(overlay => overlay.remove());
-    for (let key in bets) delete bets[key];
+    for (let key in bets) {
+      delete bets[key];
+    }
+    // Restart the timer for the next spin
     startTimer();
   }, 4000);
+  
 });
 
 // Record game result via AJAX.
