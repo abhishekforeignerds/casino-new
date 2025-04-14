@@ -31,6 +31,23 @@ $stmt->bind_result($points);
 $stmt->fetch();
 $stmt->close();
 
+$stmt = $conn->prepare("SELECT * FROM game_results WHERE user_id = ?");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$gameResults = []; // Initialize empty array
+
+while ($row = $result->fetch_assoc()) {
+    $gameResults[] = $row; // Append each row to the array
+}
+
+$stmt->close();
+
+// Now $gameResults holds all the data
+
+
+
 // Now $points contains the user's current points
 
 ?>
@@ -286,7 +303,9 @@ $stmt->close();
                 </div>
 
                 <!-- Queen Row -->
-                <div class="grid-label" id="grid-label-2" data-index="21"><img class="card" src="/assets-normal/img/q.png" alt="Queen of Diamonds"></div>
+                <div class="grid-label" id="grid-label-2" data-index="21">
+                    <img class="card" src="/assets-normal/img/q.png" alt="Queen of Diamonds">
+                </div>
                 <div class="grid-card" data-index="4">
                     <img src="https://deckofcardsapi.com/static/img/QS.png" alt="Queen of Spades">
                 </div>
@@ -301,8 +320,10 @@ $stmt->close();
                 </div>
 
                 <!-- Jack Row -->
-                <div class="grid-label" id="grid-label-3" data-index="25"><img class="card" src="/assets-normal/img/j-removebg-preview.png"
-                        alt="Jack of Diamonds"></div>
+                <div class="grid-label" id="grid-label-3" data-index="25">
+                    <img class="card" src="/assets-normal/img/j-removebg-preview.png"
+                        alt="Jack of Diamonds">
+                </div>
                 <div class="grid-card" data-index="8">
                     <img src="https://deckofcardsapi.com/static/img/JS.png" alt="Jack of Spades">
                 </div>
@@ -362,6 +383,7 @@ $stmt->close();
 // CONFIGURABLE VARIABLES
 let balance = <?php echo htmlspecialchars($points); ?>;
 let winningPoints = <?php echo htmlspecialchars($winningPoints); ?>;
+let gameResults = <?php echo json_encode($gameResults); ?>;
 </script>
 
 <script src="./assets-normal/js/poker-roulette.js"></script>

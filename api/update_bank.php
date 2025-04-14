@@ -39,12 +39,12 @@ if ($stmt = mysqli_prepare($conn, $query)) {
                 mysqli_stmt_close($stmt2);
 
                 // Destroy the current session and start a new one with the updated user data
-                session_destroy();
-                session_start();
-                $_SESSION['user_id'] = $id;
-                $_SESSION['username'] = $username;
-                $_SESSION['fname'] = $first_name;
-                $_SESSION['points'] = $points;
+                // session_destroy();
+                // session_start();
+                // $_SESSION['user_id'] = $id;
+                // $_SESSION['username'] = $username;
+                // $_SESSION['fname'] = $first_name;
+                // $_SESSION['points'] = $points;
 
                 echo json_encode(["success" => true, "message" => "Bank value updated and session refreshed successfully."]);
                 exit;
