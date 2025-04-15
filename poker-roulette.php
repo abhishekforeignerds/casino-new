@@ -39,15 +39,15 @@ $stmt->fetch();
 $stmt->close();
 $game_id = 1;
 
-$stmt = $conn->prepare("SELECT winning_percentage FROM games WHERE id = ?");
-$stmt->bind_param("i", $game_id);
+$stmt = $conn->prepare("SELECT winning_percentage FROM user WHERE id = ?");
+$stmt->bind_param("i", $user_id);
 $stmt->execute();
 $stmt->bind_result($winning_percentage);
 $stmt->fetch();
 $stmt->close();
 
-$stmt = $conn->prepare("SELECT override_chance FROM games WHERE id = ?");
-$stmt->bind_param("i", $game_id);
+$stmt = $conn->prepare("SELECT override_chance FROM user WHERE id = ?");
+$stmt->bind_param("i", $user_id);
 $stmt->execute();
 $stmt->bind_result($override_chance);
 $stmt->fetch();
