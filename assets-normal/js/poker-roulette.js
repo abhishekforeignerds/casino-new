@@ -144,6 +144,7 @@ function addOrMergeOverlay(cell, coinAmount) {
   }
 }
 lastBetHistory = {};
+lastBet = {};
 // Utility to get grid cells from the grid container.
 const gridCells = Array.from(document.querySelectorAll("#card-grid > div"));
 // Assume the grid is defined with 5 columns.
@@ -164,7 +165,7 @@ document.querySelectorAll(".grid-card").forEach(card => {
     if (balance < selectedCoin) return;
 
     // Check if adding this bet will exceed the max allowed bet amount.
-    if (totalBets + selectedCoin > 10000) {
+    if (totalBets + selectedCoin > maxBetamount) {
       alert("Max bet amount is 10000");
       return;
     }
@@ -219,7 +220,7 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     if (balance < selectedCoin) return;
 
     // Check if adding this bet will exceed the max allowed bet amount.
-    if (totalBets + (selectedCoin * 3) > 10000) {
+    if (totalBets + (selectedCoin * 3) > maxBetamount) {
       alert("Max bet amount is 10000");
       return;
     }
@@ -285,7 +286,7 @@ document.querySelectorAll(".grid-label").forEach(label => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin) return;
     
-    if (totalBets + (selectedCoin * 4) > 10000) {
+    if (totalBets + (selectedCoin * 4) > maxBetamount) {
       alert("Max bet amount is 10000");
       return;
     }
@@ -373,7 +374,7 @@ document.getElementById("double-bets").addEventListener("click", function () {
   });
 
   // Check if doubling would exceed the max bet limit.
-  if (totalBets + totalExtra > 10000) {
+  if (totalBets + totalExtra > maxBetamount) {
     alert("Max bet amount is 10000");
     return; // Not enough remaining bet limit to double
   }
@@ -610,7 +611,7 @@ function drawSuitRing() {
 drawSuitRing();
 
 // ---- Timer Setup for Rotating Wheel ----
-const spinTimerDuration = 12; // Change this value to modify the timer duration for the wheel (in seconds)
+// Change this value to modify the timer duration for the wheel (in seconds)
 let countdown = spinTimerDuration;
 let timerInterval;
 
@@ -712,9 +713,58 @@ startTimer();
 // or false if you want the user to always lose.
 // Set this variable to true if you want the user to always win;
 // set to false if you want the user to always lose.
-const userwins = false;
-console.log('gameResults')
-console.log(gameResults)
+
+// Calculate the total bet (rounding to 2 decimal places)
+const totalBetRaw = gameResults.reduce((sum, result) => sum + parseFloat(result.bet), 0);
+const totalBet = Math.round(totalBetRaw * 100) / 100;
+
+// Calculate the total win_value (rounding to 2 decimal places)
+const totalWinValue = Math.round(
+  gameResults.reduce((sum, result) => sum + result.win_value, 0) * 100
+) / 100;
+
+// Define the win percentage threshold
+
+let userwins;
+
+// Define an override chance (10% chance to override the "default" outcome)
+
+
+if ((gameResults.length > 10 || totalWinValue > 200)) {
+  // Calculate current win percentage, rounded to two decimals.
+  let currentWinPercentage = totalBet > 0 ? (totalWinValue / totalBet) * 100 : 0;
+  currentWinPercentage = Math.round(currentWinPercentage * 100) / 100;
+
+  // Check the current win percentage against the winningPercentage threshold.
+  if (currentWinPercentage > winningPercentage) {
+    // Default outcome for a high win ratio is to lose ('no').
+    // But with a small chance, override to win.
+    userwins = Math.random() < overrideChance ? 'yes' : 'no';
+  } else if (currentWinPercentage < winningPercentage) {
+    // Default outcome for a low win ratio is to win ('yes').
+    // But with a small chance, override to lose.
+    userwins = Math.random() < overrideChance ? 'no' : 'yes';
+  } else {
+    // When currentWinPercentage exactly equals winningPercentage,
+    // use a standard evaluation. (Or you could also randomize here if desired.)
+    userwins = currentWinPercentage >= winningPercentage ? 'yes' : 'no';
+  }
+  console.log('currentWinPercentage')
+console.log(currentWinPercentage)
+  console.log('winningPercentage')
+console.log(winningPercentage)
+  console.log('overrideChance')
+console.log(overrideChance)
+} else {
+  // If gameResults length is 10 or less AND totalWinValue is 200 or less, fallback to 'random'.
+  userwins = 'random';
+}
+
+
+console.log('userwins')
+console.log(userwins)
+
+
 // Array representing the card details for the wheel and grid.
 // Indices 0-3: Kings; 4-7: Queens; 8-11: Jacks.
 // The order is: Spades, Diamonds, Clubs, Hearts.
@@ -777,9 +827,11 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     
     // If there is at least one matching index, override chosenIndex
     if (possibleIndices.length > 0) {
-      if (userwins) {
+      if (userwins == 'yes') {
         // Pick one of the matching indices at random.
         chosenIndex = possibleIndices[Math.floor(Math.random() * possibleIndices.length)];
+      } else if (userwins === 'random') {
+        chosenIndex = Math.floor(Math.random() * segmentCount);
       } else {
         // Force a loss: if the current random choice is one of the matching indices,
         // shift it (here, we simply increment mod segmentCount until it doesn't match).

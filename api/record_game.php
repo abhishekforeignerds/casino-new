@@ -26,7 +26,10 @@ if (!is_numeric($winningSpin) || !is_numeric($betTotal)) {
     echo json_encode(["success" => false, "message" => "Invalid parameters."]);
     exit;
 }
-
+if ($betTotal <= 0) {
+    echo json_encode(["success" => true, "message" => "Game result recorded successfully."]);
+    exit;
+}
 // Determine if it's a win or a loss
 // If winValue is provided and greater than 0, treat as win; otherwise, treat as loss.
 if (isset($_POST['winValue']) && is_numeric($_POST['winValue']) && $_POST['winValue'] > 0) {

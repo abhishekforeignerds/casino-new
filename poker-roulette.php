@@ -19,6 +19,13 @@ $stmt->execute();
 $stmt->bind_result($winningPoints);
 $stmt->fetch();
 $stmt->close();
+$stmt = $conn->prepare("SELECT SUM(bet) AS total_bet FROM game_results WHERE user_id = ?");
+$stmt->bind_param("i", $user_id);
+
+$stmt->execute();
+$stmt->bind_result($bettingPoints);
+$stmt->fetch();
+$stmt->close();
 
 // Ensure $winningPoints is at least 0 if null
 $winningPoints = $winningPoints ?? 0;
@@ -30,8 +37,24 @@ $stmt->execute();
 $stmt->bind_result($points);
 $stmt->fetch();
 $stmt->close();
+$game_id = 1;
 
-$stmt = $conn->prepare("SELECT * FROM game_results WHERE user_id = ?");
+$stmt = $conn->prepare("SELECT winning_percentage FROM games WHERE id = ?");
+$stmt->bind_param("i", $game_id);
+$stmt->execute();
+$stmt->bind_result($winning_percentage);
+$stmt->fetch();
+$stmt->close();
+
+$stmt = $conn->prepare("SELECT override_chance FROM games WHERE id = ?");
+$stmt->bind_param("i", $game_id);
+$stmt->execute();
+$stmt->bind_result($override_chance);
+$stmt->fetch();
+$stmt->close();
+
+
+$stmt = $conn->prepare("SELECT * FROM game_results WHERE user_id = ? AND game_id = 1 AND bet != 0");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -43,6 +66,7 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $stmt->close();
+
 
 // Now $gameResults holds all the data
 
@@ -176,8 +200,24 @@ $stmt->close();
         <button id="fullscreenBtn" style="color:white;font-size: 32px;border: none;background: none;z-index: 1000;cursor: pointer;">
           <i class="fas fa-expand"></i>
         </button>
-        <div id="winPoints-display">Win Points: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($winningPoints); ?></span></div>
-          <div id="balance-display">Balance: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($points); ?></span></div>
+        <!-- <div id="betPoints-display">Betting Points: 
+            <span style='color: gold;font-weight:800;'> 
+                <?php // echo htmlspecialchars($bettingPoints ?? 0); ?>
+            </span>
+        </div> -->
+
+        <div id="winPoints-display">Win Points: 
+            <span style='color: gold;font-weight:800;'> 
+                <?php echo htmlspecialchars($winningPoints ?? 0); ?>
+            </span>
+        </div>
+
+        <div id="balance-display">Balance: 
+            <span style='color: gold;font-weight:800;'> 
+                <?php echo htmlspecialchars($points ?? 0); ?>
+            </span>
+        </div>
+
           
                 <div id="time-info-container" >
                 <div id="current-time" style="font-size: 18px;"></div>
@@ -379,12 +419,20 @@ $stmt->close();
 
 
 
-<script>
+    <script>
 // CONFIGURABLE VARIABLES
-let balance = <?php echo htmlspecialchars($points); ?>;
-let winningPoints = <?php echo htmlspecialchars($winningPoints); ?>;
-let gameResults = <?php echo json_encode($gameResults); ?>;
+let balance = <?php echo htmlspecialchars($points ?? 0); ?>;
+let winningPoints = <?php echo htmlspecialchars($winningPoints ?? 0); ?>;
+let bettingPoints = <?php echo htmlspecialchars($bettingPoints ?? 0); ?>;
+
+let winningPercentage = <?php echo htmlspecialchars($winning_percentage ?? 70); ?>;
+let overrideChance = <?php echo htmlspecialchars($override_chance ?? 0.3); ?>;
+let spinTimerDuration = <?php echo htmlspecialchars($spinTimerDuration ?? 120); ?>;
+let maxBetamount = <?php echo htmlspecialchars($maxBetamount ?? 10000); ?>;
+
+let gameResults = <?php echo json_encode($gameResults ?? []); ?>;
 </script>
+
 
 <script src="./assets-normal/js/poker-roulette.js"></script>
 
