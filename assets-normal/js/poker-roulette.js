@@ -8,7 +8,7 @@ const halfSegment = segmentAngle / 2; // 15°
 const centerX = 200, centerY = 200, outerRadius = 200, innerRadius = 28;
 
 // Define colors for segments
-const segmentColors = ["#dc9600", "#ffdc00", "#f5cd28"];
+const segmentColors = ["#201cb2", "#5c1166", "#5c1110"];
 
 // Draw segments (each segment spans from (i*30° -15°) to (i*30° +15°))
 function drawSegments() {
@@ -61,6 +61,18 @@ function getWinningIndex(rotationAngle) {
   const r = rotationAngle % 360;
   const effectiveAngle = (360 - r + halfSegment) % 360;
   return Math.floor(effectiveAngle / segmentAngle);
+}
+function updateTotalBetDisplay() {
+  // Assumes the span is the first child inside the #totalbet-display div.
+  const displaySpan = document.querySelector("#currentbet-display span");
+  if (displaySpan) {
+    displaySpan.textContent = totalBets;
+  }
+  const totalbet = document.querySelector("#totalbet-display span");
+  if (totalbet) {
+    const totalbetvalue = parseFloat(totalbet.textContent.trim()) || 0;
+    totalbet.textContent = bettingPoints + parseFloat(totalBets);
+  }
 }
 
 let currentRotation = 0;
@@ -151,6 +163,7 @@ const gridCells = Array.from(document.querySelectorAll("#card-grid > div"));
 const GRID_COLUMNS = 5;
 // ----- PLACE BET ON GRID CARD -----
 // ----- PLACE BET ON GRID CARD (with merging logic) -----
+// ----- PLACE BET ON GRID CARD -----
 document.querySelectorAll(".grid-card").forEach(card => {
   card.addEventListener("click", function () {
     const resultDisplay = document.getElementById("result-display");
@@ -164,7 +177,7 @@ document.querySelectorAll(".grid-card").forEach(card => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin) return;
 
-    // Check if adding this bet will exceed the max allowed bet amount.
+    // Check max bet
     if (totalBets + selectedCoin > maxBetamount) {
       alert("Max bet amount is 10000");
       return;
@@ -174,37 +187,23 @@ document.querySelectorAll(".grid-card").forEach(card => {
     updateBalanceDisplay();
     updatewinPointsDisplay();
 
-    // Merge bet amount if there's already a bet on this cell.
-    if (bets[index] === undefined) {
-      bets[index] = selectedCoin;
-    } else {
-      bets[index] += selectedCoin;
-    }
+    // Merge overlay
+    if (bets[index] === undefined) bets[index] = selectedCoin;
+    else bets[index] += selectedCoin;
     totalBets += selectedCoin;
-
-    // Use the helper function to add or merge an overlay in the cell.
     addOrMergeOverlay(this, selectedCoin);
+    updateTotalBetDisplay();
 
-    // Store last bet info.
-    lastBet = {
-      identifier: index,
-      amount: selectedCoin,
-      element: this,
-      overlayHTML: this.querySelector(".bet-overlay").outerHTML
-    };
-    lastBetHistory = {
-      identifier: index,
-      amount: selectedCoin,
-      element: this,
-      overlayHTML: this.querySelector(".bet-overlay").outerHTML
-    };
+    // Prepare lastBet
+    lastBet = { identifier: index, amount: selectedCoin, element: this, overlayHTML: this.querySelector(".bet-overlay").outerHTML };
+    lastBetHistory = { ...lastBet };
+
+    // Special rule: if 12 grid bets placed, override lastBet.amount to second-largest
+    applySecondLargestRule();
   });
 });
 
-
-
-// ----- PLACE BET ON GRID HEADER (for suit bets) -----
-// For grid-header bets, we now add the overlay to the entire column.
+// ----- PLACE BET ON GRID HEADER (suit) -----
 document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
   header.addEventListener("click", function () {
     const resultDisplay = document.getElementById("result-display");
@@ -219,7 +218,7 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin) return;
 
-    // Check if adding this bet will exceed the max allowed bet amount.
+    // Check max bet
     if (totalBets + (selectedCoin * 3) > maxBetamount) {
       alert("Max bet amount is 10000");
       return;
@@ -229,45 +228,30 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     updateBalanceDisplay();
     updatewinPointsDisplay();
 
-    // Merge bet amount if this bet already exists.
-    if (bets[betKey] === undefined) {
-      bets[betKey] = (selectedCoin * 3);
-    } else {
-      bets[betKey] += (selectedCoin * 3);
-    }
+    // Merge overlay
+    if (bets[betKey] === undefined) bets[betKey] = (selectedCoin * 3);
+    else bets[betKey] += (selectedCoin * 3);
     totalBets += (selectedCoin * 3);
+    updateTotalBetDisplay();
 
-    // Determine the column of the clicked header.
-    let clickedIndex = gridCells.findIndex(cell => cell === this);
-    if (clickedIndex === -1) return;
-    let col = clickedIndex % GRID_COLUMNS;
-
-    // For every cell in the grid that is in the same column, add or merge overlay.
-    gridCells.forEach((cell, index) => {
-      if (index % GRID_COLUMNS === col) {
-        addOrMergeOverlay(cell, selectedCoin);
-      }
+    // Apply overlay to column
+    const clickedIndex = gridCells.findIndex(cell => cell === this);
+    const col = clickedIndex % GRID_COLUMNS;
+    gridCells.forEach((cell, idx) => {
+      if (idx % GRID_COLUMNS === col) addOrMergeOverlay(cell, selectedCoin);
     });
 
-    // Store last bet info.
-    lastBet = {
-      identifier: betKey,
-      amount: selectedCoin,
-      element: this, // reference to the header element
-      // For multi-cell overlays, you might want to store extra data if needed.
-      overlayHTML: null
-    };
-    lastBetHistory = {
-      identifier: betKey,
-      amount: selectedCoin,
-      element: this, // reference to the label element
-      overlayHTML: null
-    };
+    // Prepare lastBet
+    lastBet = { identifier: betKey, amount: selectedCoin, element: this, overlayHTML: null };
+    lastBetHistory = { ...lastBet };
+
+    // Special rule: if all 4 suits bet, override lastBet.amount to second-largest
+    applySecondLargestRule();
   });
 });
 
-// ----- PLACE BET ON GRID LABEL (for card type bets) -----
-// For grid-label bets, we now add the overlay to the entire row.
+allcardsbeted = false;
+// ----- PLACE BET ON GRID LABEL (card type) -----
 document.querySelectorAll(".grid-label").forEach(label => {
   label.addEventListener("click", function () {
     const resultDisplay = document.getElementById("result-display");
@@ -276,16 +260,15 @@ document.querySelectorAll(".grid-label").forEach(label => {
       resultDisplay.textContent = "Betting time is over.";
       return;
     }
-    
+
     const img = this.querySelector("img");
     if (!img) return;
-    const altText = img.getAttribute("alt");
-    // Extracts "King", "Queen", or "Jack" from the alt text.
-    const cardType = altText.split(" ")[0];
+    const cardType = img.getAttribute("alt").split(" ")[0];
     const betKey = "cardType-" + cardType;
     if (selectedCoin === null) return;
     if (balance < selectedCoin) return;
-    
+
+    // Check max bet
     if (totalBets + (selectedCoin * 4) > maxBetamount) {
       alert("Max bet amount is 10000");
       return;
@@ -295,41 +278,59 @@ document.querySelectorAll(".grid-label").forEach(label => {
     updateBalanceDisplay();
     updatewinPointsDisplay();
 
-    // Merge bet amount if bet already exists.
-    if (bets[betKey] === undefined) {
-      bets[betKey] = (selectedCoin * 4);
-    } else {
-      bets[betKey] += (selectedCoin * 4);
-    }
+    // Merge overlay
+    if (bets[betKey] === undefined) bets[betKey] = (selectedCoin * 4);
+    else bets[betKey] += (selectedCoin * 4);
     totalBets += (selectedCoin * 4);
+    updateTotalBetDisplay();
 
-    // Determine the row of the clicked label.
-    let clickedIndex = gridCells.findIndex(cell => cell === this);
-    if (clickedIndex === -1) return;
-    let row = Math.floor(clickedIndex / GRID_COLUMNS);
-
-    // For every cell in the same row, add or merge overlay.
-    gridCells.forEach((cell, index) => {
-      if (Math.floor(index / GRID_COLUMNS) === row) {
-        addOrMergeOverlay(cell, selectedCoin);
-      }
+    // Apply overlay to row
+    const clickedIndex = gridCells.findIndex(cell => cell === this);
+    const row = Math.floor(clickedIndex / GRID_COLUMNS);
+    gridCells.forEach((cell, idx) => {
+      if (Math.floor(idx / GRID_COLUMNS) === row) addOrMergeOverlay(cell, selectedCoin);
     });
 
-    // Store last bet info.
-    lastBet = {
-      identifier: betKey,
-      amount: selectedCoin,
-      element: this, // reference to the label element
-      overlayHTML: null
-    };
-    lastBetHistory = {
-      identifier: betKey,
-      amount: selectedCoin,
-      element: this, // reference to the label element
-      overlayHTML: null
-    };
+    // Prepare lastBet
+    lastBet = { identifier: betKey, amount: selectedCoin, element: this, overlayHTML: null };
+    lastBetHistory = { ...lastBet };
+
+    // Special rule: if all 3 card types bet, override lastBet.amount to second-largest
+    applySecondLargestRule();
   });
 });
+
+// ----- Helper: second-largest override -----
+function applySecondLargestRule() {
+  const keys = Object.keys(bets);
+  let relevantValues = null;
+
+  // 12 grid cells
+  const gridKeys = keys.filter(k => !isNaN(k) && +k < GRID_COLUMNS * GRID_ROWS);
+  if (gridKeys.length >= 12) {
+    relevantValues = gridKeys.map(k => bets[k]);
+    allcardsbeted = true;
+  }
+  // 3 card types
+  else if (["cardType-Jack","cardType-Queen","cardType-King"].every(k => bets[k] !== undefined)) {
+    relevantValues = ["cardType-Jack","cardType-Queen","cardType-King"].map(k => bets[k] / 4);
+    allcardsbeted = true;
+  }
+  // 4 suits
+  else if (["suit-♠","suit-♦","suit-♣","suit-♥"].every(k => bets[k] !== undefined)) {
+    relevantValues = ["suit-♠","suit-♦","suit-♣","suit-♥"].map(k => bets[k] / 3);
+    allcardsbeted = true;
+  }
+
+  if (relevantValues) {
+    // Sort desc and pick second element
+    const sorted = relevantValues.slice().sort((a, b) => b - a);
+    const second = sorted[1] !== undefined ? sorted[1] : sorted[0];
+    lastBet.amount = second;
+    lastBetHistory.amount = second;
+  }
+}
+
 
 
 
@@ -402,10 +403,7 @@ document.getElementById("double-bets").addEventListener("click", function () {
 document.getElementById("repeat-bet").addEventListener("click", function () {
   const resultDisplay = document.getElementById("result-display");
   lastBet = { ...lastBetHistory };
-  console.log('lastBetHistory')
-  console.log(lastBetHistory)
-  console.log('lastBet')
-  console.log(lastBet)
+
 
   if (!lastBet) return; // No previous bet
 
@@ -692,7 +690,7 @@ function startTimer() {
       countdown--;
     }
     updateTimeDisplay();
-    if (countdown <= 12) {
+    if (countdown <= 115) {
       resultDisplay.textContent = "";
       resultDisplay.style.display = 'none';
     }
@@ -725,45 +723,6 @@ const totalWinValue = Math.round(
 
 // Define the win percentage threshold
 
-let userwins;
-
-// Define an override chance (10% chance to override the "default" outcome)
-
-
-if ((gameResults.length > 10 || totalWinValue > 200)) {
-  // Calculate current win percentage, rounded to two decimals.
-  let currentWinPercentage = totalBet > 0 ? (totalWinValue / totalBet) * 100 : 0;
-  currentWinPercentage = Math.round(currentWinPercentage * 100) / 100;
-
-  // Check the current win percentage against the winningPercentage threshold.
-  if (currentWinPercentage > winningPercentage) {
-    // Default outcome for a high win ratio is to lose ('no').
-    // But with a small chance, override to win.
-    userwins = Math.random() < overrideChance ? 'yes' : 'no';
-  } else if (currentWinPercentage < winningPercentage) {
-    // Default outcome for a low win ratio is to win ('yes').
-    // But with a small chance, override to lose.
-    userwins = Math.random() < overrideChance ? 'no' : 'yes';
-  } else {
-    // When currentWinPercentage exactly equals winningPercentage,
-    // use a standard evaluation. (Or you could also randomize here if desired.)
-    userwins = currentWinPercentage >= winningPercentage ? 'yes' : 'no';
-  }
-  console.log('currentWinPercentage')
-console.log(currentWinPercentage)
-  console.log('winningPercentage')
-console.log(winningPercentage)
-  console.log('overrideChance')
-console.log(overrideChance)
-} else {
-  // If gameResults length is 10 or less AND totalWinValue is 200 or less, fallback to 'random'.
-  userwins = 'random';
-}
-
-
-console.log('userwins')
-console.log(userwins)
-
 
 // Array representing the card details for the wheel and grid.
 // Indices 0-3: Kings; 4-7: Queens; 8-11: Jacks.
@@ -784,8 +743,61 @@ const cardDetails = [
 ];
 
 document.getElementById("spinBtn").addEventListener("click", function () {
+  console.log(bets)
+
+  
+let userwins;
+
+// Define an override chance (10% chance to override the "default" outcome)
+
+
+if ((gameResults.length > 10 || totalWinValue > 200)) {
+  // Calculate current win percentage, rounded to two decimals.
+  let currentWinPercentage = totalBet > 0 ? (totalWinValue / totalBet) * 100 : 0;
+  currentWinPercentage = Math.round(currentWinPercentage * 100) / 100;
+
+  // Check the current win percentage against the winningPercentage threshold.
+  if (currentWinPercentage > winningPercentage) {
+    // Default outcome for a high win ratio is to lose ('no').
+    // But with a small chance, override to win.
+    userwins = Math.random() < overrideChance ? 'yes' : 'no';
+  } else if (currentWinPercentage < winningPercentage) {
+    // Default outcome for a low win ratio is to win ('yes').
+    // But with a small chance, override to lose.
+    userwins = Math.random() < overrideChance ? 'no' : 'yes';
+  } else if (currentWinPercentage < winningPercentage) {
+    // Default outcome for a low win ratio is to win ('yes').
+    // But with a small chance, override to lose.
+    userwins = Math.random() < overrideChance ? 'no' : 'yes';
+  } 
+  else {
+    // When currentWinPercentage exactly equals winningPercentage,
+    // use a standard evaluation. (Or you could also randomize here if desired.)
+    userwins = currentWinPercentage >= winningPercentage ? 'yes' : 'no';
+  }
+ 
+  console.log('currentWinPercentage')
+console.log(currentWinPercentage)
+  console.log('winningPercentage')
+console.log(winningPercentage)
+  console.log('overrideChance')
+console.log(overrideChance)
+} else {
+  // If gameResults length is 10 or less AND totalWinValue is 200 or less, fallback to 'random'.
+  userwins = 'random';
+}
+
+if (allcardsbeted) {
+  userwins = 'yes';
+}
+
+
+console.log('userwins')
+console.log(userwins)
+
+
   // Stop timer and reset display
-  totalBets = 0;
+
   stopTimer();
   resultDisplay.textContent = "";
   resultDisplay.style.display = 'none';
@@ -927,7 +939,10 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     
     // The grid card that wins is exactly at the index 'winningIndex'
     const gridIndex = winningIndex;
-  
+    const markerImgEl = document.querySelector(`.grid-card[data-index="${gridIndex}"] img`);
+    const markerSrc   = markerImgEl.src;
+    const markerAlt   = markerImgEl.alt;
+    
     // Highlight winning segments and grid card.
     document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => el.classList.remove("winner"));
     const markerSegments = document.querySelectorAll("#segments-svg path");
@@ -950,11 +965,11 @@ document.getElementById("spinBtn").addEventListener("click", function () {
 
     // Debug logging: show the bet and the winning card.
     if (lastBet && Object.keys(lastBet).length > 0) {
-      console.log("User placed bet on:", lastBet.identifier, "with amount:", lastBet.amount);
+      // console.log("User placed bet on:", lastBet.identifier, "with amount:", lastBet.amount);
     } else {
-      console.log("No bet was placed by the user.");
+      // console.log("No bet was placed by the user.");
     }
-    console.log("Winning card:", cardType, suitIcon, "at grid index:", gridIndex);
+    // console.log("Winning card:", cardType, suitIcon, "at grid index:", gridIndex);
   
     // --- Win calculation based on last bet ---
     let winValue = 0;
@@ -984,9 +999,29 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     updateBalanceDisplay();
     updatewinPointsDisplay();
     resultDisplay.style.display = 'block';
-    resultDisplay.textContent = userWon
-      ? "You win " + winValue + "!"
-      : (lastBet && Object.keys(lastBet).length > 0 ? "You lose." : "No bet was placed.");
+
+   // base message
+let msg;
+if (userWon) {
+  msg = `You win ${winValue}!`;
+} else if (lastBet && Object.keys(lastBet).length > 0) {
+  msg = `You lose.`;
+} else {
+  msg = `No bet was placed.`;
+}
+
+// now include the marker image + total bet
+resultDisplay.innerHTML = `
+  <p><strong>Current Marker Card</strong></p>
+  <img
+    src="${markerSrc}"
+    alt="${markerAlt}"
+    class="marker-card"
+  />
+  <p>${msg}</p>
+  <span><strong>Current Bet:</strong> ${totalBets}</span>
+`;
+    
   
     // Update center card display and history.
     // (The suit icon color is set based on red for hearts/diamonds, black otherwise.)
@@ -1005,7 +1040,9 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     }
     // Restart the timer for the next spin.
     lastBet = {};
+    allcardsbeted = false;
     startTimer();
+    totalBets = 0;
   }, 4000);
 });
 
@@ -1024,8 +1061,13 @@ function recordGameResult(winningSpin, betTotal, winValue = 0) {
   })
   .then(response => response.json())
   .then(data => {
-    if (data.success) { console.log("Game result stored:", data.message); }
-    else { console.error("Error storing game result:", data.message); }
+    if (data.success) {
+      //  console.log("Game result stored:", data.message);
+       }
+    else { 
+      // console.error("Error storing game result:", data.message);
+     }
+
   })
   .catch(error => console.error('AJAX request failed:', error));
 }
@@ -1084,7 +1126,7 @@ document.addEventListener("keydown", function(e) {
 document.addEventListener("fullscreenchange", () => {
   if (!document.fullscreenElement) {
     // Exited fullscreen mode
-    console.log('Exited fullscreen');
+
     fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
     navbar.style.display = 'block';
     stickContainer.style.top = "12.2rem";

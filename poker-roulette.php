@@ -197,7 +197,7 @@ $stmt->close();
         </div>
     </div>
     <div id="mini-nav">
-        <button id="fullscreenBtn" style="color:white;font-size: 32px;border: none;background: none;z-index: 1000;cursor: pointer;">
+        <button class="bordersboxes" id="fullscreenBtn" style="color:white;font-size: 32px;border: none;background: none;z-index: 1000;cursor: pointer;">
           <i class="fas fa-expand"></i>
         </button>
         <!-- <div id="betPoints-display">Betting Points: 
@@ -205,18 +205,13 @@ $stmt->close();
                 <?php // echo htmlspecialchars($bettingPoints ?? 0); ?>
             </span>
         </div> -->
+        <div class="bordersboxes" id="winPoints-display"> Win Points: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($winningPoints ?? 0); ?> </span> </div>
 
-        <div id="winPoints-display">Win Points: 
-            <span style='color: gold;font-weight:800;'> 
-                <?php echo htmlspecialchars($winningPoints ?? 0); ?>
-            </span>
-        </div>
+        <div class="bordersboxes" id="balance-display"> Balance: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($points ?? 0); ?> </span> </div>
 
-        <div id="balance-display">Balance: 
-            <span style='color: gold;font-weight:800;'> 
-                <?php echo htmlspecialchars($points ?? 0); ?>
-            </span>
-        </div>
+        <div class="bordersboxes" id="currentbet-display"> Current Bet: <span style="color: gold; font-weight:800;">0</span> </div>
+        <div class="bordersboxes" id="totalbet-display"> Total Bet: <span style="color: gold; font-weight:800;"> <?php echo htmlspecialchars($bettingPoints ?? 0); ?></span> </div>
+
 
           
                 <div id="time-info-container" >
@@ -384,7 +379,7 @@ $stmt->close();
     <div id="main-container">
         <!-- Wheel Container -->
 
-        <button id="spinBtn" hidden>Spin</button>
+        <button id="spinBtn" >Spin</button>
 
         <div id="div-spin-btns">
             <div id="div-buttons">
