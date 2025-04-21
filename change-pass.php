@@ -189,7 +189,7 @@
                                         History</a>
                                 </li>
                                 <li>
-                                    <a href="transection.php">Transection
+                                    <a href="transection.php">Game
                                         History</a>
                                 </li>
                                 <li>

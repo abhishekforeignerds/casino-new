@@ -62,18 +62,23 @@ function getWinningIndex(rotationAngle) {
   const effectiveAngle = (360 - r + halfSegment) % 360;
   return Math.floor(effectiveAngle / segmentAngle);
 }
+// Winning index is determined from the main wheel’s final rotation.
+const totalBetSpan = document.querySelector("#totalbet-display span");
+let lastTotalBets = 0;
+
 function updateTotalBetDisplay() {
-  // Assumes the span is the first child inside the #totalbet-display div.
-  const displaySpan = document.querySelector("#currentbet-display span");
-  if (displaySpan) {
-    displaySpan.textContent = totalBets;
-  }
-  const totalbet = document.querySelector("#totalbet-display span");
-  if (totalbet) {
-    const totalbetvalue = parseFloat(totalbet.textContent.trim()) || 0;
-    totalbet.textContent = bettingPoints + parseFloat(totalBets);
-  }
+  const currentSpan = document.querySelector("#currentbet-display span");
+  if (currentSpan) currentSpan.textContent = totalBets;
+
+  // how much did totalBets grow since last time?
+  const delta = totalBets - lastTotalBets;
+  lastTotalBets = totalBets;
+
+  // add only that delta
+  const prev = parseFloat(totalBetSpan.textContent.trim()) || 0;
+  totalBetSpan.textContent = (prev + delta).toString();
 }
+
 
 let currentRotation = 0;
 
@@ -81,19 +86,19 @@ let selectedCoin = null;
 const bets = {};
 
 const balanceDisplay = document.getElementById("balance-display");
-const winPointsDisplay = document.getElementById("winPoints-display");
+// const winPointsDisplay = document.getElementById("winPoints-display");
 const resultDisplay = document.getElementById("result-display");
 
 function updateBalanceDisplay() {
   balanceDisplay.innerHTML = "Balance: <span style='color: gold;font-weight:800;'>" + balance + "</span>";
 
 }
-function updatewinPointsDisplay() {
-  winPointsDisplay.innerHTML = "Win Points: <span style='color: gold;font-weight:800;'>" + winningPoints + "</span>";
+// function updatewinPointsDisplay() {
+//   winPointsDisplay.innerHTML = "Win Points: <span style='color: gold;font-weight:800;'>" + winningPoints + "</span>";
 
-}
+// }
 updateBalanceDisplay();
-updatewinPointsDisplay();
+// updatewinPointsDisplay();
 
 // AJAX helper to update bank value on server
 function updateBankValue() {
@@ -185,7 +190,7 @@ document.querySelectorAll(".grid-card").forEach(card => {
 
     balance -= selectedCoin;
     updateBalanceDisplay();
-    updatewinPointsDisplay();
+    // updatewinPointsDisplay();
 
     // Merge overlay
     if (bets[index] === undefined) bets[index] = selectedCoin;
@@ -226,7 +231,7 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
 
     balance -= (selectedCoin * 3);
     updateBalanceDisplay();
-    updatewinPointsDisplay();
+    // updatewinPointsDisplay();
 
     // Merge overlay
     if (bets[betKey] === undefined) bets[betKey] = (selectedCoin * 3);
@@ -276,7 +281,7 @@ document.querySelectorAll(".grid-label").forEach(label => {
 
     balance -= (selectedCoin * 4);
     updateBalanceDisplay();
-    updatewinPointsDisplay();
+    // updatewinPointsDisplay();
 
     // Merge overlay
     if (bets[betKey] === undefined) bets[betKey] = (selectedCoin * 4);
@@ -306,11 +311,14 @@ function applySecondLargestRule() {
   let relevantValues = null;
 
   // 12 grid cells
-  const gridKeys = keys.filter(k => !isNaN(k) && +k < GRID_COLUMNS * GRID_ROWS);
-  if (gridKeys.length >= 12) {
-    relevantValues = gridKeys.map(k => bets[k]);
-    allcardsbeted = true;
-  }
+//   const gridKeys = keys.filter(k => !isNaN(k) && +k < GRID_COLUMNS * GRID_ROWS);
+console.log(Object.keys(bets).length, 'betslength');
+
+if (Object.keys(bets).length > 11) {
+  allcardsbeted = true;
+  console.log(allcardsbeted);
+}
+
   // 3 card types
   else if (["cardType-Jack","cardType-Queen","cardType-King"].every(k => bets[k] !== undefined)) {
     relevantValues = ["cardType-Jack","cardType-Queen","cardType-King"].map(k => bets[k] / 4);
@@ -356,7 +364,18 @@ document.getElementById("clear-bets").addEventListener("click", function () {
   }
   
   updateBalanceDisplay();
-  updatewinPointsDisplay();
+  // updatewinPointsDisplay();
+  
+    const displaySpan = document.querySelector("#currentbet-display span");
+  if (displaySpan) {
+    displaySpan.textContent = totalBets - totalBets;
+  }
+  const totalbet = document.querySelector("#totalbet-display span");
+  if (totalbet) {
+    const totalbetvalue = parseFloat(totalbet.textContent.trim()) || 0;
+ 
+    totalbet.textContent = totalbetvalue - parseFloat(totalBets);
+  }
 });
 
 // ----- DOUBLE ALL BETS -----
@@ -396,7 +415,9 @@ document.getElementById("double-bets").addEventListener("click", function () {
     bets[key] *= 2;
   }
   updateBalanceDisplay();
-  updatewinPointsDisplay();
+  // updatewinPointsDisplay();
+  
+  
 });
 
 // ----- REPEAT LAST BET -----
@@ -418,7 +439,7 @@ document.getElementById("repeat-bet").addEventListener("click", function () {
 
   balance -= lastBet.amount;
   updateBalanceDisplay();
-  updatewinPointsDisplay();
+  // updatewinPointsDisplay();
   bets[lastBet.identifier] = lastBet.amount;
 
   const overlay = document.createElement("div");
@@ -747,13 +768,13 @@ document.getElementById("spinBtn").addEventListener("click", function () {
 
   
 let userwins;
-
+let gmlen = gameResults.length;
 // Define an override chance (10% chance to override the "default" outcome)
 
-
-if ((gameResults.length > 10 || totalWinValue > 200)) {
+console.log(gmlen, 'gamelenght')
+if ((gmlen > 5 || totalWinValue > 100)) {
   // Calculate current win percentage, rounded to two decimals.
-  let currentWinPercentage = totalBet > 0 ? (totalWinValue / totalBet) * 100 : 0;
+  let currentWinPercentage = totalBet > 0 ? (winningPoints / bettingPoints) * 100 : 0;
   currentWinPercentage = Math.round(currentWinPercentage * 100) / 100;
 
   // Check the current win percentage against the winningPercentage threshold.
@@ -770,18 +791,25 @@ if ((gameResults.length > 10 || totalWinValue > 200)) {
     // But with a small chance, override to lose.
     userwins = Math.random() < overrideChance ? 'no' : 'yes';
   } 
+   else if (currentWinPercentage > winningPercentage * 2) {
+    // Default outcome for a low win ratio is to win ('yes').
+    // But with a small chance, override to lose.
+    userwins ='no';
+  } 
   else {
     // When currentWinPercentage exactly equals winningPercentage,
     // use a standard evaluation. (Or you could also randomize here if desired.)
     userwins = currentWinPercentage >= winningPercentage ? 'yes' : 'no';
   }
  
-  console.log('currentWinPercentage')
-console.log(currentWinPercentage)
-  console.log('winningPercentage')
-console.log(winningPercentage)
-  console.log('overrideChance')
-console.log(overrideChance)
+  console.log(totalBet, 'totalBet')
+  console.log(totalWinValue, 'totalWinValue')
+  console.log(currentWinPercentage,'currentWinPercentage')
+
+  console.log(winningPercentage, 'winningPercentage')
+
+  console.log(overrideChance,'overrideChance')
+
 } else {
   // If gameResults length is 10 or less AND totalWinValue is 200 or less, fallback to 'random'.
   userwins = 'random';
@@ -792,8 +820,9 @@ if (allcardsbeted) {
 }
 
 
-console.log('userwins')
-console.log(userwins)
+console.log(userwins, 'userwins')
+
+console.log(allcardsbeted, 'allcardsbeted')
 
 
   // Stop timer and reset display
@@ -977,17 +1006,17 @@ console.log(userwins)
     if (lastBet && Object.keys(lastBet).length > 0) {
       if (!isNaN(lastBet.identifier)) {
         if (parseInt(lastBet.identifier, 10) === gridIndex) {
-          winValue = lastBet.amount * 5;
+          winValue = lastBet.amount * 10;
           userWon = true;
         }
       } else if (lastBet.identifier.startsWith("cardType-")) {
         if (lastBet.identifier === cardTypeKey) {
-          winValue = lastBet.amount * 5;
+          winValue = lastBet.amount * 10;
           userWon = true;
         }
       } else if (lastBet.identifier.startsWith("suit-")) {
         if (lastBet.identifier === suitKey) {
-          winValue = lastBet.amount * 5;
+          winValue = lastBet.amount * 10;
           userWon = true;
         }
       }
@@ -995,14 +1024,23 @@ console.log(userwins)
   
     if (userWon) {
       winningPoints += winValue;
+      console.log(balance, 'balance')
+      balance = (balance - totalBets);
+      console.log(totalBets, 'totalBets')
+console.log(balance, 'balance')
+console.log(winValue, 'winValue')
+balance = (balance + winValue);
+console.log(balance, 'balance')
     }
+    updateBankValue();
     updateBalanceDisplay();
-    updatewinPointsDisplay();
+    // updatewinPointsDisplay();
     resultDisplay.style.display = 'block';
 
    // base message
 let msg;
 if (userWon) {
+  balanceDisplay.innerHTML = "Balance: <span style='color: gold;font-weight:800;'>" + (balance) + "</span>";
   msg = `You win ${winValue}!`;
 } else if (lastBet && Object.keys(lastBet).length > 0) {
   msg = `You lose.`;
@@ -1028,10 +1066,24 @@ resultDisplay.innerHTML = `
     const suitIconcolor = (suitIcon === '♥' || suitIcon === '♦') ? 'red' : 'black';
     showCenterCard(winningSrc, suitIcon, suitIconcolor);
     addHistoryCard(winningSrc, suitIcon);
-  
+    let suiticonnum = 0;
+  if (suitIcon === '♥') {
+    suiticonnum = 1;
+  } else if(suitIcon === '♦'){
+    suiticonnum = 2;
+  } else if(suitIcon === '♠'){
+    suiticonnum = 3;
+  } else{
+    suiticonnum = 4;
+  }
     // Record the game result via AJAX.
-    recordGameResult(winningIndex, Object.values(bets).reduce((sum, amt) => sum + amt, 0), winValue);
-    updateBankValue();
+    recordGameResult(
+      winningIndex,
+      Object.values(bets).reduce((sum, amt) => sum + amt, 0),
+      winValue,
+      suiticonnum
+    );
+    
   
     // Remove all bet overlays and clear the bets object.
     document.querySelectorAll(".bet-overlay").forEach(overlay => overlay.remove());
@@ -1043,34 +1095,47 @@ resultDisplay.innerHTML = `
     allcardsbeted = false;
     startTimer();
     totalBets = 0;
+    lastTotalBets = 0;
   }, 4000);
 });
 
+function recordGameResult(winningSpin, betTotal, winValue = 0, suiticonnum) {
+  const params = new URLSearchParams({ winningSpin, betTotal, winValue, suiticonnum });
 
-
-// Record game result via AJAX.
-function recordGameResult(winningSpin, betTotal, winValue = 0) {
-  let formData = `winValue=${encodeURIComponent(winValue)}&winningSpin=${encodeURIComponent(winningSpin)}&betTotal=${encodeURIComponent(betTotal)}`;
-  if (winValue > 0) {
-    formData += `&winValue=${encodeURIComponent(winValue)}`;
-  }
   fetch('../../api/record_game.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: formData
+    body: params.toString()
   })
-  .then(response => response.json())
+  .then(async response => {
+    const text = await response.text();
+    // Log raw HTTP status + body for debugging:
+    console.log(`↳ HTTP ${response.status} ${response.statusText}`, '– body:', text);
+
+    if (!response.ok) {
+      // include status and body in the error
+      throw new Error(`HTTP ${response.status} ${response.statusText}: ${text}`);
+    }
+
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      throw new Error(`Invalid JSON from server: ${e.message} (raw: ${text})`);
+    }
+  })
   .then(data => {
     if (data.success) {
-      //  console.log("Game result stored:", data.message);
-       }
-    else { 
-      // console.error("Error storing game result:", data.message);
-     }
-
+      console.log('✅ Game result stored:', data.message);
+    } else {
+      console.error('🚨 Server error storing game result:', data.message);
+    }
   })
-  .catch(error => console.error('AJAX request failed:', error));
+  .catch(err => {
+    // log the full Error object so you see message + stack
+    console.error('AJAX request failed:', err);
+  });
 }
+
 
 document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".coin").forEach((coin, index) => {

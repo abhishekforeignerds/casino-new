@@ -1,86 +1,107 @@
 <?php
+// DEV mode: show & log everything
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Turn mysqli exceptions into catchable exceptions
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+header('Content-Type: application/json; charset=utf-8');
 session_start();
-include '../db.php'; // This file should establish your database connection, e.g., $conn
+require_once __DIR__ . '/../db.php';
 
-// Ensure the user is logged in
+// 1) Auth & param checks
 if (!isset($_SESSION['user_id'])) {
-    echo json_encode(["success" => false, "message" => "User not logged in."]);
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'User not logged in']);
+    exit;
+}
+if (!isset($_POST['winningSpin'], $_POST['betTotal'], $_POST['winValue'], $_POST['suiticonnum'])) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Required parameters missing']);
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
-$game_id = 1;  // Hard-coded game id
-
-// Validate required POST parameters
-if (!isset($_POST['winningSpin']) || !isset($_POST['betTotal'])) {
-    echo json_encode(["success" => false, "message" => "Required parameters missing."]);
-    exit;
-}
-
+// 2) Cast & validate
+$user_id     = $_SESSION['user_id'];
+$game_id     = 1;
 $winningSpin = $_POST['winningSpin'];
-$betTotal = $_POST['betTotal'];
-$winValue = $_POST['winValue'];
+$betTotal    = $_POST['betTotal'];
+$winValue    = $_POST['winValue'];
+// **Always** coerce to int
+$suiticonnum = (int) $_POST['suiticonnum'];
 
-// Make sure the values are numeric
-if (!is_numeric($winningSpin) || !is_numeric($betTotal)) {
-    echo json_encode(["success" => false, "message" => "Invalid parameters."]);
+if (!is_numeric($winningSpin) || !is_numeric($betTotal) || !is_numeric($winValue)) {
+    http_response_code(422);
+    echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
     exit;
 }
+
 if ($betTotal <= 0) {
-    echo json_encode(["success" => true, "message" => "Game result recorded successfully."]);
+    // Nothing to record, but still a success
+    echo json_encode(['success' => true, 'message' => 'No bet to record']);
     exit;
 }
-// Determine if it's a win or a loss
-// If winValue is provided and greater than 0, treat as win; otherwise, treat as loss.
-if (isset($_POST['winValue']) && is_numeric($_POST['winValue']) && $_POST['winValue'] > 0) {
-    // Win scenario: store winningSpin in winning_number and leave lose_number as NULL
-    $winning_number = $winningSpin;
-    $win_value = $winValue;
-    $lose_number = NULL;
+
+// 3) Build insert values
+$win_value = (float) $winValue;
+
+if ($winValue > 0) {
+    $winning_number = (int) $winningSpin;
+    $lose_number    = null;
 } else {
-    // Loss scenario: store winningSpin in lose_number and leave winning_number as NULL
-    $winning_number = NULL;
-    $lose_number = $winningSpin;
-    $win_value = NULL;
+    $winning_number = null;
+    $lose_number    = (int) $winningSpin;
 }
 
-// Get the current timestamp in the format "2025-04-07 01:54:50"
-$currentTimestamp = date('Y-m-d H:i:s');
+$ts = date('Y-m-d H:i:s');
 
-// Prepare the insert query with created_at and updated_at columns.
-$query = "INSERT INTO game_results (user_id, game_id, winning_number, lose_number, bet, win_value, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-if ($stmt = mysqli_prepare($conn, $query)) {
-    /*  
-        Bind parameters:
-        - user_id: integer
-        - game_id: integer
-        - winning_number: integer (or NULL)
-        - lose_number: integer (or NULL)
-        - bet: decimal (we use double for binding)
-        - win_value: decimal (or NULL)
-        - created_at: string (current timestamp)
-        - updated_at: string (current timestamp)
-        
-        The binding types string is updated to "iiiiddss":
-        i = integer (user_id)
-        i = integer (game_id)
-        i = integer (winning_number)
-        i = integer (lose_number)
-        d = double (betTotal)
-        d = double (win_value)
-        s = string (created_at)
-        s = string (updated_at)
-    */
-    
-    mysqli_stmt_bind_param($stmt, "iiiiddss", $user_id, $game_id, $winning_number, $lose_number, $betTotal, $win_value, $currentTimestamp, $currentTimestamp);
+$insertSql = "
+  INSERT INTO game_results
+    (user_id, game_id, winning_number, lose_number, suiticonnum, bet, win_value, created_at, updated_at)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+";
 
-    if (mysqli_stmt_execute($stmt)) {
-        echo json_encode(["success" => true, "message" => "Game result recorded successfully."]);
-    } else {
-        echo json_encode(["success" => false, "message" => "Failed to record game result."]);
-    }
-    mysqli_stmt_close($stmt);
-} else {
-    echo json_encode(["success" => false, "message" => "Database error."]);
+try {
+    $stmt = $conn->prepare($insertSql);
+    $stmt->bind_param(
+        'iiiiiddss',
+        $user_id,
+        $game_id,
+        $winning_number,
+        $lose_number,
+        $suiticonnum,
+        $betTotal,
+        $win_value,
+        $ts,
+        $ts
+    );
+    $stmt->execute();
+    $stmt->close();
+} catch (mysqli_sql_exception $e) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Database error on INSERT',
+        // this is the exact error (e.g. column can’t be null, syntax, etc.)
+        'error'   => $e->getMessage()
+    ]);
+    exit;
 }
-?>
+
+// // 4) Optionally update user points
+// if ($win_value > 0) {
+//     try {
+//         $ustmt = $conn->prepare('UPDATE `user` SET points = points + ? WHERE id = ?');
+//         $ustmt->bind_param('di', $win_value, $user_id);
+//         $ustmt->execute();
+//         $ustmt->close();
+//     } catch (mysqli_sql_exception $e) {
+//         // log but don’t break the user’s flow
+//         error_log('Points update failed: ' . $e->getMessage());
+//     }
+// }
+
+// 5) Return success
+echo json_encode(['success' => true, 'message' => 'Game result recorded successfully']);

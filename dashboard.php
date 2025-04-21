@@ -1,4 +1,124 @@
  <!-- meta tags and other links -->
+ <?php
+session_start();
+
+// Restrict access if the user is not logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: sign-in.php");
+    exit();
+}
+include 'db.php'; // Database connection
+
+
+$user_id = $_SESSION['user_id'];
+$game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 1; // Adjust as needed
+
+$stmt = $conn->prepare("SELECT SUM(win_value) AS total_win FROM game_results WHERE user_id = ?");
+$stmt->bind_param("i", $user_id);
+
+$stmt->execute();
+$stmt->bind_result($winningPoints);
+$stmt->fetch();
+$stmt->close();
+
+$stmt = $conn->prepare("SELECT SUM(amount) AS total_deposit FROM user_points_sales WHERE user_id = ?");
+$stmt->bind_param("i", $user_id);
+
+$stmt->execute();
+$stmt->bind_result($total_deposit);
+$stmt->fetch();
+$stmt->close();
+
+$stmt = $conn->prepare("SELECT SUM(amount) AS total_deposit FROM user_points_claims WHERE user_id = ? AND status= 'claimed' ");
+$stmt->bind_param("i", $user_id);
+
+$stmt->execute();
+$stmt->bind_result($total_withdraw);
+$stmt->fetch();
+$stmt->close();
+
+$stmt = $conn->prepare("SELECT * FROM user_points_claims WHERE from_id = ? ");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$user_points_claims = []; // Initialize empty array
+
+while ($row = $result->fetch_assoc()) {
+    $user_points_claims[] = $row; // Append each row to the array
+}
+
+$stmt->close();
+
+$stmt = $conn->prepare("SELECT * FROM user_points_sales WHERE user_id = ? ");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$user_points_sales = []; // Initialize empty array
+
+while ($row = $result->fetch_assoc()) {
+    $user_points_sales[] = $row; // Append each row to the array
+}
+
+$stmt->close();
+
+$stmt = $conn->prepare("SELECT SUM(bet) AS total_bet FROM game_results WHERE user_id = ? AND DATE(created_at) = CURDATE()");
+$stmt->bind_param("i", $user_id);
+
+$stmt->execute();
+$stmt->bind_result($bettingPoints);
+$stmt->fetch();
+$stmt->close();
+
+// Ensure $winningPoints is at least 0 if null
+$winningPoints = $winningPoints ?? 0;
+$userId = $_SESSION['user_id'];
+
+$stmt = $conn->prepare("SELECT points FROM user WHERE id = ?");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$stmt->bind_result($points);
+$stmt->fetch();
+$stmt->close();
+$game_id = 1;
+
+$stmt = $conn->prepare("SELECT winning_percentage FROM user WHERE id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($winning_percentage);
+$stmt->fetch();
+$stmt->close();
+
+$stmt = $conn->prepare("SELECT override_chance FROM user WHERE id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($override_chance);
+$stmt->fetch();
+$stmt->close();
+
+
+$stmt = $conn->prepare("SELECT * FROM game_results WHERE user_id = ? AND game_id = 1 AND bet != 0");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$gameResults = []; // Initialize empty array
+
+while ($row = $result->fetch_assoc()) {
+    $gameResults[] = $row; // Append each row to the array
+}
+
+$stmt->close();
+
+
+// Now $gameResults holds all the data
+
+
+
+// Now $points contains the user's current points
+
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -87,36 +207,23 @@
                                             Conditions</a>
                                     </li>
                                     <li>
-                                        <a href="sign-in.php">Sign In</a>
+                                        <a href="logout.php" class="cmn--btn active">Logout</a>
+
                                     </li>
                                     <li>
-                                        <a href="sign-up.php">Sign Up</a>
+                                        <a class="text-center mt-3 gold-box">Welcome,
+                                            <?php echo htmlspecialchars($_SESSION['fname']); ?> !
+                                        </a>
+
                                     </li>
+                                    <button class="btn-close btn-close-white d-lg-none"></button>
                                 </ul>
-                            </li>
-                            <li>
-                                <a href="#0">Blog</a>
-                                <ul class="sub-menu">
-                                    <li><a href="blog.php">Blog</a></li>
-                                    <li><a href="blog-details.php">Blog
-                                            Details</a></li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="contact.php">Contact</a>
-                            </li>
-                            <button
-                                class="btn-close btn-close-white d-lg-none"></button>
-                        </ul>
-                        <div
-                            class="header-trigger-wrapper d-flex d-lg-none align-items-center">
-                            <div class="header-trigger me-4">
-                                <span></span>
-                            </div>
-                            <a href="sign-in.php"
-                                class="cmn--btn active btn--md d-none d-sm-block">Sign
-                                In</a>
-                        </div>
+                                <div class="header-trigger-wrapper d-flex d-lg-none align-items-center">
+                                    <div class="header-trigger me-4">
+                                        <span></span>
+                                    </div>
+                                    <a href="sign-in.php" class="cmn--btn active btn--md d-none d-sm-block">Sign In</a>
+                                </div>
                     </div>
                 </div>
             </div>
@@ -189,7 +296,7 @@
                                         History</a>
                                 </li>
                                 <li>
-                                    <a href="transection.php">Transection
+                                    <a href="transection.php">Game
                                         History</a>
                                 </li>
                                 <li>
@@ -200,7 +307,7 @@
                                         Settings</a>
                                 </li>
                                 <li>
-                                    <a href="#0">Sign Out</a>
+                                    <a href="logout.php">Sign Out</a>
                                 </li>
                             </ul>
                         </div>
@@ -217,7 +324,7 @@
                             <div class="col-lg-6 col-xl-4 col-md-6 col-sm-10">
                                 <div class="dashboard__card">
                                     <div class="dashboard__card-content">
-                                        <h2 class="price">₹1750</h2>
+                                        <h2 class="price">₹ <?php echo htmlspecialchars($points ?? 0); ?> </h2>
                                         <p class="info">TOTAL BALANCE</p>
                                         <a href="#0" class="view-btn">View
                                             All</a>
@@ -230,7 +337,7 @@
                             <div class="col-lg-6 col-xl-4 col-md-6 col-sm-10">
                                 <div class="dashboard__card">
                                     <div class="dashboard__card-content">
-                                        <h2 class="price">₹1550</h2>
+                                        <h2 class="price">₹<?php echo htmlspecialchars($total_deposit ?? 0); ?> </h2>
                                         <p class="info">TOTAL DEPOSIT</p>
                                         <a href="#0" class="view-btn">View
                                             All</a>
@@ -243,7 +350,7 @@
                             <div class="col-lg-6 col-xl-4 col-md-6 col-sm-10">
                                 <div class="dashboard__card">
                                     <div class="dashboard__card-content">
-                                        <h2 class="price">₹1500</h2>
+                                        <h2 class="price">₹<?php echo htmlspecialchars($total_withdrawtotal_withdraw ?? 0); ?></h2>
                                         <p class="info">TOTAL WITHDRAW</p>
                                         <a href="#0" class="view-btn">View
                                             All</a>
@@ -323,98 +430,37 @@
                             </div>
                         </div>
                         <div class="table--responsive--md mt-5">
-                            <table class="table">
-                                <thead>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Transection ID</th>
+                                    <th>Transection Type</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th> 
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($user_points_claims as $claim): ?>
                                     <tr>
-                                        <th>Transection ID</th>
-                                        <th>Transection Type</th>
-                                        <th>Date</th>
-                                        <th>Amount</th>
+                                        <td class="trx-id" data-label="Transection ID">#<?= htmlspecialchars($claim['reference_number']) ?></td>
+                                        <td class="trx-type" data-label="Transection Type">Withdraw</td>
+                                        <td class="date" data-label="Date"><?= date("d M, y \\a\\t h:i A", strtotime($claim['created_at'])) ?></td>
+                                        <td class="amount" data-label="Amount">₹<?= number_format($claim['amount'], 2) ?></td>
+                                        <td class="status" data-label="Status">
+                                        <?php if ($claim['status'] === 'requested'): ?>
+                                            <small style="background-color: #87875f; padding: 2px 8px; border-radius: 5px; color: #fff;">Claim Requested</small>
+                                        <?php elseif ($claim['status'] === 'rejected'): ?>
+                                            <small style="background-color: #dc3545; padding: 2px 8px; border-radius: 5px; color: #fff;">Rejected</small>
+                                        <?php else: ?>
+                                            <small style="background-color: #28a745; padding: 2px 8px; border-radius: 5px; color: #fff;">Claimed</small>
+                                        <?php endif; ?>
+
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="trx-id"
-                                            data-label="Transection ID">#481XV93NCKD0</td>
-                                        <td class="trx-type"
-                                            data-label="Transection Type">Withdraw</td>
-                                        <td class="date" data-label="Date">12
-                                            Mar, 21 at 12:30 AM</td>
-                                        <td class="amount"
-                                            data-label="Amount">₹150.50</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="trx-id"
-                                            data-label="Transection ID">#V93N481XCKD0</td>
-                                        <td class="trx-type"
-                                            data-label="Transection Type">Deposit</td>
-                                        <td class="date" data-label="Date">12
-                                            Mar, 21 at 12:30 AM</td>
-                                        <td class="amount"
-                                            data-label="Amount">₹100.50</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="trx-id"
-                                            data-label="Transection ID">#1XCKD0V93N48</td>
-                                        <td class="trx-type"
-                                            data-label="Transection Type">Deposit</td>
-                                        <td class="date" data-label="Date">12
-                                            Mar, 21 at 12:30 AM</td>
-                                        <td class="amount"
-                                            data-label="Amount">₹150.50</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="trx-id"
-                                            data-label="Transection ID">#V981XCKD03N4</td>
-                                        <td class="trx-type"
-                                            data-label="Transection Type">Withdraw</td>
-                                        <td class="date" data-label="Date">12
-                                            Mar, 21 at 12:30 AM</td>
-                                        <td class="amount"
-                                            data-label="Amount">₹150.50</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="trx-id"
-                                            data-label="Transection ID">#481XV93NCKD0</td>
-                                        <td class="trx-type"
-                                            data-label="Transection Type">Deposit</td>
-                                        <td class="date" data-label="Date">12
-                                            Mar, 21 at 12:30 AM</td>
-                                        <td class="amount"
-                                            data-label="Amount">₹150.50</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="trx-id"
-                                            data-label="Transection ID">#V93N481XCKD0</td>
-                                        <td class="trx-type"
-                                            data-label="Transection Type">Withdraw</td>
-                                        <td class="date" data-label="Date">12
-                                            Mar, 21 at 12:30 AM</td>
-                                        <td class="amount"
-                                            data-label="Amount">₹100.50</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="trx-id"
-                                            data-label="Transection ID">#1XCKD0V93N48</td>
-                                        <td class="trx-type"
-                                            data-label="Transection Type">Deposit</td>
-                                        <td class="date" data-label="Date">12
-                                            Mar, 21 at 12:30 AM</td>
-                                        <td class="amount"
-                                            data-label="Amount">₹150.50</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="trx-id"
-                                            data-label="Transection ID">#V981XCKD03N4</td>
-                                        <td class="trx-type"
-                                            data-label="Transection Type">Withdraw</td>
-                                        <td class="date" data-label="Date">12
-                                            Mar, 21 at 12:30 AM</td>
-                                        <td class="amount"
-                                            data-label="Amount">₹150.50</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                         </div>
                     </div>
                 </div>

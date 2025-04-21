@@ -19,7 +19,7 @@ $stmt->execute();
 $stmt->bind_result($winningPoints);
 $stmt->fetch();
 $stmt->close();
-$stmt = $conn->prepare("SELECT SUM(bet) AS total_bet FROM game_results WHERE user_id = ?");
+$stmt = $conn->prepare("SELECT SUM(bet) AS total_bet FROM game_results WHERE user_id = ? AND DATE(created_at) = CURDATE()");
 $stmt->bind_param("i", $user_id);
 
 $stmt->execute();
@@ -66,6 +66,60 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $stmt->close();
+
+if (isset($_GET['action']) && $_GET['action']==='getValues') {
+    header('Content-Type: application/json');
+
+    // Re-run exactly the same queries you did above to refresh each value:
+    $user_id = $_SESSION['user_id'];
+
+    // total wins
+    $stmt = $conn->prepare("SELECT SUM(win_value) AS total_win FROM game_results WHERE user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute(); $stmt->bind_result($winningPoints); $stmt->fetch(); $stmt->close();
+    $winningPoints = $winningPoints ?? 0;
+
+    // today’s bets
+    $stmt = $conn->prepare("SELECT SUM(bet) AS total_bet FROM game_results WHERE user_id = ? AND DATE(created_at) = CURDATE()");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute(); $stmt->bind_result($bettingPoints); $stmt->fetch(); $stmt->close();
+
+    // current balance
+    $stmt = $conn->prepare("SELECT points, winning_percentage, override_chance FROM user WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $stmt->bind_result($points, $winning_percentage, $override_chance);
+    $stmt->fetch();
+    $stmt->close();
+
+    // game results array
+    $stmt = $conn->prepare("SELECT * FROM game_results WHERE user_id = ? AND game_id = 1 AND bet != 0");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $gameResults = [];
+    while ($r = $res->fetch_assoc()) {
+        $gameResults[] = $r;
+    }
+    $stmt->close();
+
+    // any other variables
+    $spinTimerDuration = intval($spinTimerDuration ?? 120);
+    $maxBetamount      = intval($maxBetamount ?? 10000);
+
+    // send it all back
+    echo json_encode([
+      'balance'           => intval($points),
+      'winningPoints'     => intval($winningPoints),
+      'bettingPoints'     => intval($bettingPoints),
+      'winningPercentage' => floatval($winning_percentage),
+      'overrideChance'    => floatval($override_chance),
+      'spinTimerDuration' => $spinTimerDuration,
+      'maxBetamount'      => $maxBetamount,
+      'gameResults'       => $gameResults,
+    ]);
+    exit;
+}
 
 
 // Now $gameResults holds all the data
@@ -210,7 +264,7 @@ $stmt->close();
         <div class="bordersboxes" id="balance-display"> Balance: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($points ?? 0); ?> </span> </div>
 
         <div class="bordersboxes" id="currentbet-display"> Current Bet: <span style="color: gold; font-weight:800;">0</span> </div>
-        <div class="bordersboxes" id="totalbet-display"> Total Bet: <span style="color: gold; font-weight:800;"> <?php echo htmlspecialchars($bettingPoints ?? 0); ?></span> </div>
+        <div class="bordersboxes" id="totalbet-display"> Today's Bet: <span style="color: gold; font-weight:800;"> <?php echo htmlspecialchars($bettingPoints ?? 0); ?></span> </div>
 
 
           
@@ -415,18 +469,53 @@ $stmt->close();
 
 
     <script>
-// CONFIGURABLE VARIABLES
-let balance = <?php echo htmlspecialchars($points ?? 0); ?>;
-let winningPoints = <?php echo htmlspecialchars($winningPoints ?? 0); ?>;
-let bettingPoints = <?php echo htmlspecialchars($bettingPoints ?? 0); ?>;
+  // existing declarations
+  let balance           = <?php echo (int) $points; ?>;
+  let winningPoints     = <?php echo (int) $winningPoints; ?>;
+  let bettingPoints     = <?php echo (int) $bettingPoints; ?>;
+  let winningPercentage = <?php echo (float) $winning_percentage; ?>;
+  let overrideChance    = <?php echo (float) $override_chance; ?>;
+  let spinTimerDuration = <?php echo (int) ($spinTimerDuration ?? 120); ?>;
+  let maxBetamount      = <?php echo (int) ($maxBetamount ?? 10000); ?>;
+  let gameResults       = <?php echo json_encode($gameResults); ?>;
 
-let winningPercentage = <?php echo htmlspecialchars($winning_percentage ?? 70); ?>;
-let overrideChance = <?php echo htmlspecialchars($override_chance ?? 0.3); ?>;
-let spinTimerDuration = <?php echo htmlspecialchars($spinTimerDuration ?? 120); ?>;
-let maxBetamount = <?php echo htmlspecialchars($maxBetamount ?? 10000); ?>;
+  // function to refresh all variables from server
+  function updateGameVariables() {
+    return fetch('poker-roulette.php?action=getValues')
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not OK');
+        return response.json();
+      })
+      .then(data => {
+        winningPoints     = data.winningPoints;
+        bettingPoints     = data.bettingPoints;
+        winningPercentage = data.winningPercentage;
+        overrideChance    = data.overrideChance;
+        spinTimerDuration = data.spinTimerDuration;
+        maxBetamount      = data.maxBetamount;
+        gameResults       = data.gameResults;
+      })
+      .catch(err => console.error('Failed to update game vars:', err));
+  }
 
-let gameResults = <?php echo json_encode($gameResults ?? []); ?>;
+  document.getElementById("spinBtn").addEventListener("click", function () {
+    // first, refresh all the server‐side values:
+    updateGameVariables().then(() => {
+  setTimeout(() => {
+    console.log('winningPoints:', winningPoints);
+    console.log('bettingPoints:', bettingPoints);
+    console.log('winningPercentage:', winningPercentage);
+    console.log('overrideChance:', overrideChance);
+    console.log('spinTimerDuration:', spinTimerDuration);
+    console.log('maxBetamount:', maxBetamount);
+    console.log('gameResults:', gameResults);
+  }, 5000); // 5000 ms = 5 seconds
+});
+
+
+  });
 </script>
+
 
 
 <script src="./assets-normal/js/poker-roulette.js"></script>
