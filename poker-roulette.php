@@ -259,7 +259,7 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
                 <?php // echo htmlspecialchars($bettingPoints ?? 0); ?>
             </span>
         </div> -->
-        <div class="bordersboxes" id="winPoints-display"> Win Points: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($winningPoints ?? 0); ?> </span> </div>
+        <!-- <div class="bordersboxes" id="winPoints-display"> Win Points: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($winningPoints ?? 0); ?> </span> </div> -->
 
         <div class="bordersboxes" id="balance-display"> Balance: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($points ?? 0); ?> </span> </div>
 
