@@ -107,12 +107,12 @@ function updateBankValue() {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `bankValue=${encodeURIComponent(balance)}`
   })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) { console.log("Bank value updated:", data.message); }
-    else { console.error("Error updating bank value:", data.message); }
-  })
-  .catch(error => console.error('AJAX request failed:', error));
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) { console.log("Bank value updated:", data.message); }
+      else { console.error("Error updating bank value:", data.message); }
+    })
+    .catch(error => console.error('AJAX request failed:', error));
 }
 
 // Coin selection
@@ -311,22 +311,22 @@ function applySecondLargestRule() {
   let relevantValues = null;
 
   // 12 grid cells
-//   const gridKeys = keys.filter(k => !isNaN(k) && +k < GRID_COLUMNS * GRID_ROWS);
-console.log(Object.keys(bets).length, 'betslength');
+  //   const gridKeys = keys.filter(k => !isNaN(k) && +k < GRID_COLUMNS * GRID_ROWS);
+  // console.log(Object.keys(bets).length, 'betslength');
 
-if (Object.keys(bets).length > 11) {
-  allcardsbeted = true;
-  console.log(allcardsbeted);
-}
+  if (Object.keys(bets).length > 11) {
+    allcardsbeted = true;
+    console.log(allcardsbeted);
+  }
 
   // 3 card types
-  else if (["cardType-Jack","cardType-Queen","cardType-King"].every(k => bets[k] !== undefined)) {
-    relevantValues = ["cardType-Jack","cardType-Queen","cardType-King"].map(k => bets[k] / 4);
+  else if (["cardType-Jack", "cardType-Queen", "cardType-King"].every(k => bets[k] !== undefined)) {
+    relevantValues = ["cardType-Jack", "cardType-Queen", "cardType-King"].map(k => bets[k] / 4);
     allcardsbeted = true;
   }
   // 4 suits
-  else if (["suit-♠","suit-♦","suit-♣","suit-♥"].every(k => bets[k] !== undefined)) {
-    relevantValues = ["suit-♠","suit-♦","suit-♣","suit-♥"].map(k => bets[k] / 3);
+  else if (["suit-♠", "suit-♦", "suit-♣", "suit-♥"].every(k => bets[k] !== undefined)) {
+    relevantValues = ["suit-♠", "suit-♦", "suit-♣", "suit-♥"].map(k => bets[k] / 3);
     allcardsbeted = true;
   }
 
@@ -362,18 +362,18 @@ document.getElementById("clear-bets").addEventListener("click", function () {
   for (let key in bets) {
     delete bets[key];
   }
-  
+
   updateBalanceDisplay();
   // updatewinPointsDisplay();
-  
-    const displaySpan = document.querySelector("#currentbet-display span");
+
+  const displaySpan = document.querySelector("#currentbet-display span");
   if (displaySpan) {
     displaySpan.textContent = totalBets - totalBets;
   }
   const totalbet = document.querySelector("#totalbet-display span");
   if (totalbet) {
     const totalbetvalue = parseFloat(totalbet.textContent.trim()) || 0;
- 
+
     totalbet.textContent = totalbetvalue - parseFloat(totalBets);
   }
 });
@@ -416,8 +416,8 @@ document.getElementById("double-bets").addEventListener("click", function () {
   }
   updateBalanceDisplay();
   // updatewinPointsDisplay();
-  
-  
+
+
 });
 
 // ----- REPEAT LAST BET -----
@@ -498,17 +498,18 @@ function updateHistory(src, suit, wintimes) {
   formData.append('suiticon', suit);
   formData.append('wintimes', wintimes);
 
-  fetch('../../api/updateHistory.php', {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (!data.success) {
-      console.error('Error updating history:', data.message);
-    }
-  })
-  .catch(error => console.error("Fetch error:", error));
+  fetch('../../api/updateHistory.php', { method: 'POST', body: formData })
+    .then(res => res.text())                // ← get raw text
+    .then(text => {
+      console.log('RAW RESPONSE:', text);   // ← inspect it in your console
+      try {
+        const data = JSON.parse(text);       // then try to parse
+        if (!data.success) console.error('Error updating history:', data.message);
+      } catch (err) {
+        console.error('Invalid JSON, server returned HTML or error page:', err);
+      }
+    })
+    .catch(err => console.error('Fetch error:', err));
 }
 function displayHistoryCard(src, suit, wintimes) {
   const historyContainer = document.getElementById("history-container");
@@ -584,7 +585,7 @@ function showCenterCard(src, suit, suitIconcolor) {
 function drawSuitRing() {
   const suitRing = document.getElementById("suit-ring");
   suitRing.innerHTML = "";
-  
+
   // Assuming the container is a 100x100 box centered in the parent.
   const containerSize = 100;
   const center = containerSize / 2; // 50px
@@ -622,7 +623,7 @@ function drawSuitRing() {
     span.textContent = suits[i % suits.length];
     span.style.color = (suits[i % suits.length] === "♦" || suits[i % suits.length] === "♥") ? "red" : "black";
     span.style.transform = `rotate(${angleDeg}deg)`;
-    
+
     suitRing.appendChild(span);
   }
 }
@@ -649,7 +650,7 @@ for (let i = 0; i < segmentCountTimer; i++) {
   const y1 = centerYTimer + radiusTimer * Math.sin(rad);
   const x2 = centerXTimer + (radiusTimer + stickLength) * Math.cos(rad);
   const y2 = centerYTimer + (radiusTimer + stickLength) * Math.sin(rad);
-  
+
   const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
   line.setAttribute("x1", x1);
   line.setAttribute("y1", y1);
@@ -689,10 +690,10 @@ function updateTimeDisplay() {
   const currentTime = now.toLocaleTimeString();
   const withdrawTime = new Date(now.getTime() + countdown * 1000)
     .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  
+
   document.getElementById('current-time').textContent = `Current Time: ${currentTime}`;
   document.getElementById('withdraw-time').textContent = `Withdraw Time: ${withdrawTime}`;
-  
+
   updateTimerSticks();
   countdownText.textContent = countdown;
 }
@@ -764,65 +765,89 @@ const cardDetails = [
 ];
 
 document.getElementById("spinBtn").addEventListener("click", function () {
-  console.log(bets)
+  // console.log(bets)
 
-  
-let userwins;
-let gmlen = gameResults.length;
-// Define an override chance (10% chance to override the "default" outcome)
 
-console.log(gmlen, 'gamelenght')
-if ((gmlen > 5 || totalWinValue > 100)) {
-  // Calculate current win percentage, rounded to two decimals.
-  let currentWinPercentage = totalBet > 0 ? (winningPoints / bettingPoints) * 100 : 0;
-  currentWinPercentage = Math.round(currentWinPercentage * 100) / 100;
-
-  // Check the current win percentage against the winningPercentage threshold.
-  if (currentWinPercentage > winningPercentage) {
-    // Default outcome for a high win ratio is to lose ('no').
-    // But with a small chance, override to win.
-    userwins = Math.random() < overrideChance ? 'yes' : 'no';
-  } else if (currentWinPercentage < winningPercentage) {
-    // Default outcome for a low win ratio is to win ('yes').
-    // But with a small chance, override to lose.
-    userwins = Math.random() < overrideChance ? 'no' : 'yes';
-  } else if (currentWinPercentage < winningPercentage) {
-    // Default outcome for a low win ratio is to win ('yes').
-    // But with a small chance, override to lose.
-    userwins = Math.random() < overrideChance ? 'no' : 'yes';
-  } 
-   else if (currentWinPercentage > winningPercentage * 2) {
-    // Default outcome for a low win ratio is to win ('yes').
-    // But with a small chance, override to lose.
-    userwins ='no';
-  } 
-  else {
-    // When currentWinPercentage exactly equals winningPercentage,
-    // use a standard evaluation. (Or you could also randomize here if desired.)
-    userwins = currentWinPercentage >= winningPercentage ? 'yes' : 'no';
+  let userwins;
+  let gmlen = gameResults.length;
+  if (gmlen ==  0) {
+    gmlen = 1;
   }
+  // Define an override chance (10% chance to override the "default" outcome)
+
+  console.log(gmlen, 'gamelenght')
+  let currentWinPercentage = totalBets > 0 ? (winningPoints / bettingPoints) * 100 : 0;
+  currentWinPercentage = Math.round(currentWinPercentage * 100) / 100;
+  if ((gmlen > 4 || totalWinValue > 100)) {
+
+    if (currentWinPercentage > winningPercentage) {
+      // Default outcome for a high win ratio is to lose ('no').
+      // But with a small chance, override to win.
+      console.log(currentWinPercentage, 'currentWinPercentage-no')
+  
+      console.log(winningPercentage, 'winningPercentage-no')
+      
+      userwins = Math.random() < overrideChance ? 'yes' : 'no';
+    } else if (currentWinPercentage < winningPercentage) {
+      // Default outcome for a low win ratio is to win ('yes').
+      // But with a small chance, override to lose.
  
-  console.log(totalBet, 'totalBet')
-  console.log(totalWinValue, 'totalWinValue')
-  console.log(currentWinPercentage,'currentWinPercentage')
+      console.log(currentWinPercentage, 'currentWinPercentage-yes')
+  
+      console.log(winningPercentage, 'winningPercentage-yes')
 
-  console.log(winningPercentage, 'winningPercentage')
+      userwins = Math.random() < overrideChance ? 'no' : 'yes';
+    } else if (currentWinPercentage < winningPercentage) {
+      // Default outcome for a low win ratio is to win ('yes').
+      // But with a small chance, override to lose.
 
-  console.log(overrideChance,'overrideChance')
+      console.log(currentWinPercentage, 'currentWinPercentage-strino')
+  
+      console.log(winningPercentage, 'winningPercentage-strino')
 
-} else {
-  // If gameResults length is 10 or less AND totalWinValue is 200 or less, fallback to 'random'.
-  userwins = 'random';
-}
+      userwins = Math.random() < overrideChance ? 'no' : 'yes';
+    }
+    else if (currentWinPercentage > winningPercentage * 2) {
+      // Default outcome for a low win ratio is to win ('yes').
+      // But with a small chance, override to lose.
 
-if (allcardsbeted) {
-  userwins = 'yes';
-}
+      console.log(currentWinPercentage, 'currentWinPercentage-x-no')
+  
+      console.log(winningPercentage, 'winningPercentage-x-no')
+
+      userwins = 'no';
+    }
+    else {
+      // When currentWinPercentage exactly equals winningPercentage,
+      // use a standard evaluation. (Or you could also randomize here if desired.)
+      userwins = currentWinPercentage >= winningPercentage ? 'yes' : 'no';
+    }
+
+    console.log(totalBet, 'totalBet')
+    console.log(totalWinValue, 'totalWinValue')
+    console.log(currentWinPercentage, 'currentWinPercentage')
+
+    console.log(winningPercentage, 'winningPercentage')
+
+    console.log(overrideChance, 'overrideChance')
+
+  } else {
+    // If gameResults length is 10 or less AND totalWinValue is 200 or less, fallback to 'random'.
+    userwins = Math.random() < overrideChance ? 'yes' : 'random';
+  }
+  if (currentWinPercentage > winningPercentage && lastBet.amount > 20) {
+    userwins = 'no';
+  }
+
+  if (allcardsbeted) {
+    userwins = 'yes';
+  }
 
 
-console.log(userwins, 'userwins')
+  console.log(userwins, 'userwins')
 
-console.log(allcardsbeted, 'allcardsbeted')
+
+  console.log(allcardsbeted, 'allcardsbeted')
 
 
   // Stop timer and reset display
@@ -839,14 +864,14 @@ console.log(allcardsbeted, 'allcardsbeted')
 
   // --- Calculate rotation so that the winning segment is centered ---
   const segmentAngle = 360 / segmentCount;
-  
+
   // Initially choose a random index (0 to segmentCount - 1)
   let chosenIndex = Math.floor(Math.random() * segmentCount);
 
   // --- Override chosenIndex based on the userwins flag and last bet, if a bet exists ---
   if (lastBet && Object.keys(lastBet).length > 0) {
     let possibleIndices = [];
-    
+
     // If the bet identifier is numeric, assume it is a specific grid card index.
     if (!isNaN(lastBet.identifier)) {
       possibleIndices = [parseInt(lastBet.identifier, 10)];
@@ -865,7 +890,7 @@ console.log(allcardsbeted, 'allcardsbeted')
         .map((cd, index) => (cd.suit === betSuit ? index : -1))
         .filter(index => index !== -1);
     }
-    
+
     // If there is at least one matching index, override chosenIndex
     if (possibleIndices.length > 0) {
       if (userwins == 'yes') {
@@ -899,7 +924,7 @@ console.log(allcardsbeted, 'allcardsbeted')
   // --- Apply the spin animation to wheel, suit ring, and stick container ---
   wheel.style.transition = "transform 4s ease-out";
   wheel.style.transform = "rotate(" + currentRotation + "deg)";
-  
+
   suitRing.style.transition = "transform 4s ease-out";
   suitRing.style.transform = "rotate(" + (-currentRotation) + "deg)";
 
@@ -932,7 +957,7 @@ console.log(allcardsbeted, 'allcardsbeted')
       index = (index + 1) % texts.length;
     }, 500);
   }
-  
+
   function stopCenterTextAnimation() {
     clearInterval(centerInterval);
     const centerText = document.querySelector('#center-circle .center-text');
@@ -940,7 +965,7 @@ console.log(allcardsbeted, 'allcardsbeted')
       centerText.classList.remove("animate");
     }
   }
-  
+
   startCenterTextAnimation();
 
   // --- After spin duration, finalize and determine results ---
@@ -953,10 +978,10 @@ console.log(allcardsbeted, 'allcardsbeted')
     suitRing.style.transform = "rotate(" + (-currentRotation) + "deg)";
     stickContainer.style.transition = "none";
     stickContainer.style.transform = "rotate(" + currentRotation + "deg)";
-    
+
     // Stop center text animation
     stopCenterTextAnimation();
-  
+
     // The chosenIndex is our winning index.
     const winningIndex = chosenIndex;
     const winningCard = cardDetails[winningIndex];
@@ -965,13 +990,13 @@ console.log(allcardsbeted, 'allcardsbeted')
     // For win calculations we use keys based on the card type and suit.
     const cardTypeKey = "cardType-" + cardType;
     const suitKey = "suit-" + suitIcon;
-    
+
     // The grid card that wins is exactly at the index 'winningIndex'
     const gridIndex = winningIndex;
     const markerImgEl = document.querySelector(`.grid-card[data-index="${gridIndex}"] img`);
-    const markerSrc   = markerImgEl.src;
-    const markerAlt   = markerImgEl.alt;
-    
+    const markerSrc = markerImgEl.src;
+    const markerAlt = markerImgEl.alt;
+
     // Highlight winning segments and grid card.
     document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => el.classList.remove("winner"));
     const markerSegments = document.querySelectorAll("#segments-svg path");
@@ -987,7 +1012,7 @@ console.log(allcardsbeted, 'allcardsbeted')
     const wheelCards = document.querySelectorAll(".card-wrapper");
     const winningWheelCard = wheelCards[winningIndex];
     winningWheelCard.classList.add("winner");
-  
+
     // Get winning card image source
     const imgEl = winningWheelCard.querySelector("img");
     const winningSrc = imgEl.getAttribute("src");
@@ -999,7 +1024,7 @@ console.log(allcardsbeted, 'allcardsbeted')
       // console.log("No bet was placed by the user.");
     }
     // console.log("Winning card:", cardType, suitIcon, "at grid index:", gridIndex);
-  
+
     // --- Win calculation based on last bet ---
     let winValue = 0;
     let userWon = false;
@@ -1021,35 +1046,35 @@ console.log(allcardsbeted, 'allcardsbeted')
         }
       }
     }
-  
+
     if (userWon) {
       winningPoints += winValue;
       console.log(balance, 'balance')
       balance = (balance - totalBets);
       console.log(totalBets, 'totalBets')
-console.log(balance, 'balance')
-console.log(winValue, 'winValue')
-balance = (balance + winValue);
-console.log(balance, 'balance')
+      console.log(balance, 'balance')
+      console.log(winValue, 'winValue')
+      balance = (balance + winValue);
+      console.log(balance, 'balance')
     }
     updateBankValue();
     updateBalanceDisplay();
     // updatewinPointsDisplay();
     resultDisplay.style.display = 'block';
 
-   // base message
-let msg;
-if (userWon) {
-  balanceDisplay.innerHTML = "Balance: <span style='color: gold;font-weight:800;'>" + (balance) + "</span>";
-  msg = `You win ${winValue}!`;
-} else if (lastBet && Object.keys(lastBet).length > 0) {
-  msg = `You lose.`;
-} else {
-  msg = `No bet was placed.`;
-}
+    // base message
+    let msg;
+    if (userWon) {
+      balanceDisplay.innerHTML = "Balance: <span style='color: gold;font-weight:800;'>" + (balance) + "</span>";
+      msg = `You win ${winValue}!`;
+    } else if (lastBet && Object.keys(lastBet).length > 0) {
+      msg = `You lose.`;
+    } else {
+      msg = `No bet was placed.`;
+    }
 
-// now include the marker image + total bet
-resultDisplay.innerHTML = `
+    // now include the marker image + total bet
+    resultDisplay.innerHTML = `
   <p><strong>Current Marker Card</strong></p>
   <img
     src="${markerSrc}"
@@ -1059,23 +1084,23 @@ resultDisplay.innerHTML = `
   <p>${msg}</p>
   <span><strong>Current Bet:</strong> ${totalBets}</span>
 `;
-    
-  
+
+
     // Update center card display and history.
     // (The suit icon color is set based on red for hearts/diamonds, black otherwise.)
     const suitIconcolor = (suitIcon === '♥' || suitIcon === '♦') ? 'red' : 'black';
     showCenterCard(winningSrc, suitIcon, suitIconcolor);
     addHistoryCard(winningSrc, suitIcon);
     let suiticonnum = 0;
-  if (suitIcon === '♥') {
-    suiticonnum = 1;
-  } else if(suitIcon === '♦'){
-    suiticonnum = 2;
-  } else if(suitIcon === '♠'){
-    suiticonnum = 3;
-  } else{
-    suiticonnum = 4;
-  }
+    if (suitIcon === '♥') {
+      suiticonnum = 1;
+    } else if (suitIcon === '♦') {
+      suiticonnum = 2;
+    } else if (suitIcon === '♠') {
+      suiticonnum = 3;
+    } else {
+      suiticonnum = 4;
+    }
     // Record the game result via AJAX.
     recordGameResult(
       winningIndex,
@@ -1083,8 +1108,8 @@ resultDisplay.innerHTML = `
       winValue,
       suiticonnum
     );
-    
-  
+
+
     // Remove all bet overlays and clear the bets object.
     document.querySelectorAll(".bet-overlay").forEach(overlay => overlay.remove());
     for (let key in bets) {
@@ -1107,39 +1132,39 @@ function recordGameResult(winningSpin, betTotal, winValue = 0, suiticonnum) {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params.toString()
   })
-  .then(async response => {
-    const text = await response.text();
-    // Log raw HTTP status + body for debugging:
-    console.log(`↳ HTTP ${response.status} ${response.statusText}`, '– body:', text);
+    .then(async response => {
+      const text = await response.text();
+      // Log raw HTTP status + body for debugging:
+      console.log(`↳ HTTP ${response.status} ${response.statusText}`, '– body:', text);
 
-    if (!response.ok) {
-      // include status and body in the error
-      throw new Error(`HTTP ${response.status} ${response.statusText}: ${text}`);
-    }
+      if (!response.ok) {
+        // include status and body in the error
+        throw new Error(`HTTP ${response.status} ${response.statusText}: ${text}`);
+      }
 
-    try {
-      return JSON.parse(text);
-    } catch (e) {
-      throw new Error(`Invalid JSON from server: ${e.message} (raw: ${text})`);
-    }
-  })
-  .then(data => {
-    if (data.success) {
-      console.log('✅ Game result stored:', data.message);
-    } else {
-      console.error('🚨 Server error storing game result:', data.message);
-    }
-  })
-  .catch(err => {
-    // log the full Error object so you see message + stack
-    console.error('AJAX request failed:', err);
-  });
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error(`Invalid JSON from server: ${e.message} (raw: ${text})`);
+      }
+    })
+    .then(data => {
+      if (data.success) {
+        console.log('✅ Game result stored:', data.message);
+      } else {
+        console.error('🚨 Server error storing game result:', data.message);
+      }
+    })
+    .catch(err => {
+      // log the full Error object so you see message + stack
+      console.error('AJAX request failed:', err);
+    });
 }
 
 
 document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".coin").forEach((coin, index) => {
-    const color = coin.id; 
+    const color = coin.id;
     if (color.startsWith("#") || color === "orange") {
       coin.style.backgroundColor = color;
     }
@@ -1180,7 +1205,7 @@ function toggleFullscreen() {
 fullscreenBtn.addEventListener("click", toggleFullscreen);
 
 // Listen for F11 key press and prevent the default browser action
-document.addEventListener("keydown", function(e) {
+document.addEventListener("keydown", function (e) {
   if (e.key === "F11" || e.keyCode === 122) {
     e.preventDefault();  // Prevent the default F11 behavior (which may vary by browser)
     toggleFullscreen();
