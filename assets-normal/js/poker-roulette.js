@@ -63,21 +63,34 @@ function getWinningIndex(rotationAngle) {
   return Math.floor(effectiveAngle / segmentAngle);
 }
 // Winning index is determined from the main wheel’s final rotation.
-const totalBetSpan = document.querySelector("#totalbet-display span");
+
 let lastTotalBets = 0;
 
+// helper to sync UI whenever totalBets changes
 function updateTotalBetDisplay() {
-  const currentSpan = document.querySelector("#currentbet-display span");
-  if (currentSpan) currentSpan.textContent = totalBets;
-
-  // how much did totalBets grow since last time?
+  const totalBetSpan = document.querySelector("#totalbet-display span");
+  const currentBetSpan = document.querySelector("#currentbet-display span");
+  
+  // update the “current bet” label
+  if (currentBetSpan) {
+    currentBetSpan.textContent = totalBets;
+  }
+  
+  // compute how much new to add to the rolling “totalbet-display”
   const delta = totalBets - lastTotalBets;
   lastTotalBets = totalBets;
 
-  // add only that delta
+  // update the cumulative display
   const prev = parseFloat(totalBetSpan.textContent.trim()) || 0;
   totalBetSpan.textContent = (prev + delta).toString();
 }
+
+// call this whenever you add X to totalBets
+function addToTotalBets(amount) {
+  totalBets += amount;
+  updateTotalBetDisplay();
+}
+
 
 
 let currentRotation = 0;
@@ -344,7 +357,10 @@ function applySecondLargestRule() {
 
 // ----- CLEAR ALL BETS -----
 document.getElementById("clear-bets").addEventListener("click", function () {
-  console.log(bets)
+  console.log('bets', bets)
+  console.log('totalBets', totalBets)
+  console.log('lastTotalBets', lastTotalBets)
+  console.log('lastBet', lastBet)
   // Query all bet overlays in the DOM
   const overlays = document.querySelectorAll('.bet-overlay');
 
@@ -376,80 +392,84 @@ document.getElementById("clear-bets").addEventListener("click", function () {
 
     totalbet.textContent = totalbetvalue - parseFloat(totalBets);
   }
+  totalBets = 0;
+  lastTotalBets = 0;
+  lastBet ={};
+  console.log('bets',bets);
+  console.log('totalBets',totalBets);
+  console.log('lastTotalBets',lastTotalBets);
+  console.log('lastBet',lastBet);
 });
-
-// ----- DOUBLE ALL BETS -----
 document.getElementById("double-bets").addEventListener("click", function () {
-  console.log(bets)
   const overlays = document.querySelectorAll('.bet-overlay');
-  let totalExtra = 0;
+  let extra = 0;
 
-  overlays.forEach(overlay => {
-    // Query the coin's inner span.
-    const coinSpan = overlay.querySelector(':scope > .coin span');
-    if (coinSpan) {
-      const currentBet = parseInt(coinSpan.textContent, 10);
-      totalExtra += currentBet;
-    }
+  // sum up what doubling will cost
+  overlays.forEach(ov => {
+    const coinSpan = ov.querySelector(':scope > .coin span');
+    const current = coinSpan ? parseInt(coinSpan.textContent, 10) : 0;
+    extra += current;
   });
 
-  // Check if doubling would exceed the max bet limit.
-  if (totalBets + totalExtra > maxBetamount) {
-    alert("Max bet amount is 10000");
-    return; // Not enough remaining bet limit to double
+  // guard rails
+  if (totalBets + extra > maxBetamount) {
+    return alert("Max bet amount is " + maxBetamount);
+  }
+  if (balance < extra) {
+    return alert("Not enough balance to double all bets.");
   }
 
-  if (balance < totalExtra) return; // Not enough balance to double
+  // deduct balance, bump totalBets by the extra
+  balance -= extra;
+  addToTotalBets(extra);
+  updateBalanceDisplay();
 
-  balance -= totalExtra;
-  totalBets += totalExtra; // Increase the total bet record
-
-  overlays.forEach(overlay => {
-    const coinSpan = overlay.querySelector(':scope > .coin span');
-    if (coinSpan) {
-      const currentBet = parseInt(coinSpan.textContent, 10);
-      coinSpan.textContent = currentBet * 2;
-    }
+  // now actually double the displayed chips and our bets map
+  overlays.forEach(ov => {
+    const coinSpan = ov.querySelector(':scope > .coin span');
+    const current = parseInt(coinSpan.textContent, 10);
+    coinSpan.textContent = (current * 2).toString();
   });
   for (let key in bets) {
     bets[key] *= 2;
   }
-  updateBalanceDisplay();
-  // updatewinPointsDisplay();
-
-
 });
+
 
 // ----- REPEAT LAST BET -----
 document.getElementById("repeat-bet").addEventListener("click", function () {
-  const resultDisplay = document.getElementById("result-display");
-  lastBet = { ...lastBetHistory };
-
-
-  if (!lastBet) return; // No previous bet
-
+  if (!lastBetHistory) {
+    return alert("No previous bet to repeat.");
+  }
   if (countdown <= 5) {
-    resultDisplay.style.display = 'block';
-    resultDisplay.textContent = "Betting time is over.";
+    const rd = document.getElementById("result-display");
+    rd.style.display = 'block';
+    rd.textContent = "Betting time is over.";
     return;
   }
 
-  if (bets[lastBet.identifier] !== undefined) return;
-  if (balance < lastBet.amount) return;
+  const { identifier, amount, element, overlayHTML } = lastBetHistory;
+  // if you already have a bet on that segment, skip
+  if (bets[identifier] !== undefined) {
+    return alert("You've already bet on that segment.");
+  }
+  if (balance < amount) {
+    return alert("Insufficient balance to repeat bet.");
+  }
 
-  balance -= lastBet.amount;
+  // deduct and register
+  balance -= amount;
+  addToTotalBets(amount);
   updateBalanceDisplay();
-  // updatewinPointsDisplay();
-  bets[lastBet.identifier] = lastBet.amount;
 
+  // render the overlay again
+  bets[identifier] = amount;
   const overlay = document.createElement("div");
   overlay.className = "bet-overlay";
-  overlay.innerHTML = lastBet.overlayHTML;
-  lastBet.element.appendChild(overlay);
-  betOverlays[lastBet.identifier] = overlay;
+  overlay.innerHTML = overlayHTML;
+  element.appendChild(overlay);
+  betOverlays[identifier] = overlay;
 });
-
-
 
 
 // Add winning card image and suit icon to history (limit 12)
@@ -685,50 +705,63 @@ function updateTimerSticks() {
   });
 }
 
+
+const clientTimeAtLoad = Date.now();
+const serverClientOffset = serverTimeAtLoad - clientTimeAtLoad; // sync offset
+
+function getSyncedTime() {
+  return Date.now() + serverClientOffset;
+}
+
+function getCountdown() {
+  const syncedTime = getSyncedTime();
+  const elapsed = syncedTime % (spinTimerDuration * 1000);
+  return Math.floor((spinTimerDuration * 1000 - elapsed) / 1000);
+}
+
 function updateTimeDisplay() {
-  const now = new Date();
+  const now = new Date(getSyncedTime());
   const currentTime = now.toLocaleTimeString();
+
+  const countdown = getCountdown();
   const withdrawTime = new Date(now.getTime() + countdown * 1000)
     .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   document.getElementById('current-time').textContent = `Current Time: ${currentTime}`;
   document.getElementById('withdraw-time').textContent = `Withdraw Time: ${withdrawTime}`;
 
-  updateTimerSticks();
   countdownText.textContent = countdown;
+
+  updateTimerSticks();
+
+  if (countdown <= 115) {
+    resultDisplay.textContent = "";
+    resultDisplay.style.display = 'none';
+  }
+
+  if (countdown <= 5) {
+    resultDisplay.textContent = "Betting Time is Over";
+    resultDisplay.style.display = 'block';
+  }
+
+  if (countdown === 0) {
+    document.getElementById("spinBtn").click(); // auto-spin at 0
+  }
 }
 
 function startTimer() {
-  // Clear any existing interval first
-  stopTimer();
-  countdown = spinTimerDuration;
+  stopTimer(); // avoid duplicate intervals
   updateTimeDisplay();
-  timerInterval = setInterval(() => {
-    if (countdown <= 0) {
-      // Auto-trigger the spin if timer runs out
-      document.getElementById("spinBtn").click();
-      countdown = spinTimerDuration;
-    } else {
-      countdown--;
-    }
-    updateTimeDisplay();
-    if (countdown <= 115) {
-      resultDisplay.textContent = "";
-      resultDisplay.style.display = 'none';
-    }
-    if (countdown <= 5) {
-      resultDisplay.textContent = "Betting Time is Over";
-      resultDisplay.style.display = 'block';
-    }
-  }, 1000);
+  timerInterval = setInterval(updateTimeDisplay, 1000);
 }
 
 function stopTimer() {
   clearInterval(timerInterval);
 }
 
-// Start timer initially
+// Start synchronized timer
 startTimer();
+
 // Set this variable to true if you want the user to always win,
 // or false if you want the user to always lose.
 // Set this variable to true if you want the user to always win;

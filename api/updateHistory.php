@@ -1,79 +1,93 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 session_start();
-include '../db.php';  // assumes this defines $conn = mysqli_connect(...);
+include '../db.php'; // This file should set up your database connection (e.g., $conn)
 
-header('Content-Type: application/json');
-
-// 1) ensure user is logged in
 if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
     echo json_encode(["success" => false, "message" => "User not logged in."]);
     exit;
 }
+
 $user_id = $_SESSION['user_id'];
+$game_id = isset($_POST['game_id']) ? intval($_POST['game_id']) : 1;
 
-// 2) collect & validate POST
-$game_id  = isset($_POST['game_id'])  ? intval($_POST['game_id']) : 1;
-$src      = $_POST['src']      ?? null;
-$suiticon = $_POST['suiticon'] ?? null;
-$wintimes = $_POST['wintimes'] ?? null;
-
-if (!$src || !$suiticon || !$wintimes) {
-    http_response_code(400);
+// Validate required POST values
+if (!isset($_POST['src']) || !isset($_POST['suiticon']) || !isset($_POST['wintimes'])) {
     echo json_encode(["success" => false, "message" => "Incomplete card data."]);
     exit;
 }
 
-// 3) load existing history JSON (if any)
-$historyArray = [];
-$sqlFetch = "SELECT history 
-             FROM game_history 
-             WHERE user_id = ? AND game_id = ?";
-if ($stmt = mysqli_prepare($conn, $sqlFetch)) {
+$src = $_POST['src'];
+$suiticon = $_POST['suiticon'];
+$wintimes = $_POST['wintimes'];
+
+// Attempt to retrieve an existing history record for this user and game
+$query = "SELECT id, history FROM game_history WHERE user_id = ? AND game_id = ?";
+$recordExists = false;
+$historyJson = null;
+$history_id = null;
+if ($stmt = mysqli_prepare($conn, $query)) {
     mysqli_stmt_bind_param($stmt, "ii", $user_id, $game_id);
     mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $historyJson);
-    if (mysqli_stmt_fetch($stmt) && $historyJson) {
-        $decoded = json_decode($historyJson, true);
-        if (is_array($decoded)) {
-            $historyArray = $decoded;
-        }
+    mysqli_stmt_store_result($stmt);
+    mysqli_stmt_bind_result($stmt, $history_id, $historyJson);
+    if (mysqli_stmt_fetch($stmt)) {
+        $recordExists = true;
     }
     mysqli_stmt_close($stmt);
+} else {
+    echo json_encode(["success" => false, "message" => "Database error."]);
+    exit;
 }
 
-// 4) append new entry + trim to last 12
-$historyArray[] = [
+// Decode existing history or start a new array
+$historyArray = $historyJson ? json_decode($historyJson, true) : [];
+if (!is_array($historyArray)) {
+    $historyArray = [];
+}
+
+// Append the new card entry
+$newEntry = [
     "src"      => $src,
     "suiticon" => $suiticon,
     "wintimes" => $wintimes
 ];
+$historyArray[] = $newEntry;
+
+// Ensure the history contains only the latest 12 cards
 if (count($historyArray) > 12) {
     $historyArray = array_slice($historyArray, -12);
 }
+
 $updatedHistoryJson = json_encode($historyArray);
 
-// 5) upsert in one statement
-$sqlUpsert = "
-    INSERT INTO game_history (game_id, user_id, history)
-    VALUES (?, ?, ?)
-    ON DUPLICATE KEY UPDATE
-       history = VALUES(history)
-";
-if ($stmt = mysqli_prepare($conn, $sqlUpsert)) {
-    mysqli_stmt_bind_param($stmt, "iis", $game_id, $user_id, $updatedHistoryJson);
-    if (mysqli_stmt_execute($stmt)) {
-        echo json_encode(["success" => true, "message" => "History saved/updated successfully."]);
-    } else {
-        http_response_code(500);
-        echo json_encode(["success" => false, "message" => "Database write error."]);
+// Update the record if it exists; otherwise, insert a new record
+if ($recordExists) {
+    $updateQuery = "UPDATE game_history SET history = ? WHERE id = ?";
+    if ($stmt2 = mysqli_prepare($conn, $updateQuery)) {
+        mysqli_stmt_bind_param($stmt2, "si", $updatedHistoryJson, $history_id);
+        if (mysqli_stmt_execute($stmt2)) {
+            mysqli_stmt_close($stmt2);
+            echo json_encode(["success" => true, "message" => "History updated successfully."]);
+            exit;
+        } else {
+            mysqli_stmt_close($stmt2);
+            echo json_encode(["success" => false, "message" => "Failed to update history."]);
+            exit;
+        }
     }
-    mysqli_stmt_close($stmt);
 } else {
-    http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Database prepare error."]);
+    $insertQuery = "INSERT INTO game_history (game_id, user_id, history) VALUES (?, ?, ?)";
+    if ($stmt3 = mysqli_prepare($conn, $insertQuery)) {
+        mysqli_stmt_bind_param($stmt3, "iis", $game_id, $user_id, $updatedHistoryJson);
+        if (mysqli_stmt_execute($stmt3)) {
+            mysqli_stmt_close($stmt3);
+            echo json_encode(["success" => true, "message" => "History saved successfully."]);
+            exit;
+        } else {
+            mysqli_stmt_close($stmt3);
+            echo json_encode(["success" => false, "message" => "Failed to save history."]);
+            exit;
+        }
+    }
 }
+?>

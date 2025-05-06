@@ -138,6 +138,11 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
     <title>Casino - Online Casino Platform</title>
     <link rel="icon" type="image/png" href="assets/images/favicon.png" sizes="16x16">
     <!-- bootstrap 5  -->
+    <script>
+    // PHP's time() returns seconds since Unix epoch.
+    window.SERVER_TIMESTAMP = <?php echo time(); ?>;
+    console.log('embedded SERVER_TIMESTAMP:', window.SERVER_TIMESTAMP);
+  </script>
     <link rel="stylesheet" href="assets/css/lib/bootstrap.min.css">
     <!-- Icon Link  -->
     <link rel="stylesheet" href="assets/css/all.min.css">
@@ -216,7 +221,7 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
                             <a href="index.php">Home</a>
                         </li>
                         <li>
-                            <a href="about.php">About</a>
+                            <a href="dashboard.php">Dashboard</a>
                         </li>
                         <li>
                             <a href="games.php">Games <span class="badge badge--sm badge--base text-dark">NEW</span></a>
@@ -479,6 +484,9 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
   let maxBetamount      = <?php echo (int) ($maxBetamount ?? 10000); ?>;
   let gameResults       = <?php echo json_encode($gameResults); ?>;
 
+  const serverTimeAtLoad = window.SERVER_TIMESTAMP * 1000; // → ms
+    console.log('serverTimeAtLoad (ms):', serverTimeAtLoad);
+
   // function to refresh all variables from server
   function updateGameVariables() {
     return fetch('poker-roulette.php?action=getValues')
@@ -523,106 +531,6 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
 
         
 <script>
-
-      
-//   const svg = document.getElementById("circular-timer");
-//   const segmentCountTimer = 60;  // number of sticks
-//   const centerXTimer = 100, centerYTimer = 100; // center of SVG
-//   const radiusTimer = 70;      // radiusTimer from center where sticks start
-//   const stickLength = 10; // length of each stick
-//   const timerSticks = [];
-
-//   // Create sticks around the circle
-//   for (let i = 0; i < segmentCountTimer; i++) {
-//       const angle = i * (360 / segmentCountTimer);
-//       const rad = angle * Math.PI / 180;
-//       const x1 = centerXTimer + radiusTimer * Math.cos(rad);
-//       const y1 = centerYTimer + radiusTimer * Math.sin(rad);
-//       const x2 = centerXTimer + (radiusTimer + stickLength) * Math.cos(rad);
-//       const y2 = centerYTimer + (radiusTimer + stickLength) * Math.sin(rad);
-      
-//       const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-//       line.setAttribute("x1", x1);
-//       line.setAttribute("y1", y1);
-//       line.setAttribute("x2", x2);
-//       line.setAttribute("y2", y2);
-//       line.setAttribute("stroke-width", "4");
-//       // Initially, all sticks are white
-//       line.setAttribute("stroke", "white");
-//       svg.appendChild(line);
-//       timerSticks.push(line);
-//   }
-
-//   // Create center text for countdown display
-//   const countdownText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-//   countdownText.setAttribute("x", centerXTimer);
-//   countdownText.setAttribute("y", centerYTimer);
-//   countdownText.setAttribute("text-anchor", "middle");
-//   countdownText.setAttribute("dominant-baseline", "middle"); // centers text vertically
-//   countdownText.setAttribute("font-size", "24");
-//   countdownText.setAttribute("fill", "#333");
-//   countdownText.textContent = 10;  // initial countdown value
-//   svg.appendChild(countdownText);
-
-
-//   // --- Timer and Display Code ---
-//   const currentTimeEl = document.getElementById('current-time');
-//   const withdrawTimeEl = document.getElementById('withdraw-time');
-//   let countdown = 10; // 10 seconds for auto spin
-
-//   // Update the circular timer sticks based on the time passed
-//   function updateTimerSticks() {
-//       // Calculate fraction of time passed (0 when countdown is 10, 1 when countdown is 0)
-//       const fractionPassed = (10 - countdown) / 10;
-//       const greenSegments = Math.round(fractionPassed * segmentCountTimer);
-      
-//       // Update each stick: if its index is less than greenSegments, color it green, else white
-//       timerSticks.forEach((stick, index) => {
-//           if (index < greenSegments) {
-//               stick.setAttribute("stroke", "green");
-//           } else {
-//               stick.setAttribute("stroke", "white");
-//           }
-//       });
-//   }
-
-//   // Update the time displays and center countdown text
-//   function updateTimeDisplay() {
-//       const now = new Date();
-//       const currentTime = now.toLocaleTimeString();
-//       // Withdraw time will show only hours and minutes (no seconds)
-//       const withdrawTime = new Date(now.getTime() + countdown * 1000)
-//         .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      
-//       currentTimeEl.textContent = `Current Time: ${currentTime}`;
-//       withdrawTimeEl.textContent = `Withdraw Time: ${withdrawTime}`;
-      
-//       // Update the circular timer sticks
-//       updateTimerSticks();
-      
-//       // Update the center countdown text
-//       countdownText.textContent = countdown;
-//   }
-
-//   // Initial display update
-//   updateTimeDisplay();
-
-//   // Timer update loop (runs every second)
-//   const timerInterval = setInterval(() => {
-//       if (countdown <= 0) {
-//           // Auto-trigger the spin
-//           document.getElementById("spinBtn").click();
-//           // Reset countdown after auto spin
-//           countdown = 10;
-//       } else {
-//           countdown--;
-//       }
-//       updateTimeDisplay();
-//   }, 1000);
-
-//     const textElement = document.querySelector("text");
-//     textElement.setAttribute("fill", "white");
-
 
 
     document.addEventListener("DOMContentLoaded", function () {
