@@ -7,31 +7,33 @@
     --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 body {
-    background: 
-      radial-gradient(circle at center top, 
-        rgba(255, 255, 120, 0.95) 0%, 
-        rgba(255, 235, 80, 0.75) 10%, 
-        rgba(255, 210, 50, 0.4) 25%, 
-        rgba(255, 200, 0, 0.2) 40%, 
-        transparent 60%),
-      conic-gradient(from 0deg at center top, 
-        rgba(255, 255, 120, 0.25) 0deg, 
-        rgba(255, 220, 80, 0.05) 45deg,
-        rgba(255, 255, 120, 0.25) 90deg, 
-        rgba(255, 220, 80, 0.05) 135deg,
-        rgba(255, 255, 120, 0.25) 180deg,
-        rgba(255, 220, 80, 0.05) 225deg,
-        rgba(255, 255, 120, 0.25) 270deg,
-        rgba(255, 220, 80, 0.05) 315deg,
-        rgba(255, 255, 120, 0.25) 360deg),
-      linear-gradient(195deg,
-        #290323 0%,
-        #31042f 20%,
-        #3b073f 40%,
-        #45074f 60%,
-        #51075f 80%,
-        #290323 100%);
-    background-blend-mode: screen, screen, normal;
+    background-image: url('/assets-normal/img/new-bg.png');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+    
+    /* background: 
+  radial-gradient(circle at center top,
+    rgba(218, 188, 98, 0.9) 0%,
+    rgba(124, 93, 28, 0.5) 50%,
+    transparent 80%),
+  conic-gradient(from 0deg at center top,
+    rgba(218, 188, 98, 0.2) 0deg,
+    rgba(124, 93, 28, 0.1) 45deg,
+    rgba(218, 188, 98, 0.2) 90deg,
+    rgba(124, 93, 28, 0.1) 135deg,
+    rgba(218, 188, 98, 0.2) 180deg,
+    rgba(124, 93, 28, 0.1) 225deg,
+    rgba(218, 188, 98, 0.2) 270deg,
+    rgba(124, 93, 28, 0.1) 315deg,
+    rgba(218, 188, 98, 0.2) 360deg),
+  linear-gradient(195deg,
+    #7c5d1c 0%,
+    #dabc62 50%,
+    #7c5d1c 100%);
+background-blend-mode: screen, screen, normal; */
+
     min-height: 100vh;
   }
     
@@ -146,12 +148,17 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 
 /* Card */
 #image-roulette .card {
-    width: 55px;
+    width: 49px;
     height: 75px;
+    height: 70px;
+    display: block;
+    /* border-radius: 50%; */
     display: block;
     box-shadow: var(--card-shadow);
     transform-origin: center;
-    background-color: #d19e1d;
+    background-color: transparent;
+    border: 1px solid transparent;
+    box-shadow: none;
 }
 
 /* Center Circle */
@@ -176,14 +183,14 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 /* Marker */
 #image-roulette #marker {
     position: absolute;
-    top: 1px; /* adjust as needed */
-    left: 50%;
+    top: 0px; /* adjust as needed */
+    left: 45%;
     transform: translateX(-50%);
-    width: 0;
+    width: 0px;
     height: 0;
-    border-left: 0px solid transparent;
-    border-right: 0px solid transparent;
-    border-bottom: 20px solid #b60909; /* marker color */
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 30px solid #ffd700; /* marker color */
     z-index: 10;
   }
   /* Bottom triangle (pointing down) */
@@ -246,7 +253,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 /* Bet Overlay */
 #image-roulette .bet-overlay {
     position: absolute;
-    top: 50%;
+    top: 75%;
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 1rem;
@@ -322,8 +329,8 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 
 #image-roulette .history-card {
     width: 30px;
-    height: 50px;
-    box-shadow: var(--card-shadow);
+    height: 35px;
+    /* box-shadow: var(--card-shadow); */
     object-fit: cover;
 }
 
@@ -367,7 +374,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
     overflow: hidden;
     left: -60px;
     background: #fff;
-    box-shadow: rgb(250, 230, 21) 0px 0px 0px 3px, rgb(92 17 16) 0px 0px 0px 6px, rgb(92 17 16) 0px 0px 0px 9px, rgb(92 17 102) 0px 0px 0px 12px, rgb(92 17 102) 0px 0px 0px 15px, 0 60px 80px #198754, 0 45px 26px #ff9c19;
+    box-shadow: rgb(250, 230, 21) 0px 0px 0px 3px, rgb(92 17 16) 0px 0px 0px 6px, rgb(92 17 16) 0px 0px 0px 9px, rgb(92 17 102) 0px 0px 0px 12px, rgb(255 213 0) 0px 0px 0px 15px, 0 60px 80px #198754, 0 45px 26px #ff9c19;
 }
 
 #image-roulette #wheel-container::after {
@@ -429,12 +436,12 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
             display: grid;
             grid-template-columns: auto repeat(4, 1fr);
             gap: 15px;
-            max-width: 600px;
+            max-width: 800px;
             align-items: center;
             justify-items: center;
             margin: auto;
-                padding: 6px 6px;
-    border: 4px solid white;
+            padding: 6px 6px;
+            border: 4px solid #ff9c19;
         }
 
 /* Header cells at the top */
@@ -442,10 +449,11 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
     font-size: 3rem;
     font-weight: bold;
     text-align: center;
-    border: 3px solid white;
+    border: 3px solid #ff9c19;
     border-radius: 5px;
-    padding: 0px 22px;
-    width: 100px;
+    /* padding: 0px 22px; */
+    width: 135px;
+    background: linear-gradient(to right, #ffd700, #ffd700);
 }
 
 /* The top left empty cell */
@@ -461,24 +469,16 @@ background: transparent;
     align-items: center;
     justify-content: center;
     padding: 8px 22px;
-    border: 3px solid white;
+    border: 3px solid #ff9c19;
     border-radius: 5px;
-    background: #d19e1d;
+    background: #ffd700;
     background: -webkit-linear-gradient(to right, #d19e1d, #ffd86e, #e3a812);
-    background: linear-gradient(to right, #360738, #9d5159, #5c1123);
+    /* background: linear-gradient(to right, #360738, #9d5159, #5c1123); */
     border-radius: 7px;
 }
 
 /* Existing card styles */
-#image-roulette .grid-card {
-position: relative;
-width: 80px;
-height: 110px;
-overflow: hidden;
-box-shadow: var(--card-shadow);
-cursor: pointer;
-transition: transform 0.2s;
-}
+#image-roulette .grid-card {position: relative;width: 124px;height: 120px;overflow: hidden;border-radius: 0px;box-shadow: var(--card-shadow);cursor: pointer;transition: transform 0.2s;background: antiquewhite;border: 3px solid #ff9c19;background: linear-gradient(to bottom, #ffd700, #ffd700, #ffd700);}
 
 #image-roulette .grid-card:hover {
 transform: scale(1.05);
@@ -495,14 +495,14 @@ opacity: 0.8;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: black;
 }
 #grid-outer{
-    max-width: 800px;
+    max-width: 932px;
     align-items: center;
     justify-items: center;
     margin: auto;
-
-
+    width: 800px;
 }
 #grid-outer {
     position: relative;
@@ -518,12 +518,12 @@ opacity: 0.8;
     rgba(88, 13, 95, 0.3),
     rgba(74, 10, 80, 0.3)
   );
-  
-        top:25px;
+  background: #25262a;
+    top:25px;
 }
 
 /* Increase border width from 2px to 4px */
-#grid-outer:before, 
+/* #grid-outer:before, 
 #grid-outer:after {
     content: '';
     position: absolute;
@@ -547,7 +547,7 @@ opacity: 0.8;
     height: calc(100% + 16px);
     z-index: -1;
     animation: steam 100s linear infinite;
-}
+} */
 
 @keyframes steam {
     0% {
@@ -644,7 +644,7 @@ opacity: 0.8;
     height: 0;
     border-left: 0px solid transparent;
     border-right: 0px solid transparent;
-    border-bottom: 20px solid red; /* Marker color */
+    /* border-bottom: 20px solid red; */ /* Marker color */
     z-index: 10;
   }
   
@@ -660,9 +660,9 @@ opacity: 0.8;
   }
   
 
-  img.card {background: linear-gradient(45deg, #890e0e, #0b164bfa);}
+  img.card {background: transparent}
 
-.history-item img.history-card {background: linear-gradient(45deg, #890e0e, #0b164bfa);height:60px;width:50px;}
+.history-item img.history-card {/* background: linear-gradient(45deg, #890e0e, #0b164bfa); */height: 62px;width:50px;border: 1px solid transparent;background: transparent;}
 
 #marker img.gem-marker {
     width: 40px;
@@ -777,39 +777,39 @@ div#div-spin-btns {
 
 div#grid-label-1 .bet-overlay {
     position: absolute;
-    top: 36%;
-    left: 10%;
+    top: 33%;
+    left: 14%;
 }
 div#grid-label-2 .bet-overlay {
     position: absolute;
-    top: 63%;
-    left: 10%;
+    top: 60%;
+    left: 14%;
 }
 div#grid-label-3 .bet-overlay {
     position: absolute;
-    top: 90%;
-    left: 10%;
+    top: 86%;
+    left: 14%;
 }
 
 div#suitIcon1  .bet-overlay {
     position: absolute;
     top: 10%;
-    left: 30%;
+    left: 34%;
 }
 div#suitIcon2  .bet-overlay {
     position: absolute;
     top: 10%;
-    left: 50%;
+    left: 54%;
 }
 div#suitIcon3  .bet-overlay {
     position: absolute;
     top: 10%;
-    left: 70%;
+    left: 74%;
 }
 div#suitIcon4  .bet-overlay {
     position: absolute;
     top: 10%;
-    left: 90%;
+    left: 94%;
 }
 
 
@@ -844,18 +844,24 @@ div#suitIcon4  .bet-overlay {
 
 .history-item {
     border: none; /* reset any border */
-    padding: 0 6px;
-    border-left: 2px solid red;
+    /* padding: 0 6px; */
+    /* border-left: 2px solid red; */
     display: flex;
     flex-direction: column;
+    align-items: center;
+    background: linear-gradient(45deg, #ffd700, #dca230);
+    width: 55px;
   }
   
-  .history-item:first-child {
+  .history-item:last-child {
 
 border-right: none;
 
-border-right: 2px solid red;
+/* border-right: 2px solid red; */
 
+background: linear-gradient(308deg, #eebd17, #b90707);
+
+width: 63px;
 }
 
 .horizontal-line {
@@ -867,6 +873,116 @@ border-right: 2px solid red;
     vertical-align: middle;
   }
   
+@media screen and (max-width: 1024px) {
+    div#mini-nav {
+        display: flex;
+        align-items: center;
+        flex-direction: column-reverse;
+    }
+    .bordersboxes {
+        border: 2px solid;
+        width: 18rem;
+        padding: 5px 56px;
+        margin: 6px 0;
+    }
+}
+#result-display img.marker-card {
+    width: 20%;
+    height: 60%;
+}
+text {
+    fill: white;
+}
+.play-circle {
+    width: 50px;
+    height: 50px;
+    background-color: #d7b70e;
+    color: black;
+    font-weight: bold;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    font-size: 15px;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+    animation: glow 0.5s infinite ease-in-out;
+  }
+  
+  
+  @keyframes glow {
+    0%, 50%, 100% {
+      box-shadow:
+        0 4px 20px rgba(139, 0, 0, 0.4),   /* deeper red outer shadow */
+        0 0 10px rgba(139, 0, 0, 0.7),     /* middle glow */
+        0 0 20px rgba(139, 0, 0, 0.6);     /* inner intense glow */
+    }
+  }
+  
+  .play-circle:hover {
+    transform: scale(1.1);
+  }
+  
+  
+.grid-card.d-flex.align-items-baseline.justify-content-around img.card {
+    width: 48px !important;
+    height: 60px !important;
+}
+.grid-card,
+.grid-card * {
+  overflow: visible !important;
+  /* remove any clipping masks too */
+  clip-path: none !important;
+}
+.card-wrapper {
+    position: relative;
+    overflow: visible;  /* only this wrapper needs visible overflow */
+  }
+  
+  .cstm-ribbon {
+    position: absolute;
+    top: 75px;
+    right: -5%;
+    padding: 6px 16px;
+    background: linear-gradient(to right, #f51f1f, #de0b0b, #ce0000);
+    color: #fff;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    width: 132px;
+    overflow: hidden;            /* contain the glow */
+  }
+  
+  /* Glow overlay */
+  .cstm-ribbon::before {
+    content: "";
+    position: absolute;
+    top: 0; left: -50%;
+    width: 20%;
+    height: 100%;
+    background: linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-20deg);
+    animation: ribbon-glow 1.5s ease-in-out infinite;
+  }
+  
+  /* Keyframes to slide the glow across */
+  @keyframes ribbon-glow {
+    0%   { left: -0%; }
+    100%  { left: 90%; }
+  }
+  
+  
+  #image-roulette .grid-card img {height: 71% !important;object-fit: cover;opacity: 0.8;}
+  
+  
   /* For devices with a max-width of 1024px (e.g. tablets, smaller desktops) */
 @media screen and (max-width: 1024px) {
     #image-roulette #main-container {
@@ -874,15 +990,15 @@ border-right: 2px solid red;
         align-items: center;
         gap: 20px;
     }
-     #image-roulette #card-grid {
-            display: grid;
-            grid-template-columns: auto repeat(4, 1fr);
-            gap: 0px;
-            max-width: 600px;
-            align-items: center;
-            justify-items: center;
-            margin: auto;
-        }
+    #image-roulette #card-grid {
+        display: grid;
+        grid-template-columns: auto repeat(4, 1fr);
+        gap: 0px;
+        max-width: max-content;
+        align-items: center;
+        justify-items: center;
+        margin: auto;
+    }
           #image-roulette .grid-header.empty {
     height: 63px;
   }
@@ -896,8 +1012,9 @@ border-right: 2px solid red;
     text-align: center;
     border: 3px solid white;
     border-radius: 5px;
-    padding: 0px 22px;
-    width: 65px;
+    border-radius: 5px;
+         padding: 0px 0px; 
+        width: 65px;
 }
 
 #image-roulette .grid-label .card {
@@ -918,7 +1035,7 @@ svg#circular-timer {
     width: 150px;
     height: 150px;
 }
-#image-roulette .grid-card {position: relative;width: 64px;height: 90px;overflow: hidden;box-shadow: var(--card-shadow);cursor: pointer;transition: transform 0.2s;}
+#image-roulette .grid-card {position: relative;width: 55px;height: 80px;overflow: hidden;box-shadow: var(--card-shadow);cursor: pointer;transition: transform 0.2s;margin: 5px 0;}
 
 /* History Box */
 #image-roulette #history-box {
@@ -978,27 +1095,88 @@ button#clear-bets, button#double-bets, button#repeat-bet {
     height: 30px !important;
 }
 
-
-
+#grid-outer {
+    width: auto;
+}
+#image-roulette .grid-label {
+ 
+    padding: 8px 1px;
 }
 
-@media screen and (max-width: 1024px) {
-    div#mini-nav {
-        display: flex;
-        align-items: center;
-        flex-direction: column-reverse;
-    }
-    .bordersboxes {
-        border: 2px solid;
-        width: 18rem;
-        padding: 5px 56px;
-        margin: 6px 0;
-    }
+#image-roulette .grid-card img {
+    height: 39% !important;
 }
-#result-display img.marker-card {
-    width: 41%;
-    height: 60%;
+
+  .cstm-ribbon {
+    position: absolute;
+    top: 39px;
+    right: -19%;
+    padding: 6px 16px;
+    background: linear-gradient(to right, #f51f1f, #de0b0b, #ce0000);
+    color: #fff;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 8px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    width: 65px;
+    overflow: hidden;            /* contain the glow */
+  }
+  
+  .grid-header.d-flex.align-items-center.justify-content-around .play-circle {
+    width: 25px;
+    height: 25px;
+    font-size: 8px;
 }
-text {
-    fill: white;
+
+.grid-header.d-flex.align-items-center.justify-content-around img.card {
+    width: 34px !important;
+    height: 35px !important;
 }
+.bet-overlay .coin {
+    height: 45px;
+    width: 45px;
+
+}
+
+
+div#grid-label-1 .bet-overlay {
+    position: absolute;
+    top: 35%;
+    left: 21%;
+}
+div#grid-label-2 .bet-overlay {
+    position: absolute;
+    top: 60%;
+    left: 21%;
+}
+div#grid-label-3 .bet-overlay {
+    position: absolute;
+    top: 85%;
+    left: 21%;
+}
+
+div#suitIcon1  .bet-overlay {
+    position: absolute;
+    top: 12%;
+    left: 40%;
+}
+div#suitIcon2  .bet-overlay {
+    position: absolute;
+    top: 12%;
+    left: 58%;
+}
+div#suitIcon3  .bet-overlay {
+    position: absolute;
+    top: 12%;
+    left: 75%;
+}
+div#suitIcon4  .bet-overlay {
+    position: absolute;
+    top: 10%;
+    left: 92%;
+}
+
+    
+}
+  

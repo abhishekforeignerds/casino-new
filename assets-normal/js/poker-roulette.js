@@ -56,6 +56,138 @@ function drawLines() {
 drawSegments();
 drawLines();
 
+const balanceDisplay = document.getElementById("balance-display");
+// const winPointsDisplay = document.getElementById("winPoints-display");
+const resultDisplay = document.getElementById("result-display");
+// Timer functions
+
+let countdown = spinTimerDuration;
+let timerInterval;
+const countdownText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+
+const svg = document.getElementById("circular-timer");
+const segmentCountTimer = 60;
+const centerXTimer = 100, centerYTimer = 100;
+const radiusTimer = 70;
+const stickLength = 10;
+const timerSticks = [];
+
+function updateTimerSticks() {
+  const fractionPassed = (spinTimerDuration - countdown) / spinTimerDuration;
+  const greenSegments = Math.round(fractionPassed * segmentCountTimer);
+  timerSticks.forEach((stick, index) => {
+    if (index < greenSegments) {
+      stick.setAttribute("stroke", "green");
+    } else {
+      stick.setAttribute("stroke", "white");
+    }
+  });
+}
+
+
+const clientTimeAtLoad = Date.now();
+const serverClientOffset = serverTimeAtLoad - clientTimeAtLoad; // sync offset
+
+function getSyncedTime() {
+  return Date.now() + serverClientOffset;
+}
+let withdrawTime;
+function getCountdown() {
+  const syncedTime = getSyncedTime();
+  const elapsed = syncedTime % (spinTimerDuration * 1000);
+  return Math.floor((spinTimerDuration * 1000 - elapsed) / 1000);
+}
+let userwins;
+let chosenIndex;
+// In your page’s <script> (make sure jQuery is loaded first)
+function fetchBetHistory(withdrawTime) {
+  $.ajax({
+    url: '../../api/get_all_bet_history.php',
+    method: 'POST',
+    data: JSON.stringify({ withdrawTime }),
+    contentType: 'application/json; charset=utf-8',
+    dataType: 'json',
+  })
+  .done(function(response) {
+    if (response.status === 'success') {
+      console.log('Fetched rows:', response.data);
+      console.log('Choosen Index:', response.meta);
+      userwins = response.meta.userwins;
+      chosenIndex = response.meta.choosenindex;
+      // TODO: render response.data into your UI
+    } else {
+      console.error('Server returned error:', response);
+      // e.g. showErrorToUser(response.message);
+    }
+  })
+  .fail(function(jqXHR, textStatus, errorThrown) {
+    // Try to parse JSON payload
+    let err = jqXHR.responseJSON || {
+      status: 'error',
+      type: 'HTTP',
+      message: textStatus + (errorThrown ? (': ' + errorThrown) : '')
+    };
+    console.error('AJAX failure:', err);
+    // e.g. showErrorToUser(err.message);
+  });
+}
+
+
+
+
+function updateTimeDisplay() {
+  const now = new Date(getSyncedTime());
+  const currentTime = now.toLocaleTimeString();
+
+  const countdown = getCountdown();
+  withdrawTime = new Date(now.getTime() + countdown * 1000 + 60000)
+  .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  document.getElementById('current-time').textContent = `Current Time: ${currentTime}`;
+  document.getElementById('withdraw-time').textContent = `Withdraw Time: ${withdrawTime}`;
+
+  countdownText.textContent = countdown;
+
+  updateTimerSticks();
+
+  if (countdown == 105) {
+    resultDisplay.textContent = "";
+    resultDisplay.style.display = 'none';
+    
+  }
+
+  if (countdown <= 5) {
+    resultDisplay.textContent = "Betting Time is Over";
+    resultDisplay.style.display = 'block';
+  
+  }
+  if (countdown == 5) {
+    updateBankValue();
+  }
+  if (countdown == 3) {
+    fetchBetHistory(withdrawTime);
+  }
+
+
+  if (countdown === 0) {
+    document.getElementById("spinBtn").click(); // auto-spin at 0
+  }
+}
+
+
+function startTimer() {
+  stopTimer(); // avoid duplicate intervals
+  updateTimeDisplay();
+  timerInterval = setInterval(updateTimeDisplay, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+// Start synchronized timer
+startTimer();
+
 // Winning index is determined from the main wheel’s final rotation.
 function getWinningIndex(rotationAngle) {
   const r = rotationAngle % 360;
@@ -98,9 +230,7 @@ let currentRotation = 0;
 let selectedCoin = null;
 const bets = {};
 
-const balanceDisplay = document.getElementById("balance-display");
-// const winPointsDisplay = document.getElementById("winPoints-display");
-const resultDisplay = document.getElementById("result-display");
+
 
 function updateBalanceDisplay() {
   balanceDisplay.innerHTML = "Balance: <span style='color: gold;font-weight:800;'>" + balance + "</span>";
@@ -215,9 +345,29 @@ document.querySelectorAll(".grid-card").forEach(card => {
     // Prepare lastBet
     lastBet = { identifier: index, amount: selectedCoin, element: this, overlayHTML: this.querySelector(".bet-overlay").outerHTML };
     lastBetHistory = { ...lastBet };
-
+ 
     // Special rule: if 12 grid bets placed, override lastBet.amount to second-largest
     applySecondLargestRule();
+    const data = {
+      userId: user_id,
+      identifier: lastBet.identifier,
+      amount: lastBet.amount,
+      withdrawTime: withdrawTime
+    };
+    fetch('../../api/total_history.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log('Server response:', result);
+    })
+    .catch(error => {
+      console.error('Error sending data:', error);
+    });
   });
 });
 
@@ -265,6 +415,25 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
 
     // Special rule: if all 4 suits bet, override lastBet.amount to second-largest
     applySecondLargestRule();
+    const data = {
+      identifier: lastBet.identifier,
+      amount: lastBet.amount,
+      withdrawTime: withdrawTime
+    };
+    fetch('../../api/total_history.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log('Server response:', result);
+    })
+    .catch(error => {
+      console.error('Error sending data:', error);
+    });
   });
 });
 
@@ -315,6 +484,26 @@ document.querySelectorAll(".grid-label").forEach(label => {
 
     // Special rule: if all 3 card types bet, override lastBet.amount to second-largest
     applySecondLargestRule();
+    const data = {
+      identifier: lastBet.identifier,
+      amount: lastBet.amount,
+      withdrawTime: withdrawTime
+    };
+    fetch('../../api/total_history.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log('Server response:', result);
+    })
+    .catch(error => {
+      console.error('Error sending data:', error);
+    });
+    
   });
 });
 
@@ -602,66 +791,66 @@ function showCenterCard(src, suit, suitIconcolor) {
 }
 
 // Draw suit ring with icons positioned at segment centers.
-function drawSuitRing() {
-  const suitRing = document.getElementById("suit-ring");
-  suitRing.innerHTML = "";
+// function drawSuitRing() {
+//   const suitRing = document.getElementById("suit-ring");
+//   suitRing.innerHTML = "";
 
-  // Assuming the container is a 100x100 box centered in the parent.
-  const containerSize = 100;
-  const center = containerSize / 2; // 50px
-  suitRing.style.position = "absolute";
-  suitRing.style.width = containerSize + "px";
-  suitRing.style.height = containerSize + "px";
-  suitRing.style.top = "50%";
-  suitRing.style.left = "50%";
-  suitRing.style.transformOrigin = "50% 50%";
-  suitRing.style.marginLeft = `-${center}px`;
-  suitRing.style.marginTop = `-${center}px`;
-  suitRing.style.transform = "rotate(0deg)";
-  suitRing.style.transition = "none";
+//   // Assuming the container is a 100x100 box centered in the parent.
+//   const containerSize = 100;
+//   const center = containerSize / 2; // 50px
+//   suitRing.style.position = "absolute";
+//   suitRing.style.width = containerSize + "px";
+//   suitRing.style.height = containerSize + "px";
+//   suitRing.style.top = "50%";
+//   suitRing.style.left = "50%";
+//   suitRing.style.transformOrigin = "50% 50%";
+//   suitRing.style.marginLeft = `-${center}px`;
+//   suitRing.style.marginTop = `-${center}px`;
+//   suitRing.style.transform = "rotate(0deg)";
+//   suitRing.style.transition = "none";
 
-  // Adjust this value to change how far icons are from the center.
-  const ringRadius = 100;
-  // Angular offset to rotate the entire suit ring if needed.
-  const baseAngleOffset = 10;
+//   // Adjust this value to change how far icons are from the center.
+//   const ringRadius = 90;
+//   // Angular offset to rotate the entire suit ring if needed.
+//   const baseAngleOffset = 5;
 
-  // The suit order to be repeated over the segments.
-  const suits = ["♥", "♣", "♦", "♠"];
 
-  for (let i = 0; i < segmentCount; i++) {
-    const angleDeg = i * segmentAngle + halfSegment + baseAngleOffset;
-    const angleRad = angleDeg * Math.PI / 180;
-    const x = ringRadius * Math.cos(angleRad) + center - 10;
-    const y = ringRadius * Math.sin(angleRad) + center - 10;
+//   const suits = [
+//     '<img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades">',
+//     '<img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades">',
+//     '<img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades">',
+//     '<img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades">',
+//   ];
+  
 
-    const span = document.createElement("span");
-    span.className = "suit-segment";
-    span.style.position = "absolute";
-    span.style.left = x + "px";
-    span.style.top = y + "px";
-    span.style.fontSize = "30px";
-    span.textContent = suits[i % suits.length];
-    span.style.color = (suits[i % suits.length] === "♦" || suits[i % suits.length] === "♥") ? "red" : "black";
-    span.style.transform = `rotate(${angleDeg}deg)`;
+//   for (let i = 0; i < segmentCount; i++) {
+//     const angleDeg = i * segmentAngle + halfSegment + baseAngleOffset;
+//     const angleRad = angleDeg * Math.PI / 180;
+//     const x = ringRadius * Math.cos(angleRad) + center - 10;
+//     const y = ringRadius * Math.sin(angleRad) + center - 10;
 
-    suitRing.appendChild(span);
-  }
-}
+//     const span = document.createElement("span");
+//     span.className = "suit-segment";
+//     span.style.position = "absolute";
+//     span.style.left = x + "px";
+//     span.style.top = y + "px";
+//     span.style.transform = `rotate(${angleDeg}deg)`;
 
-drawSuitRing();
+//     // inject the <img> HTML
+//     span.innerHTML = suits[i % suits.length];
+
+//     suitRing.appendChild(span);
+//   }
+// }
+
+// drawSuitRing();
 
 // ---- Timer Setup for Rotating Wheel ----
 // Change this value to modify the timer duration for the wheel (in seconds)
-let countdown = spinTimerDuration;
-let timerInterval;
+
 
 // Create circular timer sticks
-const svg = document.getElementById("circular-timer");
-const segmentCountTimer = 60;
-const centerXTimer = 100, centerYTimer = 100;
-const radiusTimer = 70;
-const stickLength = 10;
-const timerSticks = [];
+
 
 for (let i = 0; i < segmentCountTimer; i++) {
   const angle = i * (360 / segmentCountTimer);
@@ -682,7 +871,7 @@ for (let i = 0; i < segmentCountTimer; i++) {
   timerSticks.push(line);
 }
 
-const countdownText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+
 countdownText.setAttribute("x", centerXTimer);
 countdownText.setAttribute("y", centerYTimer);
 countdownText.setAttribute("text-anchor", "middle");
@@ -691,76 +880,6 @@ countdownText.setAttribute("font-size", "24");
 countdownText.setAttribute("fill", "#333");
 countdownText.textContent = spinTimerDuration;
 svg.appendChild(countdownText);
-
-// Timer functions
-function updateTimerSticks() {
-  const fractionPassed = (spinTimerDuration - countdown) / spinTimerDuration;
-  const greenSegments = Math.round(fractionPassed * segmentCountTimer);
-  timerSticks.forEach((stick, index) => {
-    if (index < greenSegments) {
-      stick.setAttribute("stroke", "green");
-    } else {
-      stick.setAttribute("stroke", "white");
-    }
-  });
-}
-
-
-const clientTimeAtLoad = Date.now();
-const serverClientOffset = serverTimeAtLoad - clientTimeAtLoad; // sync offset
-
-function getSyncedTime() {
-  return Date.now() + serverClientOffset;
-}
-
-function getCountdown() {
-  const syncedTime = getSyncedTime();
-  const elapsed = syncedTime % (spinTimerDuration * 1000);
-  return Math.floor((spinTimerDuration * 1000 - elapsed) / 1000);
-}
-
-function updateTimeDisplay() {
-  const now = new Date(getSyncedTime());
-  const currentTime = now.toLocaleTimeString();
-
-  const countdown = getCountdown();
-  const withdrawTime = new Date(now.getTime() + countdown * 1000)
-    .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-  document.getElementById('current-time').textContent = `Current Time: ${currentTime}`;
-  document.getElementById('withdraw-time').textContent = `Withdraw Time: ${withdrawTime}`;
-
-  countdownText.textContent = countdown;
-
-  updateTimerSticks();
-
-  if (countdown <= 115) {
-    resultDisplay.textContent = "";
-    resultDisplay.style.display = 'none';
-  }
-
-  if (countdown <= 5) {
-    resultDisplay.textContent = "Betting Time is Over";
-    resultDisplay.style.display = 'block';
-  }
-
-  if (countdown === 0) {
-    document.getElementById("spinBtn").click(); // auto-spin at 0
-  }
-}
-
-function startTimer() {
-  stopTimer(); // avoid duplicate intervals
-  updateTimeDisplay();
-  timerInterval = setInterval(updateTimeDisplay, 1000);
-}
-
-function stopTimer() {
-  clearInterval(timerInterval);
-}
-
-// Start synchronized timer
-startTimer();
 
 // Set this variable to true if you want the user to always win,
 // or false if you want the user to always lose.
@@ -799,82 +918,82 @@ const cardDetails = [
 
 document.getElementById("spinBtn").addEventListener("click", function () {
   // console.log(bets)
+  fetchBetHistory(withdrawTime);
 
-
-  let userwins;
-  let gmlen = gameResults.length;
-  if (gmlen ==  0) {
-    gmlen = 1;
-  }
+  // let userwins;
+  // let gmlen = gameResults.length;
+  // if (gmlen ==  0) {
+  //   gmlen = 1;
+  // }
   // Define an override chance (10% chance to override the "default" outcome)
 
-  console.log(gmlen, 'gamelenght')
-  let currentWinPercentage = totalBets > 0 ? (winningPoints / bettingPoints) * 100 : 0;
-  currentWinPercentage = Math.round(currentWinPercentage * 100) / 100;
-  if ((gmlen > 4 || totalWinValue > 100)) {
+  // console.log(gmlen, 'gamelenght')
+  // let currentWinPercentage = totalBets > 0 ? (winningPoints / bettingPoints) * 100 : 0;
+  // currentWinPercentage = Math.round(currentWinPercentage * 100) / 100;
+  // if ((gmlen > 4 || totalWinValue > 100)) {
 
-    if (currentWinPercentage > winningPercentage) {
-      // Default outcome for a high win ratio is to lose ('no').
-      // But with a small chance, override to win.
-      console.log(currentWinPercentage, 'currentWinPercentage-no')
+  //   if (currentWinPercentage > winningPercentage) {
+  //     // Default outcome for a high win ratio is to lose ('no').
+  //     // But with a small chance, override to win.
+  //     console.log(currentWinPercentage, 'currentWinPercentage-no')
   
-      console.log(winningPercentage, 'winningPercentage-no')
+  //     console.log(winningPercentage, 'winningPercentage-no')
       
-      userwins = Math.random() < overrideChance ? 'yes' : 'no';
-    } else if (currentWinPercentage < winningPercentage) {
-      // Default outcome for a low win ratio is to win ('yes').
-      // But with a small chance, override to lose.
+  //     userwins = Math.random() < overrideChance ? 'yes' : 'no';
+  //   } else if (currentWinPercentage < winningPercentage) {
+  //     // Default outcome for a low win ratio is to win ('yes').
+  //     // But with a small chance, override to lose.
  
-      console.log(currentWinPercentage, 'currentWinPercentage-yes')
+  //     console.log(currentWinPercentage, 'currentWinPercentage-yes')
   
-      console.log(winningPercentage, 'winningPercentage-yes')
+  //     console.log(winningPercentage, 'winningPercentage-yes')
 
-      userwins = Math.random() < overrideChance ? 'no' : 'yes';
-    } else if (currentWinPercentage < winningPercentage) {
-      // Default outcome for a low win ratio is to win ('yes').
-      // But with a small chance, override to lose.
+  //     userwins = Math.random() < overrideChance ? 'no' : 'yes';
+  //   } else if (currentWinPercentage < winningPercentage) {
+  //     // Default outcome for a low win ratio is to win ('yes').
+  //     // But with a small chance, override to lose.
 
-      console.log(currentWinPercentage, 'currentWinPercentage-strino')
+  //     console.log(currentWinPercentage, 'currentWinPercentage-strino')
   
-      console.log(winningPercentage, 'winningPercentage-strino')
+  //     console.log(winningPercentage, 'winningPercentage-strino')
 
-      userwins = Math.random() < overrideChance ? 'no' : 'yes';
-    }
-    else if (currentWinPercentage > winningPercentage * 2) {
-      // Default outcome for a low win ratio is to win ('yes').
-      // But with a small chance, override to lose.
+  //     userwins = Math.random() < overrideChance ? 'no' : 'yes';
+  //   }
+  //   else if (currentWinPercentage > winningPercentage * 2) {
+  //     // Default outcome for a low win ratio is to win ('yes').
+  //     // But with a small chance, override to lose.
 
-      console.log(currentWinPercentage, 'currentWinPercentage-x-no')
+  //     console.log(currentWinPercentage, 'currentWinPercentage-x-no')
   
-      console.log(winningPercentage, 'winningPercentage-x-no')
+  //     console.log(winningPercentage, 'winningPercentage-x-no')
 
-      userwins = 'no';
-    }
-    else {
-      // When currentWinPercentage exactly equals winningPercentage,
-      // use a standard evaluation. (Or you could also randomize here if desired.)
-      userwins = currentWinPercentage >= winningPercentage ? 'yes' : 'no';
-    }
+  //     userwins = 'no';
+  //   }
+  //   else {
+  //     // When currentWinPercentage exactly equals winningPercentage,
+  //     // use a standard evaluation. (Or you could also randomize here if desired.)
+  //     userwins = currentWinPercentage >= winningPercentage ? 'yes' : 'no';
+  //   }
 
-    console.log(totalBet, 'totalBet')
-    console.log(totalWinValue, 'totalWinValue')
-    console.log(currentWinPercentage, 'currentWinPercentage')
+  //   console.log(totalBet, 'totalBet')
+  //   console.log(totalWinValue, 'totalWinValue')
+  //   console.log(currentWinPercentage, 'currentWinPercentage')
 
-    console.log(winningPercentage, 'winningPercentage')
+  //   console.log(winningPercentage, 'winningPercentage')
 
-    console.log(overrideChance, 'overrideChance')
+  //   console.log(overrideChance, 'overrideChance')
 
-  } else {
-    // If gameResults length is 10 or less AND totalWinValue is 200 or less, fallback to 'random'.
-    userwins = Math.random() < overrideChance ? 'yes' : 'random';
-  }
-  if (currentWinPercentage > winningPercentage && lastBet.amount > 20) {
-    userwins = 'no';
-  }
+  // } else {
+  //   // If gameResults length is 10 or less AND totalWinValue is 200 or less, fallback to 'random'.
+  //   userwins = Math.random() < overrideChance ? 'yes' : 'random';
+  // }
+  // if (currentWinPercentage > winningPercentage && lastBet.amount > 20) {
+  //   userwins = 'no';
+  // }
 
-  if (allcardsbeted) {
-    userwins = 'yes';
-  }
+  // if (allcardsbeted) {
+  //   userwins = 'yes';
+  // }
 
 
   console.log(userwins, 'userwins')
@@ -885,7 +1004,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
 
   // Stop timer and reset display
 
-  stopTimer();
+  // stopTimer();
   resultDisplay.textContent = "";
   resultDisplay.style.display = 'none';
   document.querySelectorAll(".grid-card").forEach(card => card.classList.remove("winner"));
@@ -899,7 +1018,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
   const segmentAngle = 360 / segmentCount;
 
   // Initially choose a random index (0 to segmentCount - 1)
-  let chosenIndex = Math.floor(Math.random() * segmentCount);
+  // let chosenIndex = Math.floor(Math.random() * segmentCount);
 
   // --- Override chosenIndex based on the userwins flag and last bet, if a bet exists ---
   if (lastBet && Object.keys(lastBet).length > 0) {
@@ -929,6 +1048,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
       if (userwins == 'yes') {
         // Pick one of the matching indices at random.
         chosenIndex = possibleIndices[Math.floor(Math.random() * possibleIndices.length)];
+        console.log('chosenIndex' , chosenIndex)
       } else if (userwins === 'random') {
         chosenIndex = Math.floor(Math.random() * segmentCount);
       } else {
@@ -1026,9 +1146,20 @@ document.getElementById("spinBtn").addEventListener("click", function () {
 
     // The grid card that wins is exactly at the index 'winningIndex'
     const gridIndex = winningIndex;
-    const markerImgEl = document.querySelector(`.grid-card[data-index="${gridIndex}"] img`);
-    const markerSrc = markerImgEl.src;
-    const markerAlt = markerImgEl.alt;
+    const markerImgEls = document.querySelectorAll(`.grid-card[data-index="${gridIndex}"] img`);
+
+const markerImgEl1 = markerImgEls[0];
+const markerImgEl2 = markerImgEls[1];
+
+const markerSrc = markerImgEl1?.src;
+const markerAlt = markerImgEl1?.alt;
+
+const markerSrc2 = markerImgEl2?.src;
+const markerAlt2 = markerImgEl2?.alt;
+
+    // const markerImgEl = document.querySelector(`.grid-card[data-index="${gridIndex}"] img`);
+    // const markerSrc = markerImgEl.src;
+    // const markerAlt = markerImgEl.alt;
 
     // Highlight winning segments and grid card.
     document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => el.classList.remove("winner"));
@@ -1090,7 +1221,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
       balance = (balance + winValue);
       console.log(balance, 'balance')
     }
-    updateBankValue();
+
     updateBalanceDisplay();
     // updatewinPointsDisplay();
     resultDisplay.style.display = 'block';
@@ -1109,11 +1240,18 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     // now include the marker image + total bet
     resultDisplay.innerHTML = `
   <p><strong>Current Marker Card</strong></p>
+  <div class="d-flex d-flex align-items-center justify-content-center">
   <img
     src="${markerSrc}"
     alt="${markerAlt}"
     class="marker-card"
   />
+  <img
+    src="${markerSrc2}"
+    alt="${markerAlt2}"
+    class="marker-card"
+  />
+   </div>
   <p>${msg}</p>
   <span><strong>Current Bet:</strong> ${totalBets}</span>
 `;
@@ -1151,7 +1289,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     // Restart the timer for the next spin.
     lastBet = {};
     allcardsbeted = false;
-    startTimer();
+    // startTimer();
     totalBets = 0;
     lastTotalBets = 0;
   }, 4000);

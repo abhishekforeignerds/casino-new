@@ -236,7 +236,7 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
                         </li>
                         <li>
                             <a class="text-center mt-3 gold-box">Welcome,
-                                <?php echo htmlspecialchars($_SESSION['fname']); ?> !
+                                <?php echo htmlspecialchars($_SESSION['fname']); ?>    <?php echo htmlspecialchars($_SESSION['lname']); ?> !
                             </a>
 
                         </li>
@@ -246,7 +246,7 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
                         <div class="header-trigger me-4">
                             <span></span>
                         </div>
-                        <a href="sign-in.php" class="cmn--btn active btn--md d-none d-sm-block">Sign In</a>
+                        <a href="logout.php" class="cmn--btn active btn--md d-none d-sm-block">Logout</a>
                     </div>
                   <!-- Toggle Fullscreen Button with Icon -->
                     
@@ -303,53 +303,53 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
                 <!-- Card wrappers -->
                 <!-- Kings Row -->
                 <div class="card-wrapper" style="left: 166px;top: 0px;" data-initial-rotation="171">
-                    <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Spades"
+                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades"
                         style="transform: rotate(171deg);">
                 </div>
                 <div class="card-wrapper" style="left: 249px;top: 22px;" data-initial-rotation="205">
-                    <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Diamonds"
+                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Diamonds"
                         style="transform: rotate(205deg);">
                 </div>
                 <div class="card-wrapper" style="left: 312px;top: 82px;" data-initial-rotation="245">
-                    <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Clubs"
+                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Clubs"
                         style="transform: rotate(245deg);">
                 </div>
                 <div class="card-wrapper" style="left: 335px;top: 161px;" data-initial-rotation="272">
-                    <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Hearts"
+                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Hearts"
                         style="transform: rotate(272deg);">
                 </div>
                 <!-- Queens Row -->
                 <div class="card-wrapper" style="left: 313px;top: 242px;" data-initial-rotation="298">
-                    <img class="card" src="/assets-normal/img/q.png" alt="Queen of Spades"
+                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Spades"
                         style="transform: rotate(298deg);">
                 </div>
                 <div class="card-wrapper" style="left: 255px;top: 301px;" data-initial-rotation="327">
-                    <img class="card" src="/assets-normal/img/q.png" alt="Queen of Diamonds"
+                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Diamonds"
                         style="transform: rotate(327deg);">
                 </div>
                 <div class="card-wrapper" style="left: 174px;top: 325px;" data-initial-rotation="3">
-                    <img class="card" src="/assets-normal/img/q.png" alt="Queen of Clubs"
+                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Clubs"
                         style="transform: rotate(3deg);">
                 </div>
                 <div class="card-wrapper" style="left: 94px;top: 303px;" data-initial-rotation="30">
-                    <img class="card" src="/assets-normal/img/q.png" alt="Queen of Hearts"
+                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Hearts"
                         style="transform: rotate(30deg);">
                 </div>
                 <!-- Jacks Row -->
                 <div class="card-wrapper" style="left: 32px;top: 242px;" data-initial-rotation="61">
-                    <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Spades"
+                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Spades"
                         style="transform: rotate(61deg);">
                 </div>
                 <div class="card-wrapper" style="left: 10px;top: 159px;" data-initial-rotation="98">
-                    <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Diamonds"
+                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Diamonds"
                         style="transform: rotate(98deg);">
                 </div>
                 <div class="card-wrapper" style="left: 33px;top: 82px;" data-initial-rotation="116">
-                    <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Clubs"
+                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Clubs"
                         style="transform: rotate(116deg);">
                 </div>
                 <div class="card-wrapper" style="left: 94px;top:22px;" data-initial-rotation="153">
-                    <img class="card" src="/assets-normal/img/j-removebg-preview.png" alt="Jack of Hearts"
+                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Hearts"
                         style="transform: rotate(153deg);">
                 </div>
             </div>
@@ -358,10 +358,107 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
             <div id="center-circle"> <div class="center-text">N</div></div>
 
             <!-- Suit Ring -->
-            <div id="suit-ring"></div>
+            <div id="suit-ring" style="
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: 50%;
+    left: 50%;
+    transform-origin: 50% 50%;
+    margin-left: -50px;
+    margin-top: -50px;
+    transform: rotate(-359deg);
+    transition: none;
+  " bis_skin_checked="1">
+    <span class="suit-segment" style="
+      position: absolute;
+      left: 107.572px;
+      top: 99.7818px;
+      transform: rotate(293deg);
+    "><img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades"></span>
+            <span class="suit-segment" style="
+      position: absolute;
+      left: 69.8509px;
+      top: 116.944px;
+      transform: rotate(332deg);
+    "><img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades"></span>
+    <span
+        class="suit-segment" style="
+      position: absolute;
+      left: 55.6283px;
+      top: 128.633px;
+      transform: rotate(80deg);
+    "><img class="card" src="/assets-normal/img/golden-diamond.png"
+            alt="King of Spades" /></span><span
+        class="suit-segment" style="
+      position: absolute;
+      left: -17.78181px;
+      top: 102.572px;
+      transform: rotate(22deg);
+    "><img class="card" src="/assets-normal/img/spades-golden.png"
+            alt="King of Spades" /></span><span
+        class="suit-segment" style="
+      position: absolute;
+      left: -39.944px;
+      top: 69.8509px;
+      transform: rotate(54deg);
+    "><img class="card" src="/assets-normal/img/golden-hearts.png"
+            alt="King of Spades" /></span><span
+        class="suit-segment" style="
+      position: absolute;
+      left: -43.6327px;
+      top: 19.6283px;
+      transform: rotate(77deg);
+    "><img class="card" src="/assets-normal/img/clubs-golden.png"
+            alt="King of Spades" /></span><span
+        class="suit-segment" style="
+      position: absolute;
+      left: -44.5723px;
+      top: 9.21819px;
+      transform: rotate(200deg);
+    "><img class="card" src="/assets-normal/img/golden-diamond.png"
+            alt="King of Spades" /></span><span
+        class="suit-segment" style="
+      position: absolute;
+      left: 8.1491px;
+      top: -41.944px;
+      transform: rotate(146deg);
+    "><img class="card" src="/assets-normal/img/spades-golden.png"
+            alt="King of Spades" /></span><span
+        class="suit-segment" style="
+      position: absolute;
+      left: 55.3717px;
+      top: -44.6327px;
+      transform: rotate(175deg);
+    "><img class="card" src="/assets-normal/img/golden-hearts.png"
+            alt="King of Spades" /></span><span
+        class="suit-segment" style="
+      position: absolute;
+      left: 93.7818px;
+      top: -25.5723px;
+      transform: rotate(213deg);
+    "><img class="card" src="/assets-normal/img/clubs-golden.png"
+            alt="King of Spades" /></span><span
+        class="suit-segment" style="
+      position: absolute;
+      left: 108.944px;
+      top: -17.8509px;
+      transform: rotate(320deg);
+    "><img class="card" src="/assets-normal/img/golden-diamond.png"
+            alt="King of Spades" /></span><span
+        class="suit-segment" style="
+      position: absolute;
+      left: 121.633px;
+      top: 55.3717px;
+      transform: rotate(267deg);
+    "><img class="card" src="/assets-normal/img/spades-golden.png"
+            alt="King of Spades" /></span>
+</div>
 
             <!-- Marker -->
-            <div id="marker"> <img class="gem-marker" src="/assets-normal/img/gem-new.png"></div>
+            <div id="marker"> 
+                <!-- <img class="gem-marker" src="/assets-normal/img/gem-new.png"> -->
+            </div>
         </div>
 
 
@@ -374,62 +471,114 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
                 <div class="grid-header empty" data-index="12">
                     <div id="withdraw-time" style="font-size: 15px;"></div>
                 </div>
-                <div class="grid-header" id="suitIcon1" style="color:black" data-index="13">♠</div>
+                <div class="grid-header d-flex align-items-center justify-content-around" id="suitIcon1" style="color:black" data-index="13">
+                    <img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades">
+                    <div class="play-circle">Play</div>
+                </div>
+                <div class="grid-header d-flex align-items-center justify-content-around" id="suitIcon2" style="color:red" data-index="14">
+                    <img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades">
+                    <div class="play-circle">Play</div>
+                </div>
+                <div class="grid-header d-flex align-items-center justify-content-around" id="suitIcon3" style="color:black" data-index="15">
+                    <img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades">
+                    <div class="play-circle">Play</div>
+                </div>
+                <div class="grid-header d-flex align-items-center justify-content-around" id="suitIcon4" style="color:red" data-index="16">
+                    <img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades">
+                    <div class="play-circle">Play</div>
+                </div>
+
+                <!-- <div class="grid-header" id="suitIcon1" style="color:black" data-index="13">♠</div>
                 <div class="grid-header" id="suitIcon2" style="color:red" data-index="14">♦</div>
                 <div class="grid-header" id="suitIcon3" style="color:black" data-index="15">♣</div>
-                <div class="grid-header" id="suitIcon4" style="color:red" data-index="16">♥</div>
+                <div class="grid-header" id="suitIcon4" style="color:red" data-index="16">♥</div> -->
 
                 <!-- King Row -->
-                <div class="grid-label" id="grid-label-1" data-index="17">
-                    <img class="card" src="/assets-normal/img/k-removebg-preview.png" alt="King of Spades">
+                <div class="grid-label d-flex align-items-center justify-content-around" id="grid-label-1" data-index="17">
+                <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades">
+                    <div class="play-circle">Play</div>
                 </div>
-                <div class="grid-card" data-index="0">
-                    <img src="https://deckofcardsapi.com/static/img/KS.png" alt="King of Spades">
+                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="0">
+                <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades">
+                    <img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades">
+                       <div class="cstm-ribbon">Play</div>
+                 
+
                 </div>
-                <div class="grid-card" data-index="1">
-                    <img src="https://deckofcardsapi.com/static/img/KD.png" alt="King of Diamonds">
+
+                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="1">
+                <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades">
+                     <img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades">
+                        <div class="cstm-ribbon">Play</div>
                 </div>
-                <div class="grid-card" data-index="2">
-                    <img src="https://deckofcardsapi.com/static/img/KC.png" alt="King of Clubs">
+                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="2">
+                <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades">
+                       <img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades">
+                          <div class="cstm-ribbon">Play</div>
                 </div>
-                <div class="grid-card" data-index="3">
-                    <img src="https://deckofcardsapi.com/static/img/KH.png" alt="King of Hearts">
+                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="3">
+                <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades">
+                        <img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades">
+                           <div class="cstm-ribbon">Play</div>
                 </div>
 
                 <!-- Queen Row -->
-                <div class="grid-label" id="grid-label-2" data-index="21">
-                    <img class="card" src="/assets-normal/img/q.png" alt="Queen of Diamonds">
+                <div class="grid-label d-flex align-items-center justify-content-around" id="grid-label-2" data-index="21">
+                    <img class="card" src="/assets-normal/img/golden-q.png" alt="King of Spades">
+                 
+                    <div class="play-circle">Play</div>
                 </div>
-                <div class="grid-card" data-index="4">
-                    <img src="https://deckofcardsapi.com/static/img/QS.png" alt="Queen of Spades">
+                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="4">
+                  
+                     <img class="card" src="/assets-normal/img/golden-q.png" alt="King of Spades">
+                     <img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades">
+                     <div class="cstm-ribbon">Play</div>
                 </div>
-                <div class="grid-card" data-index="5">
-                    <img src="https://deckofcardsapi.com/static/img/QD.png" alt="Queen of Diamonds">
+                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="5">
+                <img class="card" src="/assets-normal/img/golden-q.png" alt="King of Spades">
+                     <img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades">
+                        <div class="cstm-ribbon">Play</div>
                 </div>
-                <div class="grid-card" data-index="6">
-                    <img src="https://deckofcardsapi.com/static/img/QC.png" alt="Queen of Clubs">
+                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="6">
+                <img class="card" src="/assets-normal/img/golden-q.png" alt="King of Spades">
+                       <img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades">
+                          <div class="cstm-ribbon">Play</div>
                 </div>
-                <div class="grid-card" data-index="7">
-                    <img src="https://deckofcardsapi.com/static/img/QH.png" alt="Queen of Hearts">
+                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="7">
+                <img class="card" src="/assets-normal/img/golden-q.png" alt="King of Spades">
+                        <img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades">
+                           <div class="cstm-ribbon">Play</div>
                 </div>
 
                 <!-- Jack Row -->
-                <div class="grid-label" id="grid-label-3" data-index="25">
-                    <img class="card" src="/assets-normal/img/j-removebg-preview.png"
-                        alt="Jack of Diamonds">
+                <div class="grid-label d-flex align-items-center justify-content-around" id="grid-label-3" data-index="25">
+                <img class="card" src="/assets-normal/img/golden-j.png" alt="King of Spades">
+               
+                        <div class="play-circle">Play</div>
                 </div>
-                <div class="grid-card" data-index="8">
-                    <img src="https://deckofcardsapi.com/static/img/JS.png" alt="Jack of Spades">
+                
+                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="8">
+                    <img class="card" src="/assets-normal/img/golden-j.png" alt="King of Spades">
+                     <img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades">
+                        <div class="cstm-ribbon">Play</div>
                 </div>
-                <div class="grid-card" data-index="9">
-                    <img src="https://deckofcardsapi.com/static/img/JD.png" alt="Jack of Diamonds">
+                
+                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="9">
+                <img class="card" src="/assets-normal/img/golden-j.png" alt="King of Spades">
+                     <img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades">
+                        <div class="cstm-ribbon">Play</div>
                 </div>
-                <div class="grid-card" data-index="10">
-                    <img src="https://deckofcardsapi.com/static/img/JC.png" alt="Jack of Clubs">
+                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="10">
+                <img class="card" src="/assets-normal/img/golden-j.png" alt="King of Spades">
+                       <img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades">
+                          <div class="cstm-ribbon">Play</div>
                 </div>
-                <div class="grid-card" data-index="11">
-                    <img src="https://deckofcardsapi.com/static/img/JH.png" alt="Jack of Hearts">
+                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="11">
+                <img class="card" src="/assets-normal/img/golden-j.png" alt="King of Spades">
+                        <img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades">
+                           <div class="cstm-ribbon">Play</div>
                 </div>
+
             </div>
 
 
@@ -438,7 +587,7 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
     <div id="main-container">
         <!-- Wheel Container -->
 
-        <button id="spinBtn" >Spin</button>
+        <button id="spinBtn" hidden>Spin</button>
 
         <div id="div-spin-btns">
             <div id="div-buttons">
@@ -456,6 +605,7 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
         <div>
             <div class="container-chip-child">
                 <div id="#073d91" class="coin" data-value="5"><span>5</span></div>
+
                 <div id="#32a9f1" class="coin" data-value="10"><span>10</span></div>
                 <div id="orange" class="coin" data-value="20"><span>20</span></div>
                 <div id="#315a97" class="coin" data-value="50"><span>50</span></div>
@@ -470,11 +620,12 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
 
         </div>
     </div>
+  
 
-
-
+    <!-- <img class="" src="/assets-normal/img/newsc.png" alt="King of Spades"> -->
     <script>
   // existing declarations
+  let user_id           = <?php echo (int) $user_id; ?>;
   let balance           = <?php echo (int) $points; ?>;
   let winningPoints     = <?php echo (int) $winningPoints; ?>;
   let bettingPoints     = <?php echo (int) $bettingPoints; ?>;
