@@ -177,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
     <!-- Account Section Starts Here -->
-    <section class="account-section overflow-hidden bg_img" style="background:url(assets/images/account/bg.jpg)">
+    <section class="account-section overflow-hidden" style="background:url(assets/images/account/bg.jpg)">
         <div class="container">
             <div class="account__main__wrapper">
                 <div class="account__form__wrapper">

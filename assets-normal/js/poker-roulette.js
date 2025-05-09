@@ -57,11 +57,13 @@ drawSegments();
 drawLines();
 
 const balanceDisplay = document.getElementById("balance-display");
-// const winPointsDisplay = document.getElementById("winPoints-display");
+const winPointsDisplay = document.getElementById("claim-display");
+const totalUnclaimdisplay = document.getElementById("unclaim-display");
 const resultDisplay = document.getElementById("result-display");
 // Timer functions
 
-let countdown = spinTimerDuration;
+let countdowntemp = spinTimerDuration;
+let countdown;
 let timerInterval;
 const countdownText = document.createElementNS("http://www.w3.org/2000/svg", "text");
 
@@ -81,6 +83,9 @@ function updateTimerSticks() {
     } else {
       stick.setAttribute("stroke", "white");
     }
+    if (countdown < 10) {
+      stick.setAttribute("stroke", "red");
+    }
   });
 }
 
@@ -99,6 +104,7 @@ function getCountdown() {
 }
 let userwins;
 let chosenIndex;
+let winValue = 0;
 // In your page’s <script> (make sure jQuery is loaded first)
 function fetchBetHistory(withdrawTime) {
   $.ajax({
@@ -114,6 +120,7 @@ function fetchBetHistory(withdrawTime) {
       console.log('Choosen Index:', response.meta);
       userwins = response.meta.userwins;
       chosenIndex = response.meta.choosenindex;
+      winValue = response.meta.winningpoint;
       // TODO: render response.data into your UI
     } else {
       console.error('Server returned error:', response);
@@ -138,8 +145,8 @@ function fetchBetHistory(withdrawTime) {
 function updateTimeDisplay() {
   const now = new Date(getSyncedTime());
   const currentTime = now.toLocaleTimeString();
+  countdown = getCountdown();
 
-  const countdown = getCountdown();
   withdrawTime = new Date(now.getTime() + countdown * 1000 + 60000)
   .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -236,12 +243,16 @@ function updateBalanceDisplay() {
   balanceDisplay.innerHTML = "Balance: <span style='color: gold;font-weight:800;'>" + balance + "</span>";
 
 }
-// function updatewinPointsDisplay() {
-//   winPointsDisplay.innerHTML = "Win Points: <span style='color: gold;font-weight:800;'>" + winningPoints + "</span>";
+function updatewinPointsDisplay() {
+  winPointsDisplay.innerHTML = "Claimed: <span style='color: gold;font-weight:800;'>" + totalClaim + "</span>";
 
-// }
+}
+function updateUnclaimPointsDisplay() {
+  totalUnclaimdisplay.innerHTML = "Unclaimed: <span style='color: gold;font-weight:800;'>" + totalUnclaim + "</span>";
+
+}
 updateBalanceDisplay();
-// updatewinPointsDisplay();
+updatewinPointsDisplay();
 
 // AJAX helper to update bank value on server
 function updateBankValue() {
@@ -314,6 +325,7 @@ const GRID_COLUMNS = 5;
 // ----- PLACE BET ON GRID CARD -----
 document.querySelectorAll(".grid-card").forEach(card => {
   card.addEventListener("click", function () {
+    console.log('countdown',countdown)
     const resultDisplay = document.getElementById("result-display");
     if (countdown <= 5) {
       resultDisplay.style.display = 'block';
@@ -349,7 +361,7 @@ document.querySelectorAll(".grid-card").forEach(card => {
     // Special rule: if 12 grid bets placed, override lastBet.amount to second-largest
     applySecondLargestRule();
     const data = {
-      userId: user_id,
+      user_id: user_id,
       identifier: lastBet.identifier,
       amount: lastBet.amount,
       withdrawTime: withdrawTime
@@ -374,6 +386,7 @@ document.querySelectorAll(".grid-card").forEach(card => {
 // ----- PLACE BET ON GRID HEADER (suit) -----
 document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
   header.addEventListener("click", function () {
+    console.log('countdown',countdown)
     const resultDisplay = document.getElementById("result-display");
     if (countdown <= 5) {
       resultDisplay.style.display = 'block';
@@ -414,33 +427,59 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     lastBetHistory = { ...lastBet };
 
     // Special rule: if all 4 suits bet, override lastBet.amount to second-largest
+    console.log(lastBet);
+
+    let identifiers = [];
+    switch (lastBet.element.id) {
+      case 'suitIcon1':
+        identifiers = [0, 4, 8];
+        break;
+      case 'suitIcon2':
+        identifiers = [1, 5, 9];
+        break;
+      case 'suitIcon3':
+        identifiers = [2, 6, 10];
+        break;
+      case 'suitIcon4':
+        identifiers = [3, 7, 11];
+        break;
+      default:
+        console.warn('Unknown suit icon:', lastBet.element);
+    }
+    
+    console.log(identifiers);
+    
     applySecondLargestRule();
-    const data = {
-      identifier: lastBet.identifier,
-      amount: lastBet.amount,
-      withdrawTime: withdrawTime
-    };
-    fetch('../../api/total_history.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-      console.log('Server response:', result);
-    })
-    .catch(error => {
-      console.error('Error sending data:', error);
+    identifiers.forEach(id => {
+        const data = {
+          user_id: user_id,
+          identifier: id,
+          amount: lastBet.amount,
+          withdrawTime: withdrawTime
+        };
+        fetch('../../api/total_history.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+          console.log('Server response:', result);
+        })
+        .catch(error => {
+          console.error('Error sending data:', error);
+        });
+      });
     });
-  });
 });
 
 allcardsbeted = false;
 // ----- PLACE BET ON GRID LABEL (card type) -----
 document.querySelectorAll(".grid-label").forEach(label => {
   label.addEventListener("click", function () {
+    console.log('countdown',countdown)
     const resultDisplay = document.getElementById("result-display");
     if (countdown <= 5) {
       resultDisplay.style.display = 'block';
@@ -484,8 +523,29 @@ document.querySelectorAll(".grid-label").forEach(label => {
 
     // Special rule: if all 3 card types bet, override lastBet.amount to second-largest
     applySecondLargestRule();
+
+    console.log(lastBet);
+
+    let identifiers = [];
+    switch (lastBet.element.id) {
+      case 'grid-label-3':
+        identifiers = [0, 1, 2, 3];
+        break;
+      case 'grid-label-2':
+        identifiers = [4, 5, 6, 7];
+        break;
+      case 'grid-label-1':
+        identifiers = [8, 9, 10, 11];
+        break;
+      default:
+        console.warn('Unknown suit icon:', lastBet.element);
+    }
+    
+    console.log(identifiers);
+    identifiers.forEach(id => {
     const data = {
-      identifier: lastBet.identifier,
+      user_id: user_id,
+      identifier: id,
       amount: lastBet.amount,
       withdrawTime: withdrawTime
     };
@@ -505,6 +565,7 @@ document.querySelectorAll(".grid-label").forEach(label => {
     });
     
   });
+});
 });
 
 // ----- Helper: second-largest override -----
@@ -550,6 +611,11 @@ document.getElementById("clear-bets").addEventListener("click", function () {
   console.log('totalBets', totalBets)
   console.log('lastTotalBets', lastTotalBets)
   console.log('lastBet', lastBet)
+  if (countdown <= 5) {
+    resultDisplay.style.display = 'block';
+    resultDisplay.textContent = "Betting time is over.";
+    return;
+  }
   // Query all bet overlays in the DOM
   const overlays = document.querySelectorAll('.bet-overlay');
 
@@ -590,6 +656,11 @@ document.getElementById("clear-bets").addEventListener("click", function () {
   console.log('lastBet',lastBet);
 });
 document.getElementById("double-bets").addEventListener("click", function () {
+  if (countdown <= 5) {
+    resultDisplay.style.display = 'block';
+    resultDisplay.textContent = "Betting time is over.";
+    return;
+  }
   const overlays = document.querySelectorAll('.bet-overlay');
   let extra = 0;
 
@@ -627,6 +698,11 @@ document.getElementById("double-bets").addEventListener("click", function () {
 
 // ----- REPEAT LAST BET -----
 document.getElementById("repeat-bet").addEventListener("click", function () {
+  if (countdown <= 5) {
+    resultDisplay.style.display = 'block';
+    resultDisplay.textContent = "Betting time is over.";
+    return;
+  }
   if (!lastBetHistory) {
     return alert("No previous bet to repeat.");
   }
@@ -918,7 +994,7 @@ const cardDetails = [
 
 document.getElementById("spinBtn").addEventListener("click", function () {
   // console.log(bets)
-  fetchBetHistory(withdrawTime);
+  // fetchBetHistory(withdrawTime);
 
   // let userwins;
   // let gmlen = gameResults.length;
@@ -1021,46 +1097,52 @@ document.getElementById("spinBtn").addEventListener("click", function () {
   // let chosenIndex = Math.floor(Math.random() * segmentCount);
 
   // --- Override chosenIndex based on the userwins flag and last bet, if a bet exists ---
-  if (lastBet && Object.keys(lastBet).length > 0) {
-    let possibleIndices = [];
+  // if (lastBet && Object.keys(lastBet).length > 0) {
+  //   let possibleIndices = [];
 
-    // If the bet identifier is numeric, assume it is a specific grid card index.
-    if (!isNaN(lastBet.identifier)) {
-      possibleIndices = [parseInt(lastBet.identifier, 10)];
-    }
-    // If the bet is on a card type (e.g. "cardType-King")
-    else if (lastBet.identifier.startsWith("cardType-")) {
-      const betCardType = lastBet.identifier.split("-")[1]; // "King", "Queen", or "Jack"
-      possibleIndices = cardDetails
-        .map((cd, index) => (cd.card === betCardType ? index : -1))
-        .filter(index => index !== -1);
-    }
-    // If the bet is on a suit (e.g. "suit-♠")
-    else if (lastBet.identifier.startsWith("suit-")) {
-      const betSuit = lastBet.identifier.split("-")[1]; // "♠", "♦", etc.
-      possibleIndices = cardDetails
-        .map((cd, index) => (cd.suit === betSuit ? index : -1))
-        .filter(index => index !== -1);
-    }
+  //   // If the bet identifier is numeric, assume it is a specific grid card index.
+  //   if (!isNaN(lastBet.identifier)) {
+  //     possibleIndices = [parseInt(lastBet.identifier, 10)];
+  //   }
+  //   // If the bet is on a card type (e.g. "cardType-King")
+  //   else if (lastBet.identifier.startsWith("cardType-")) {
+  //     const betCardType = lastBet.identifier.split("-")[1]; // "King", "Queen", or "Jack"
+  //     possibleIndices = cardDetails
+  //       .map((cd, index) => (cd.card === betCardType ? index : -1))
+  //       .filter(index => index !== -1);
+  //   }
+  //   // If the bet is on a suit (e.g. "suit-♠")
+  //   else if (lastBet.identifier.startsWith("suit-")) {
+  //     const betSuit = lastBet.identifier.split("-")[1]; // "♠", "♦", etc.
+  //     possibleIndices = cardDetails
+  //       .map((cd, index) => (cd.suit === betSuit ? index : -1))
+  //       .filter(index => index !== -1);
+  //   }
 
-    // If there is at least one matching index, override chosenIndex
-    if (possibleIndices.length > 0) {
-      if (userwins == 'yes') {
-        // Pick one of the matching indices at random.
-        chosenIndex = possibleIndices[Math.floor(Math.random() * possibleIndices.length)];
-        console.log('chosenIndex' , chosenIndex)
-      } else if (userwins === 'random') {
-        chosenIndex = Math.floor(Math.random() * segmentCount);
-      } else {
-        // Force a loss: if the current random choice is one of the matching indices,
-        // shift it (here, we simply increment mod segmentCount until it doesn't match).
-        while (possibleIndices.includes(chosenIndex)) {
-          chosenIndex = (chosenIndex + 1) % segmentCount;
-        }
-      }
-    }
-  }
-
+  //   // If there is at least one matching index, override chosenIndex
+  //   if (possibleIndices.length > 0) {
+  //     if (userwins == 'yes') {
+  //       // Pick one of the matching indices at random.
+  //       // chosenIndex = possibleIndices[Math.floor(Math.random() * possibleIndices.length)];
+  //       console.log('chosenIndex' , chosenIndex)
+  //       console.log('userwins' , userwins)
+  //     } else if (userwins === 'random') {
+  //       chosenIndex = Math.floor(Math.random() * segmentCount);
+  //       console.log('chosenIndex' , chosenIndex)
+  //       console.log('userwins' , userwins)
+  //     } else {
+  //       // Force a loss: if the current random choice is one of the matching indices,
+  //       // shift it (here, we simply increment mod segmentCount until it doesn't match).
+  //       while (possibleIndices.includes(chosenIndex)) {
+  //         // chosenIndex = (chosenIndex + 1) % segmentCount;
+  //         console.log('chosenIndex' , chosenIndex)
+  //         console.log('userwins' , userwins)
+  //       }
+  //     }
+  //   }
+  // }
+  console.log('chosenIndex' , chosenIndex)
+  console.log('userwins' , userwins)
   // Calculate rotation details so the winning segment is centered.
   const markerOffset = 0; // Adjust if the marker is not exactly at the top.
   const targetRotationMod = (360 - (chosenIndex * segmentAngle + segmentAngle / 2) + markerOffset) % 360;
@@ -1190,35 +1272,48 @@ const markerAlt2 = markerImgEl2?.alt;
     // console.log("Winning card:", cardType, suitIcon, "at grid index:", gridIndex);
 
     // --- Win calculation based on last bet ---
-    let winValue = 0;
+    
     let userWon = false;
-    if (lastBet && Object.keys(lastBet).length > 0) {
-      if (!isNaN(lastBet.identifier)) {
-        if (parseInt(lastBet.identifier, 10) === gridIndex) {
-          winValue = lastBet.amount * 10;
-          userWon = true;
+
+    
+        if (userwins == 'yes' && winValue > 0) {
+     
+            winValue = winValue * 10;
+            userWon = true;
+          if (auto_claim) {
+
+            totalClaim = totalClaim + winValue;
+            updatewinPointsDisplay();
+            balance = balance + winValue;
+            updateBankValue();
+          } else {
+            totalUnclaim = totalUnclaim + winValue;
+            updateUnclaimPointsDisplay();
+          }
         }
-      } else if (lastBet.identifier.startsWith("cardType-")) {
-        if (lastBet.identifier === cardTypeKey) {
-          winValue = lastBet.amount * 10;
-          userWon = true;
-        }
-      } else if (lastBet.identifier.startsWith("suit-")) {
-        if (lastBet.identifier === suitKey) {
-          winValue = lastBet.amount * 10;
-          userWon = true;
-        }
-      }
-    }
+        
+      
+      // else if (lastBet.identifier.startsWith("cardType-")) {
+      //   if (lastBet.identifier === cardTypeKey) {
+      //     winValue = lastBet.amount * 10;
+      //     userWon = true;
+      //   }
+      // } else if (lastBet.identifier.startsWith("suit-")) {
+      //   if (lastBet.identifier === suitKey) {
+      //     winValue = lastBet.amount * 10;
+      //     userWon = true;
+      //   }
+      // }
+
 
     if (userWon) {
       winningPoints += winValue;
       console.log(balance, 'balance')
-      balance = (balance - totalBets);
+      // balance = (balance - totalBets);
       console.log(totalBets, 'totalBets')
       console.log(balance, 'balance')
       console.log(winValue, 'winValue')
-      balance = (balance + winValue);
+      // balance = (balance + winValue);
       console.log(balance, 'balance')
     }
 
@@ -1277,7 +1372,8 @@ const markerAlt2 = markerImgEl2?.alt;
       winningIndex,
       Object.values(bets).reduce((sum, amt) => sum + amt, 0),
       winValue,
-      suiticonnum
+      suiticonnum,
+      withdrawTime,
     );
 
 
@@ -1295,8 +1391,8 @@ const markerAlt2 = markerImgEl2?.alt;
   }, 4000);
 });
 
-function recordGameResult(winningSpin, betTotal, winValue = 0, suiticonnum) {
-  const params = new URLSearchParams({ winningSpin, betTotal, winValue, suiticonnum });
+function recordGameResult(winningSpin, betTotal, winValue = 0, suiticonnum, withdrawTime) {
+  const params = new URLSearchParams({ winningSpin, betTotal, winValue, suiticonnum, withdrawTime });
 
   fetch('../../api/record_game.php', {
     method: 'POST',

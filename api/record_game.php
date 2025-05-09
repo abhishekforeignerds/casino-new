@@ -29,6 +29,20 @@ $game_id     = 1;
 $winningSpin = $_POST['winningSpin'];
 $betTotal    = $_POST['betTotal'];
 $winValue    = $_POST['winValue'];
+$withdrawTime  = $_POST['withdrawTime'] ?? null;
+if (!$withdrawTime) {
+    http_response_code(422);
+    echo json_encode([
+        'status'  => 'error',
+        'type'    => 'Validation',
+        'message' => 'withdrawTime is required.'
+    ]);
+    exit;
+}
+
+// Combine with today’s date
+$currentDate   = date('Y-m-d');
+$fullTimestamp = date('Y-m-d H:i:s', strtotime("$currentDate $withdrawTime"));
 // **Always** coerce to int
 $suiticonnum = (int) $_POST['suiticonnum'];
 
@@ -50,6 +64,64 @@ $win_value = (float) $winValue;
 if ($winValue > 0) {
     $winning_number = (int) $winningSpin;
     $lose_number    = null;
+
+        $userquery = "SELECT auto_claim FROM user WHERE id = ?";
+        $stmt = $conn->prepare($userquery);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $stmt->close();
+
+        $auto_claim = $row['auto_claim'];
+
+
+        if ($auto_claim) {
+            $claimpoint    = $win_value;
+            $unclaimpoint  = 0;
+            $auto_claim    = 1;
+            $insertSql = "
+                INSERT INTO claim_point_data
+                    (user_id, claim_point, unclaim_point, balance, auto_claim, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ";
+        } else {
+            $claimpoint    = 0;
+            $unclaimpoint  = $win_value;
+            $auto_claim    = 0;
+            $insertSql = "
+                INSERT INTO claim_point_data
+                    (user_id, claim_point, unclaim_point, balance, auto_claim, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ";
+        }
+        
+        try {
+            $stmt = $conn->prepare($insertSql);
+            // types:    i         i           i            i         i           s           s
+            $stmt->bind_param(
+                'iiiiiss',
+                $user_id,
+                $claimpoint,
+                $unclaimpoint,
+                $betTotal,
+                $auto_claim,
+                $fullTimestamp,
+                $fullTimestamp
+            );
+            $stmt->execute();
+            $stmt->close();
+        } catch (mysqli_sql_exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Database error on INSERT',
+                'error'   => $e->getMessage()
+            ]);
+            exit;
+        }
+        
+
 } else {
     $winning_number = null;
     $lose_number    = (int) $winningSpin;
@@ -74,8 +146,8 @@ try {
         $suiticonnum,
         $betTotal,
         $win_value,
-        $ts,
-        $ts
+        $fullTimestamp,
+        $fullTimestamp
     );
     $stmt->execute();
     $stmt->close();

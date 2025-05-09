@@ -11,8 +11,25 @@ include 'db.php'; // Database connection
 
 $user_id = $_SESSION['user_id'];
 $game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 1; // Adjust as needed
+$stmt = $conn->prepare("SELECT 
+SUM(claim_point) AS total_claim, 
+SUM(unclaim_point) AS total_unclaim 
+FROM claim_point_data 
+WHERE user_id = ? AND DATE(created_at) = CURDATE()");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($totalClaim, $totalUnclaim);
+$stmt->fetch();
+$stmt->close();
 
-$stmt = $conn->prepare("SELECT SUM(win_value) AS total_win FROM game_results WHERE user_id = ?");
+$totalClaim = $totalClaim ?? 0;
+$totalUnclaim = $totalUnclaim ?? 0;
+
+
+// You must fetch this from DB or session
+
+
+$stmt = $conn->prepare("SELECT SUM(win_value) AS total_win FROM game_results WHERE user_id = ? AND DATE(created_at) = CURDATE()");
 $stmt->bind_param("i", $user_id);
 
 $stmt->execute();
@@ -37,6 +54,14 @@ $stmt->execute();
 $stmt->bind_result($points);
 $stmt->fetch();
 $stmt->close();
+
+$stmt = $conn->prepare("SELECT auto_claim FROM user WHERE id = ?");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$stmt->bind_result($autoClaim);
+$stmt->fetch();
+$stmt->close();
+
 $game_id = 1;
 
 $stmt = $conn->prepare("SELECT winning_percentage FROM user WHERE id = ?");
@@ -79,6 +104,25 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
     $stmt->execute(); $stmt->bind_result($winningPoints); $stmt->fetch(); $stmt->close();
     $winningPoints = $winningPoints ?? 0;
 
+    $stmt = $conn->prepare("SELECT SUM(win_value) AS total_win FROM game_results WHERE user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute(); $stmt->bind_result($winningPoints); $stmt->fetch(); $stmt->close();
+    $winningPoints = $winningPoints ?? 0;
+
+    $stmt = $conn->prepare("SELECT 
+    SUM(claim_point) AS total_claim, 
+    SUM(unclaim_point) AS total_unclaim 
+FROM claim_point_data 
+WHERE user_id = ? AND DATE(created_at) = CURDATE()");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($totalClaim, $totalUnclaim);
+$stmt->fetch();
+$stmt->close();
+
+$totalClaim = $totalClaim ?? 0;
+$totalUnclaim = $totalUnclaim ?? 0;
+
     // today’s bets
     $stmt = $conn->prepare("SELECT SUM(bet) AS total_bet FROM game_results WHERE user_id = ? AND DATE(created_at) = CURDATE()");
     $stmt->bind_param("i", $user_id);
@@ -117,6 +161,8 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
       'spinTimerDuration' => $spinTimerDuration,
       'maxBetamount'      => $maxBetamount,
       'gameResults'       => $gameResults,
+      'totalClaim'       => $totalClaim,
+      'totalUnclaim'       => $totalUnclaim,
     ]);
     exit;
 }
@@ -264,7 +310,16 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
                 <?php // echo htmlspecialchars($bettingPoints ?? 0); ?>
             </span>
         </div> -->
-        <!-- <div class="bordersboxes" id="winPoints-display"> Win Points: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($winningPoints ?? 0); ?> </span> </div> -->
+        <div class="bordersboxes">
+  <label>
+    <input
+      type="checkbox"
+      id="auto-claim-toggle"
+    /> Auto‑claim Wins
+  </label>
+</div>
+        <div class="bordersboxes" id="claim-display"> Claimed: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($totalClaim ?? 0); ?> </span> </div>
+        <div class="bordersboxes" id="unclaim-display"> Unclaimed: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($totalUnclaim ?? 0); ?> </span> </div>
 
         <div class="bordersboxes" id="balance-display"> Balance: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($points ?? 0); ?> </span> </div>
 
@@ -628,12 +683,17 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
   let user_id           = <?php echo (int) $user_id; ?>;
   let balance           = <?php echo (int) $points; ?>;
   let winningPoints     = <?php echo (int) $winningPoints; ?>;
+  let totalUnclaim     = <?php echo (int) $totalUnclaim; ?>;
+  let totalClaim     = <?php echo (int) $totalClaim; ?>;
   let bettingPoints     = <?php echo (int) $bettingPoints; ?>;
   let winningPercentage = <?php echo (float) $winning_percentage; ?>;
   let overrideChance    = <?php echo (float) $override_chance; ?>;
   let spinTimerDuration = <?php echo (int) ($spinTimerDuration ?? 120); ?>;
   let maxBetamount      = <?php echo (int) ($maxBetamount ?? 10000); ?>;
   let gameResults       = <?php echo json_encode($gameResults); ?>;
+
+  var auto_claim =  <?php echo($autoClaim); ?>; // Global JS variable
+
 
   const serverTimeAtLoad = window.SERVER_TIMESTAMP * 1000; // → ms
     console.log('serverTimeAtLoad (ms):', serverTimeAtLoad);
@@ -673,10 +733,69 @@ if (isset($_GET['action']) && $_GET['action']==='getValues') {
 
 
   });
+
 </script>
 
 
 
+<script
+  src="https://code.jquery.com/jquery-3.6.4.min.js"
+  crossorigin="anonymous"
+></script>
+
+<script>
+$(document).ready(function(){
+
+
+// 1) On page load, fetch current auto_claim state
+$.ajax({
+  url: '../../api/get_auto_claim.php',
+  method: 'POST',
+  data: JSON.stringify({ user_id: user_id }),
+  contentType: 'application/json; charset=utf-8',
+  dataType: 'json'
+})
+.done(function(res){
+  if(res.status === 'success'){
+    $('#auto-claim-toggle').prop('checked', res.auto_claim === 1);
+  } else {
+    console.error('Error fetching auto_claim:', res.message);
+  }
+})
+.fail(function(err){
+  console.error('AJAX error fetching auto_claim:', err);
+});
+
+// 2) When toggled, update auto_claim
+$('#auto-claim-toggle').on('change', function(){
+  const newVal = this.checked ? 1 : 0;
+  $.ajax({
+    url: '../../api/set_auto_claim.php',
+    method: 'POST',
+    data: JSON.stringify({
+      user_id: user_id,
+      auto_claim: newVal
+    }),
+    contentType: 'application/json; charset=utf-8',
+    dataType: 'json'
+  })
+  .done(function(res){
+    if(res.status === 'success'){
+      console.log('auto_claim updated to', newVal);
+      location.reload();
+    } else {
+      alert('Update failed: ' + res.message);
+      // revert checkbox
+      $('#auto-claim-toggle').prop('checked', !newVal);
+    }
+  })
+  .fail(function(err){
+    console.error('AJAX error setting auto_claim:', err);
+    $('#auto-claim-toggle').prop('checked', !newVal);
+  });
+});
+});
+</script>
 <script src="./assets-normal/js/poker-roulette.js"></script>
 
 

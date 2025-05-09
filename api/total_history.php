@@ -35,7 +35,11 @@ include '../db.php';
 
 // 5) Read & validate input
 $input = json_decode(file_get_contents('php://input'), true);
-
+// echo json_encode([
+//     'status'   => 'success',
+//     'insertId' => $input,
+// ]);
+// exit;
 if (json_last_error() !== JSON_ERROR_NONE) {
     http_response_code(400);
     echo json_encode([
@@ -47,7 +51,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 // Pull in fields
-$userId       = isset($input['userId'])       ? (int)$input['userId'] : null;
+$userId       = isset($input['user_id'])       ? (int)$input['user_id'] : null;
 $gameId       = isset($input['gameId'])       ? (int)$input['gameId'] : 1;
 $betKey       = $input['identifier'] ?? null;    // “identifier” from JS
 $amount       = isset($input['amount'])       ? (float)$input['amount'] : null;
