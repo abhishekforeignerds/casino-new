@@ -993,7 +993,12 @@ const cardDetails = [
 ];
 
 document.getElementById("spinBtn").addEventListener("click", function () {
-  // console.log(bets)
+  if (typeof chosenIndex !== 'number' || chosenIndex < 0 || chosenIndex >= segmentCount) {
+    // Assign a random segment if chosenIndex is invalid or undefined
+    chosenIndex = Math.floor(Math.random() * segmentCount);
+    console.warn('chosenIndex was invalid; new random chosenIndex:', chosenIndex);
+  }
+  console.log('bets',bets)
   // fetchBetHistory(withdrawTime);
 
   // let userwins;
@@ -1265,9 +1270,9 @@ const markerAlt2 = markerImgEl2?.alt;
 
     // Debug logging: show the bet and the winning card.
     if (lastBet && Object.keys(lastBet).length > 0) {
-      // console.log("User placed bet on:", lastBet.identifier, "with amount:", lastBet.amount);
+      console.log("User placed bet on:", lastBet.identifier, "with amount:", lastBet.amount);
     } else {
-      // console.log("No bet was placed by the user.");
+      console.log("No bet was placed by the user.");
     }
     // console.log("Winning card:", cardType, suitIcon, "at grid index:", gridIndex);
 
@@ -1275,10 +1280,10 @@ const markerAlt2 = markerImgEl2?.alt;
     
     let userWon = false;
 
-    
-        if (userwins == 'yes' && winValue > 0) {
-     
-            winValue = winValue * 10;
+    console.log(lastBet)
+        if (userwins == 'yes' && winValue > 0 && lastBet.identifier == chosenIndex) {
+          console.log('true')
+            winValue = lastBet.amount * 10;
             userWon = true;
           if (auto_claim) {
 
@@ -1293,17 +1298,37 @@ const markerAlt2 = markerImgEl2?.alt;
         }
         
       
-      // else if (lastBet.identifier.startsWith("cardType-")) {
-      //   if (lastBet.identifier === cardTypeKey) {
-      //     winValue = lastBet.amount * 10;
-      //     userWon = true;
-      //   }
-      // } else if (lastBet.identifier.startsWith("suit-")) {
-      //   if (lastBet.identifier === suitKey) {
-      //     winValue = lastBet.amount * 10;
-      //     userWon = true;
-      //   }
-      // }
+      else if (userwins == 'yes' && winValue > 0 && lastBet.identifier.startsWith("cardType-")) {
+        if (lastBet.identifier === cardTypeKey) {
+          winValue = lastBet.amount * 10;
+          userWon = true;
+        if (auto_claim) {
+
+          totalClaim = totalClaim + winValue;
+          updatewinPointsDisplay();
+          balance = balance + winValue;
+          updateBankValue();
+        } else {
+          totalUnclaim = totalUnclaim + winValue;
+          updateUnclaimPointsDisplay();
+        }
+        }
+      } else if (userwins == 'yes' && winValue > 0 && lastBet.identifier.startsWith("suit-")) {
+        if (lastBet.identifier === suitKey) {
+          winValue = lastBet.amount * 10;
+            userWon = true;
+          if (auto_claim) {
+
+            totalClaim = totalClaim + winValue;
+            updatewinPointsDisplay();
+            balance = balance + winValue;
+            updateBankValue();
+          } else {
+            totalUnclaim = totalUnclaim + winValue;
+            updateUnclaimPointsDisplay();
+          }
+        }
+      }
 
 
     if (userWon) {

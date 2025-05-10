@@ -46,10 +46,10 @@ $newEntry = [
 ];
 $historyArray[] = $newEntry;
 
-// Keep only last 12 entries
-if (count($historyArray) > 12) {
-    $historyArray = array_slice($historyArray, -12);
-}
+// // Keep only last 12 entries
+// if (count($historyArray) > 12) {
+//     $historyArray = array_slice($historyArray, -12);
+// }
 
 $updatedHistoryJson = json_encode($historyArray);
 

@@ -154,12 +154,17 @@ $allPresent   = false;
 $allSame      = false;
 
 // Case A: No data at all
-if (empty($uniqueCardTypes)) {
-    $choosenindex = rand(0, 11);
-    $userwins     = 'random';
+if (!(empty($uniqueCardTypes)) && ($currentwinningPercentage < ($winningPercentage / 2))) {
+    $choosenindex = array_rand($uniqueCardTypes);
+    $userwins     = 'yes';
 
 // Case B: We have some data
-} else {
+} elseif (empty($uniqueCardTypes) || $currentwinningPercentage > ($winningPercentage / 2)) {
+    $choosenindex = rand(0, 11);
+    $userwins     = 'random';
+} 
+
+else {
     // Check if every card 0–11 is present
     $allPresent = (count($uniqueCardTypes) === 12);
 
@@ -230,23 +235,29 @@ if ($userwins === 'yes') {
 
     // Corrected SQL: only one WHERE, then AND
     $winningamountSql = "
-        SELECT bet_amount
-          FROM total_bet_history
-         WHERE card_type = {$choosenindex}
-           AND user_id   = {$user_id}
-    ";
+    SELECT bet_amount
+      FROM total_bet_history
+     WHERE card_type    = {$choosenindex}
+       AND withdraw_time = '{$fullTimestamp}'
+     LIMIT 1
+";
+
+
 
     $winningamountResult = mysqli_query($conn, $winningamountSql);
     if (!$winningamountResult) {
         throw new Exception('Query failed: ' . mysqli_error($conn));
     }
 
-    $row = mysqli_fetch_assoc($winningamountResult);
+
+
     if (!$row) {
-        throw new Exception('No bet history found for user_id=' . $user_id . ' and card_type=' . $choosenindex);
+        $winningpoint = 0;
+    } else {
+        
+        $winningpoint = $row['bet_amount'];
     }
 
-    $winningpoint = $row['bet_amount'];
 } else {
     $winningpoint = 0;
 }
@@ -321,12 +332,7 @@ $stmt->bind_param('s', $fullTimestamp);
 $stmt->execute();
 $result = $stmt->get_result();
 $row = $result->fetch_assoc();
-// if ($row = $result->fetch_assoc()) {
-//     echo "<pre>" . print_r($row, true) . "</pre>";
-// } else {
-//     echo "No record found for withdraw_time = {$fullTimestamp}";
-// }
-// Return JSON
+
 echo json_encode([
     'status'       => 'success',
     'data'         => $rows,
@@ -335,7 +341,7 @@ echo json_encode([
         'winningpoint'            => $row['winningpoint'],
         'currentwinningPercentage'=> $row['currentwinningPercentage'],
         'totalSaleToday'          => $row['totalSaleToday'],
-        'totalWinToday'          => $row['totalWinToday'],
+        'totalWinToday'           => $row['totalWinToday'],
         'winningPercentage'       => $row['winningPercentage'],
         'overrideChance'          => $row['overrideChance'],
         'userwins'                => $row['userwins'],

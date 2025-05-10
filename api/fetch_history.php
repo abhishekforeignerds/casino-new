@@ -10,9 +10,9 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 1; // Adjust as needed
 
-$query = "SELECT history FROM game_history WHERE user_id = ? AND game_id = ?";
+$query = "SELECT history FROM game_history WHERE game_id = ?  LIMIT 12";
 if ($stmt = mysqli_prepare($conn, $query)) {
-    mysqli_stmt_bind_param($stmt, "ii", $user_id, $game_id);
+    mysqli_stmt_bind_param($stmt, "i", $game_id);
     mysqli_stmt_execute($stmt);
     mysqli_stmt_store_result($stmt);
     if (mysqli_stmt_num_rows($stmt) > 0) {
