@@ -184,7 +184,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 #image-roulette #marker {
     position: absolute;
     top: 0px; /* adjust as needed */
-    left: 45%;
+    left: 50%;
     transform: translateX(-50%);
     width: 0px;
     height: 0;

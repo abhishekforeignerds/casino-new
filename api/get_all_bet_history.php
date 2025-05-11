@@ -152,19 +152,18 @@ $choosenindex = null;
 $userwins     = null;
 $allPresent   = false;
 $allSame      = false;
+$minvalue;
 
 // Case A: No data at all
-if (!(empty($uniqueCardTypes)) && ($currentwinningPercentage < ($winningPercentage / 2))) {
-    $choosenindex = array_rand($uniqueCardTypes);
-    $userwins     = 'yes';
+if (empty($uniqueCardTypes)) {
+    $choosenindex = rand(0, 11);
+    $userwins     = 'no';
 
 // Case B: We have some data
-} elseif (empty($uniqueCardTypes) || $currentwinningPercentage > ($winningPercentage / 2)) {
-    $choosenindex = rand(0, 11);
-    $userwins     = 'random';
 } 
 
 else {
+   
     // Check if every card 0–11 is present
     $allPresent = (count($uniqueCardTypes) === 12);
 
@@ -182,6 +181,7 @@ else {
             $typesWithMin  = array_keys($uniqueCardTypes, $minAmount, true);
             // if multiple, just take the first
             $choosenindex  = $typesWithMin[0];
+            $$minvalue  = $typesWithMin[0];
         }
 
         // if we got here, user “wins”
@@ -190,20 +190,27 @@ else {
     } else {
         // Not all cards are present
         // You presumably have $winningPercentage and $currentwinningPercentage available
-        if ($winningPercentage > $currentwinningPercentage) {
+
+         if (($currentwinningPercentage < ($winningPercentage / 2))) {
+            $choosenindex = array_rand($uniqueCardTypes);
+            $userwins     = 'yes';
+
+        } elseif (($currentwinningPercentage > ($winningPercentage / 2)) && ($currentwinningPercentage < ($winningPercentage - 10))) {
+            $choosenindex = rand(0, 11);
+            $userwins     = 'random';
+        } 
+        elseif ($currentwinningPercentage > ($winningPercentage - 10) && $currentwinningPercentage < ($winningPercentage)) {
             // pick a random from those already present
             $choosenindex = array_rand($uniqueCardTypes);
             $userwins     = 'yes';
-        } else {
+        } elseif ($currentwinningPercentage > ($winningPercentage)) {
             // pick from the missing ones, if any
             if (!empty($availableIndexes)) {
                 $choosenindex = $availableIndexes[array_rand($availableIndexes)];
-            } else {
-                // fallback if somehow all used
-                $choosenindex = rand(0, 11);
             }
             $userwins = 'no';
         }
+    
     }
 }
 
@@ -216,9 +223,12 @@ if (!empty($uniqueCardTypes)) {
     } else {
         $allSametxt = 'no';
         // the minimum key
-        $minAmount    = min($uniqueCardTypes);
-        $minvalueKeys = array_keys($uniqueCardTypes, $minAmount, true);
-        $minvalue     = $minvalueKeys[0];
+         $amounts = array_values($uniqueCardTypes);
+         $minAmount = min($amounts);
+            // array_keys() on the original associative array to keep key relation
+        $typesWithMin  = array_keys($uniqueCardTypes, $minAmount, true);
+
+        $minvalue = $typesWithMin[0];
     }
 } else {
     // no data → set defaults
@@ -228,7 +238,7 @@ if (!empty($uniqueCardTypes)) {
 
 // Now you have $choosenindex, $userwins, $allSametxt, $minvalue
 
-if ($userwins === 'yes') {
+
     // Make sure $choosenindex and $user_id are integers (or cast them explicitly)
     $choosenindex = (int)$choosenindex;
     $user_id       = (int)$user_id;
@@ -237,10 +247,11 @@ if ($userwins === 'yes') {
     $winningamountSql = "
     SELECT bet_amount
       FROM total_bet_history
-     WHERE card_type    = {$choosenindex}
+     WHERE card_type = {$choosenindex}
        AND withdraw_time = '{$fullTimestamp}'
      LIMIT 1
 ";
+
 
 
 
@@ -249,7 +260,15 @@ if ($userwins === 'yes') {
         throw new Exception('Query failed: ' . mysqli_error($conn));
     }
 
-
+    $row = mysqli_fetch_assoc($winningamountResult);
+    // echo json_encode([
+    //     'status'       => 'success',
+    //     'data'         => [
+    //         'row'=>$row,
+    //         'winningamountSql'=>$winningamountSql,
+    //     ],
+    // ]);
+    // exit;
 
     if (!$row) {
         $winningpoint = 0;
@@ -257,13 +276,6 @@ if ($userwins === 'yes') {
         
         $winningpoint = $row['bet_amount'];
     }
-
-} else {
-    $winningpoint = 0;
-}
-
-
-
 
 
 $insertSql = "
@@ -280,18 +292,12 @@ $insertSql = "
         minvalue,
         withdraw_time
     )
-    SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-      FROM DUAL
-     WHERE NOT EXISTS (
-         SELECT 1
-           FROM overall_game_record
-          WHERE withdraw_time = ?
-     )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ";
 
 $stmt = $conn->prepare($insertSql);
 $stmt->bind_param(
-    'sdddddssssss',
+    'idddddsssss',
     $choosenindex,
     $winningpoint,
     $currentwinningPercentage,
@@ -302,51 +308,16 @@ $stmt->bind_param(
     $userwins,
     $allSametxt,
     $minvalue,
-    $fullTimestamp,
     $fullTimestamp
 );
+
 if (!$stmt->execute()) {
     die("Insert failed: " . $stmt->error);
 }
+
 $stmt->close();
-
-$selectSql = "
-    SELECT
-        choosenindex,
-        winningpoint,
-        currentwinningPercentage,
-        totalSaleToday,
-        totalWinToday,
-        winningPercentage,
-        overrideChance,
-        userwins,
-        allSametxt,
-        minvalue,
-        withdraw_time
-    FROM overall_game_record
-    WHERE withdraw_time = ?
-";
-
-$stmt = $conn->prepare($selectSql);
-$stmt->bind_param('s', $fullTimestamp);
-$stmt->execute();
-$result = $stmt->get_result();
-$row = $result->fetch_assoc();
-
 echo json_encode([
     'status'       => 'success',
-    'data'         => $rows,
-   'meta'   => [
-        'choosenindex'            => $row['choosenindex'],
-        'winningpoint'            => $row['winningpoint'],
-        'currentwinningPercentage'=> $row['currentwinningPercentage'],
-        'totalSaleToday'          => $row['totalSaleToday'],
-        'totalWinToday'           => $row['totalWinToday'],
-        'winningPercentage'       => $row['winningPercentage'],
-        'overrideChance'          => $row['overrideChance'],
-        'userwins'                => $row['userwins'],
-        'allSametxt'              => $row['allSametxt'],
-        'minvalue'                => $row['minvalue'],
-        'row'                => $row,
-    ],
+    'data'         => $fullTimestamp,
+   
 ]);

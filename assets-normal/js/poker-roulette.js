@@ -62,6 +62,146 @@ const totalUnclaimdisplay = document.getElementById("unclaim-display");
 const resultDisplay = document.getElementById("result-display");
 // Timer functions
 
+// let countdowntemp = spinTimerDuration;
+// let countdown;
+// let timerInterval;
+// const countdownText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+
+// const svg = document.getElementById("circular-timer");
+// const segmentCountTimer = 60;
+// const centerXTimer = 100, centerYTimer = 100;
+// const radiusTimer = 70;
+// const stickLength = 10;
+// const timerSticks = [];
+
+// function updateTimerSticks() {
+//   const fractionPassed = (spinTimerDuration - countdown) / spinTimerDuration;
+//   const greenSegments = Math.round(fractionPassed * segmentCountTimer);
+//   timerSticks.forEach((stick, index) => {
+//     if (index < greenSegments) {
+//       stick.setAttribute("stroke", "green");
+//     } else {
+//       stick.setAttribute("stroke", "white");
+//     }
+//     if (countdown < 10) {
+//       stick.setAttribute("stroke", "red");
+//     }
+//   });
+// }
+
+
+// const clientTimeAtLoad = Date.now();
+// const serverClientOffset = serverTimeAtLoad - clientTimeAtLoad; // sync offset
+
+// function getSyncedTime() {
+//   return Date.now() + serverClientOffset;
+// }
+// let withdrawTime;
+// function getCountdown() {
+//   const syncedTime = getSyncedTime();
+//   const elapsed = syncedTime % (spinTimerDuration * 1000);
+//   return Math.floor((spinTimerDuration * 1000 - elapsed) / 1000);
+// }
+// let userwins;
+// let chosenIndex;
+// let winValue = 0;
+// // In your page’s <script> (make sure jQuery is loaded first)
+// function fetchBetHistory(withdrawTime) {
+//   $.ajax({
+//     url: '../../api/get_all_bet_history.php',
+//     method: 'POST',
+//     data: JSON.stringify({ withdrawTime }),
+//     contentType: 'application/json; charset=utf-8',
+//     dataType: 'json',
+//   })
+//   .done(function(response) {
+//     if (response.status === 'success') {
+//       console.log('Fetched rows:', response.data);
+//       console.log('Choosen Index:', response.meta);
+//       userwins = response.meta.userwins;
+//       chosenIndex = response.meta.choosenindex;
+//       winValue = response.meta.winningpoint;
+//       // TODO: render response.data into your UI
+//     } else {
+//       console.error('Server returned error:', response);
+//       // e.g. showErrorToUser(response.message);
+//     }
+//   })
+//   .fail(function(jqXHR, textStatus, errorThrown) {
+//     // Try to parse JSON payload
+//     let err = jqXHR.responseJSON || {
+//       status: 'error',
+//       type: 'HTTP',
+//       message: textStatus + (errorThrown ? (': ' + errorThrown) : '')
+//     };
+//     console.error('AJAX failure:', err);
+//     // e.g. showErrorToUser(err.message);
+//   });
+// }
+
+
+
+
+// function updateTimeDisplay() {
+//   const now = new Date(getSyncedTime());
+//   const currentTime = now.toLocaleTimeString();
+//   countdown = getCountdown();
+
+//   withdrawTime = new Date(now.getTime() + countdown * 1000 + 60000)
+//   .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+//   document.getElementById('current-time').textContent = `Current Time: ${currentTime}`;
+//   document.getElementById('withdraw-time').textContent = `Withdraw Time: ${withdrawTime}`;
+
+//   countdownText.textContent = countdown;
+
+//   updateTimerSticks();
+
+//   if (countdown == 105) {
+//     resultDisplay.textContent = "";
+//     resultDisplay.style.display = 'none';
+    
+//   }
+
+//   if (countdown <= 5) {
+//     resultDisplay.textContent = "Betting Time is Over";
+//     resultDisplay.style.display = 'block';
+  
+//   }
+//   if (countdown == 5) {
+//     updateBankValue();
+//   }
+//   if (countdown == 3) {
+//     fetchBetHistory(withdrawTime);
+//   }
+
+
+//   if (countdown === 0) {
+//     document.getElementById("spinBtn").click(); // auto-spin at 0
+//   }
+// }
+
+
+// function startTimer() {
+//   stopTimer(); // avoid duplicate intervals
+//   updateTimeDisplay();
+//   timerInterval = setInterval(updateTimeDisplay, 1000);
+// }
+
+// function stopTimer() {
+//   clearInterval(timerInterval);
+// }
+
+// // Start synchronized timer
+// startTimer();
+
+// // Winning index is determined from the main wheel’s final rotation.
+// function getWinningIndex(rotationAngle) {
+//   const r = rotationAngle % 360;
+//   const effectiveAngle = (360 - r + halfSegment) % 360;
+//   return Math.floor(effectiveAngle / segmentAngle);
+// }
+
 let countdowntemp = spinTimerDuration;
 let countdown;
 let timerInterval;
@@ -73,6 +213,9 @@ const centerXTimer = 100, centerYTimer = 100;
 const radiusTimer = 70;
 const stickLength = 10;
 const timerSticks = [];
+
+// How many seconds before cycle-end to clear the old result?
+const resultClearOffset = 15;
 
 function updateTimerSticks() {
   const fractionPassed = (spinTimerDuration - countdown) / spinTimerDuration;
@@ -89,23 +232,58 @@ function updateTimerSticks() {
   });
 }
 
-
 const clientTimeAtLoad = Date.now();
 const serverClientOffset = serverTimeAtLoad - clientTimeAtLoad; // sync offset
 
 function getSyncedTime() {
   return Date.now() + serverClientOffset;
 }
+
 let withdrawTime;
 function getCountdown() {
   const syncedTime = getSyncedTime();
   const elapsed = syncedTime % (spinTimerDuration * 1000);
   return Math.floor((spinTimerDuration * 1000 - elapsed) / 1000);
 }
+
 let userwins;
 let chosenIndex;
+let winamtValue = 0;
 let winValue = 0;
+
 // In your page’s <script> (make sure jQuery is loaded first)
+function getinsertedbetHistory(withdrawTime) {
+  $.ajax({
+    url: '../../api/get_inserted_bet_history.php',
+    method: 'POST',
+    data: JSON.stringify({ withdrawTime }),
+    contentType: 'application/json; charset=utf-8',
+    dataType: 'json',
+  })
+  .done(function(response) {
+    if (response.status === 'success') {
+      console.log('Fetched rows:', response.data);
+      console.log('Choosen Index:', response.data.choosenindex);
+      userwins = response.data.userwins;
+      chosenIndex = response.data.choosenindex;
+      winamtValue = response.data.winningpoint;
+      // TODO: render response.data into your UI
+    } else {
+      console.error('Server returned error:', response);
+      // e.g. showErrorToUser(response.message);
+    }
+  })
+  .fail(function(jqXHR, textStatus, errorThrown) {
+    // Try to parse JSON payload
+    let err = jqXHR.responseJSON || {
+      status: 'error',
+      type: 'HTTP',
+      message: textStatus + (errorThrown ? (': ' + errorThrown) : '')
+    };
+    console.error('AJAX failure:', err);
+    // e.g. showErrorToUser(err.message);
+  });
+}
 function fetchBetHistory(withdrawTime) {
   $.ajax({
     url: '../../api/get_all_bet_history.php',
@@ -117,10 +295,7 @@ function fetchBetHistory(withdrawTime) {
   .done(function(response) {
     if (response.status === 'success') {
       console.log('Fetched rows:', response.data);
-      console.log('Choosen Index:', response.meta);
-      userwins = response.meta.userwins;
-      chosenIndex = response.meta.choosenindex;
-      winValue = response.meta.winningpoint;
+
       // TODO: render response.data into your UI
     } else {
       console.error('Server returned error:', response);
@@ -139,16 +314,13 @@ function fetchBetHistory(withdrawTime) {
   });
 }
 
-
-
-
 function updateTimeDisplay() {
   const now = new Date(getSyncedTime());
   const currentTime = now.toLocaleTimeString();
   countdown = getCountdown();
 
   withdrawTime = new Date(now.getTime() + countdown * 1000 + 60000)
-  .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   document.getElementById('current-time').textContent = `Current Time: ${currentTime}`;
   document.getElementById('withdraw-time').textContent = `Withdraw Time: ${withdrawTime}`;
@@ -157,30 +329,34 @@ function updateTimeDisplay() {
 
   updateTimerSticks();
 
-  if (countdown == 105) {
+  // clear old result at spinTimerDuration - resultClearOffset
+  if (countdown === spinTimerDuration - resultClearOffset) {
     resultDisplay.textContent = "";
     resultDisplay.style.display = 'none';
-    
   }
 
   if (countdown <= 5) {
     resultDisplay.textContent = "Betting Time is Over";
     resultDisplay.style.display = 'block';
-  
   }
-  if (countdown == 5) {
+  if (countdown === 5) {
     updateBankValue();
   }
-  if (countdown == 3) {
+  if (countdown === 3) {
     fetchBetHistory(withdrawTime);
   }
-
-
+  if (countdown === 1) {
+    getinsertedbetHistory(withdrawTime);
+  }
+if (countdown <= 110) {
+    resultDisplay.textContent = "";
+    resultDisplay.style.display = 'none';
+    
+  }
   if (countdown === 0) {
     document.getElementById("spinBtn").click(); // auto-spin at 0
   }
 }
-
 
 function startTimer() {
   stopTimer(); // avoid duplicate intervals
@@ -201,6 +377,7 @@ function getWinningIndex(rotationAngle) {
   const effectiveAngle = (360 - r + halfSegment) % 360;
   return Math.floor(effectiveAngle / segmentAngle);
 }
+
 // Winning index is determined from the main wheel’s final rotation.
 
 let lastTotalBets = 0;
@@ -235,7 +412,7 @@ function addToTotalBets(amount) {
 let currentRotation = 0;
 
 let selectedCoin = null;
-const bets = {};
+let bets = {};
 
 
 
@@ -284,7 +461,7 @@ document.querySelectorAll(".coin").forEach(btn => {
     selectedCoinElement = this; // Store reference to the selected coin design
   });
 });
-// Global variable to record all bets
+// Global variable to record all totalbets
 let totalBets = 0;
 
 // Helper function to add or merge an overlay into a cell.
@@ -323,9 +500,12 @@ const GRID_COLUMNS = 5;
 // ----- PLACE BET ON GRID CARD -----
 // ----- PLACE BET ON GRID CARD (with merging logic) -----
 // ----- PLACE BET ON GRID CARD -----
+// Global tracker for all bets by index
+let allbetamtinx = {}; // Global map to track index-wise bets
+
 document.querySelectorAll(".grid-card").forEach(card => {
   card.addEventListener("click", function () {
-    console.log('countdown',countdown)
+    console.log('countdown', countdown)
     const resultDisplay = document.getElementById("result-display");
     if (countdown <= 5) {
       resultDisplay.style.display = 'block';
@@ -333,11 +513,10 @@ document.querySelectorAll(".grid-card").forEach(card => {
       return;
     }
 
-    const index = this.getAttribute("data-index");
+    const index = parseInt(this.getAttribute("data-index"));
     if (selectedCoin === null) return;
     if (balance < selectedCoin) return;
 
-    // Check max bet
     if (totalBets + selectedCoin > maxBetamount) {
       alert("Max bet amount is 10000");
       return;
@@ -345,48 +524,40 @@ document.querySelectorAll(".grid-card").forEach(card => {
 
     balance -= selectedCoin;
     updateBalanceDisplay();
-    // updatewinPointsDisplay();
 
-    // Merge overlay
     if (bets[index] === undefined) bets[index] = selectedCoin;
     else bets[index] += selectedCoin;
     totalBets += selectedCoin;
     addOrMergeOverlay(this, selectedCoin);
     updateTotalBetDisplay();
 
-    // Prepare lastBet
     lastBet = { identifier: index, amount: selectedCoin, element: this, overlayHTML: this.querySelector(".bet-overlay").outerHTML };
     lastBetHistory = { ...lastBet };
- 
-    // Special rule: if 12 grid bets placed, override lastBet.amount to second-largest
-    applySecondLargestRule();
+
+    // Update allbetamtinx
+    allbetamtinx[index] = (allbetamtinx[index] || 0) + selectedCoin;
+
     const data = {
       user_id: user_id,
-      identifier: lastBet.identifier,
-      amount: lastBet.amount,
+      identifier: index,
+      amount: selectedCoin,
       withdrawTime: withdrawTime
     };
     fetch('../../api/total_history.php', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     })
     .then(response => response.json())
-    .then(result => {
-      console.log('Server response:', result);
-    })
-    .catch(error => {
-      console.error('Error sending data:', error);
-    });
+    .then(result => console.log('Server response:', result))
+    .catch(error => console.error('Error sending data:', error));
   });
 });
 
 // ----- PLACE BET ON GRID HEADER (suit) -----
 document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
   header.addEventListener("click", function () {
-    console.log('countdown',countdown)
+    console.log('countdown', countdown)
     const resultDisplay = document.getElementById("result-display");
     if (countdown <= 5) {
       resultDisplay.style.display = 'block';
@@ -399,7 +570,6 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin) return;
 
-    // Check max bet
     if (totalBets + (selectedCoin * 3) > maxBetamount) {
       alert("Max bet amount is 10000");
       return;
@@ -407,27 +577,20 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
 
     balance -= (selectedCoin * 3);
     updateBalanceDisplay();
-    // updatewinPointsDisplay();
 
-    // Merge overlay
     if (bets[betKey] === undefined) bets[betKey] = (selectedCoin * 3);
     else bets[betKey] += (selectedCoin * 3);
     totalBets += (selectedCoin * 3);
     updateTotalBetDisplay();
 
-    // Apply overlay to column
-    const clickedIndex = gridCells.findIndex(cell => cell === this);
+    const clickedIndex = gridCells.findIndex(cell => cell === this); // <- Not used anymore
     const col = clickedIndex % GRID_COLUMNS;
     gridCells.forEach((cell, idx) => {
       if (idx % GRID_COLUMNS === col) addOrMergeOverlay(cell, selectedCoin);
     });
 
-    // Prepare lastBet
     lastBet = { identifier: betKey, amount: selectedCoin, element: this, overlayHTML: null };
     lastBetHistory = { ...lastBet };
-
-    // Special rule: if all 4 suits bet, override lastBet.amount to second-largest
-    console.log(lastBet);
 
     let identifiers = [];
     switch (lastBet.element.id) {
@@ -446,40 +609,34 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
       default:
         console.warn('Unknown suit icon:', lastBet.element);
     }
-    
-    console.log(identifiers);
-    
-    applySecondLargestRule();
+
+    // Update allbetamtinx
     identifiers.forEach(id => {
-        const data = {
-          user_id: user_id,
-          identifier: id,
-          amount: lastBet.amount,
-          withdrawTime: withdrawTime
-        };
-        fetch('../../api/total_history.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(result => {
-          console.log('Server response:', result);
-        })
-        .catch(error => {
-          console.error('Error sending data:', error);
-        });
-      });
+      allbetamtinx[id] = (allbetamtinx[id] || 0) + selectedCoin;
+
+      const data = {
+        user_id: user_id,
+        identifier: id,
+        amount: selectedCoin,
+        withdrawTime: withdrawTime
+      };
+      fetch('../../api/total_history.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(result => console.log('Server response:', result))
+      .catch(error => console.error('Error sending data:', error));
     });
+  });
 });
 
 allcardsbeted = false;
 // ----- PLACE BET ON GRID LABEL (card type) -----
 document.querySelectorAll(".grid-label").forEach(label => {
   label.addEventListener("click", function () {
-    console.log('countdown',countdown)
+    console.log('countdown', countdown)
     const resultDisplay = document.getElementById("result-display");
     if (countdown <= 5) {
       resultDisplay.style.display = 'block';
@@ -494,7 +651,6 @@ document.querySelectorAll(".grid-label").forEach(label => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin) return;
 
-    // Check max bet
     if (totalBets + (selectedCoin * 4) > maxBetamount) {
       alert("Max bet amount is 10000");
       return;
@@ -502,115 +658,105 @@ document.querySelectorAll(".grid-label").forEach(label => {
 
     balance -= (selectedCoin * 4);
     updateBalanceDisplay();
-    // updatewinPointsDisplay();
 
-    // Merge overlay
     if (bets[betKey] === undefined) bets[betKey] = (selectedCoin * 4);
     else bets[betKey] += (selectedCoin * 4);
     totalBets += (selectedCoin * 4);
     updateTotalBetDisplay();
 
-    // Apply overlay to row
-    const clickedIndex = gridCells.findIndex(cell => cell === this);
+    const clickedIndex = gridCells.findIndex(cell => cell === this); // <- Not used anymore
     const row = Math.floor(clickedIndex / GRID_COLUMNS);
     gridCells.forEach((cell, idx) => {
       if (Math.floor(idx / GRID_COLUMNS) === row) addOrMergeOverlay(cell, selectedCoin);
     });
 
-    // Prepare lastBet
     lastBet = { identifier: betKey, amount: selectedCoin, element: this, overlayHTML: null };
     lastBetHistory = { ...lastBet };
-
-    // Special rule: if all 3 card types bet, override lastBet.amount to second-largest
-    applySecondLargestRule();
-
-    console.log(lastBet);
 
     let identifiers = [];
     switch (lastBet.element.id) {
       case 'grid-label-3':
-        identifiers = [0, 1, 2, 3];
+        identifiers = [8, 9, 10, 11];
         break;
       case 'grid-label-2':
         identifiers = [4, 5, 6, 7];
         break;
       case 'grid-label-1':
-        identifiers = [8, 9, 10, 11];
+         identifiers = [0, 1, 2, 3];
         break;
       default:
-        console.warn('Unknown suit icon:', lastBet.element);
+        console.warn('Unknown card label:', lastBet.element);
     }
-    
-    console.log(identifiers);
+
+    // Update allbetamtinx
     identifiers.forEach(id => {
-    const data = {
-      user_id: user_id,
-      identifier: id,
-      amount: lastBet.amount,
-      withdrawTime: withdrawTime
-    };
-    fetch('../../api/total_history.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-      console.log('Server response:', result);
-    })
-    .catch(error => {
-      console.error('Error sending data:', error);
+      allbetamtinx[id] = (allbetamtinx[id] || 0) + selectedCoin;
+
+      const data = {
+        user_id: user_id,
+        identifier: id,
+        amount: selectedCoin,
+        withdrawTime: withdrawTime
+      };
+      fetch('../../api/total_history.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(result => console.log('Server response:', result))
+      .catch(error => console.error('Error sending data:', error));
     });
-    
   });
 });
-});
+
+
+
 
 // ----- Helper: second-largest override -----
-function applySecondLargestRule() {
-  const keys = Object.keys(bets);
-  let relevantValues = null;
+// function applySecondLargestRule() {
+//   const keys = Object.keys(bets);
+//   let relevantValues = null;
 
-  // 12 grid cells
-  //   const gridKeys = keys.filter(k => !isNaN(k) && +k < GRID_COLUMNS * GRID_ROWS);
-  // console.log(Object.keys(bets).length, 'betslength');
+//   // 12 grid cells
+//   //   const gridKeys = keys.filter(k => !isNaN(k) && +k < GRID_COLUMNS * GRID_ROWS);
+//   // console.log(Object.keys(bets).length, 'betslength');
 
-  if (Object.keys(bets).length > 11) {
-    allcardsbeted = true;
-    console.log(allcardsbeted);
-  }
+//   if (Object.keys(bets).length > 11) {
+//     allcardsbeted = true;
+//     console.log(allcardsbeted);
+//   }
 
-  // 3 card types
-  else if (["cardType-Jack", "cardType-Queen", "cardType-King"].every(k => bets[k] !== undefined)) {
-    relevantValues = ["cardType-Jack", "cardType-Queen", "cardType-King"].map(k => bets[k] / 4);
-    allcardsbeted = true;
-  }
-  // 4 suits
-  else if (["suit-♠", "suit-♦", "suit-♣", "suit-♥"].every(k => bets[k] !== undefined)) {
-    relevantValues = ["suit-♠", "suit-♦", "suit-♣", "suit-♥"].map(k => bets[k] / 3);
-    allcardsbeted = true;
-  }
+//   // 3 card types
+//   else if (["cardType-Jack", "cardType-Queen", "cardType-King"].every(k => bets[k] !== undefined)) {
+//     relevantValues = ["cardType-Jack", "cardType-Queen", "cardType-King"].map(k => bets[k] / 4);
+//     allcardsbeted = true;
+//   }
+//   // 4 suits
+//   else if (["suit-♠", "suit-♦", "suit-♣", "suit-♥"].every(k => bets[k] !== undefined)) {
+//     relevantValues = ["suit-♠", "suit-♦", "suit-♣", "suit-♥"].map(k => bets[k] / 3);
+//     allcardsbeted = true;
+//   }
 
-  if (relevantValues) {
-    // Sort desc and pick second element
-    const sorted = relevantValues.slice().sort((a, b) => b - a);
-    const second = sorted[1] !== undefined ? sorted[1] : sorted[0];
-    lastBet.amount = second;
-    lastBetHistory.amount = second;
-  }
-}
+//   if (relevantValues) {
+//     // Sort desc and pick second element
+//     const sorted = relevantValues.slice().sort((a, b) => b - a);
+//     const second = sorted[1] !== undefined ? sorted[1] : sorted[0];
+//     lastBet.amount = second;
+//     lastBetHistory.amount = second;
+//   }
+// }
 
 
 
 
 // ----- CLEAR ALL BETS -----
 document.getElementById("clear-bets").addEventListener("click", function () {
-  console.log('bets', bets)
-  console.log('totalBets', totalBets)
-  console.log('lastTotalBets', lastTotalBets)
-  console.log('lastBet', lastBet)
+  console.log('bets', bets);
+  console.log('allbetamtinx', allbetamtinx);
+  console.log('totalBets', totalBets);
+  console.log('lastTotalBets', lastTotalBets);
+  console.log('lastBet', lastBet);
   if (countdown <= 5) {
     resultDisplay.style.display = 'block';
     resultDisplay.textContent = "Betting time is over.";
@@ -651,6 +797,7 @@ document.getElementById("clear-bets").addEventListener("click", function () {
   lastTotalBets = 0;
   lastBet ={};
   console.log('bets',bets);
+  console.log('allbetamtinx',allbetamtinx);
   console.log('totalBets',totalBets);
   console.log('lastTotalBets',lastTotalBets);
   console.log('lastBet',lastBet);
@@ -999,6 +1146,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     console.warn('chosenIndex was invalid; new random chosenIndex:', chosenIndex);
   }
   console.log('bets',bets)
+  console.log('allbetamtinx',allbetamtinx)
   // fetchBetHistory(withdrawTime);
 
   // let userwins;
@@ -1235,14 +1383,14 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     const gridIndex = winningIndex;
     const markerImgEls = document.querySelectorAll(`.grid-card[data-index="${gridIndex}"] img`);
 
-const markerImgEl1 = markerImgEls[0];
-const markerImgEl2 = markerImgEls[1];
+    const markerImgEl1 = markerImgEls[0];
+    const markerImgEl2 = markerImgEls[1];
 
-const markerSrc = markerImgEl1?.src;
-const markerAlt = markerImgEl1?.alt;
+    const markerSrc = markerImgEl1?.src;
+    const markerAlt = markerImgEl1?.alt;
 
-const markerSrc2 = markerImgEl2?.src;
-const markerAlt2 = markerImgEl2?.alt;
+    const markerSrc2 = markerImgEl2?.src;
+    const markerAlt2 = markerImgEl2?.alt;
 
     // const markerImgEl = document.querySelector(`.grid-card[data-index="${gridIndex}"] img`);
     // const markerSrc = markerImgEl.src;
@@ -1280,10 +1428,23 @@ const markerAlt2 = markerImgEl2?.alt;
     
     let userWon = false;
 
+    function evaluateBet(allbetamtinx, chosenIndex) {
+      // see if chosenIndex is a key in allbetamtinx
+      if (allbetamtinx.hasOwnProperty(chosenIndex)) {
+        const amount = allbetamtinx[chosenIndex];      // get the amount for that index
+        const userWon = true;
+        const winamt = amount * 10;          // apply your multiplier
+        return { userWon, winamt };
+      }
+      // if it wasn’t found
+      return { userWon: false, winamt: 0 };
+    }
+    const result = evaluateBet(allbetamtinx, chosenIndex);
+
     console.log(lastBet)
-        if (userwins == 'yes' && winValue > 0 && lastBet.identifier == chosenIndex) {
+        if (winamtValue > 0 && result.userWon) {
           console.log('true')
-            winValue = lastBet.amount * 10;
+            winValue = result.winamt;
             userWon = true;
           if (auto_claim) {
 
@@ -1298,9 +1459,9 @@ const markerAlt2 = markerImgEl2?.alt;
         }
         
       
-      else if (userwins == 'yes' && winValue > 0 && lastBet.identifier.startsWith("cardType-")) {
+      else if (result.userWon && winamtValue > 0 && lastBet.identifier.startsWith("cardType-")) {
         if (lastBet.identifier === cardTypeKey) {
-          winValue = lastBet.amount * 10;
+          winValue = result.winamt;
           userWon = true;
         if (auto_claim) {
 
@@ -1313,9 +1474,9 @@ const markerAlt2 = markerImgEl2?.alt;
           updateUnclaimPointsDisplay();
         }
         }
-      } else if (userwins == 'yes' && winValue > 0 && lastBet.identifier.startsWith("suit-")) {
+      } else if (result.userWon == chosenIndex && winamtValue > 0 && lastBet.identifier.startsWith("suit-")) {
         if (lastBet.identifier === suitKey) {
-          winValue = lastBet.amount * 10;
+          winValue = result.winamt;
             userWon = true;
           if (auto_claim) {
 
@@ -1340,6 +1501,8 @@ const markerAlt2 = markerImgEl2?.alt;
       console.log(winValue, 'winValue')
       // balance = (balance + winValue);
       console.log(balance, 'balance')
+    } else {
+      winValue = 0;
     }
 
     updateBalanceDisplay();
@@ -1409,6 +1572,8 @@ const markerAlt2 = markerImgEl2?.alt;
     }
     // Restart the timer for the next spin.
     lastBet = {};
+    allbetamtinx = {};
+    bets = {};
     allcardsbeted = false;
     // startTimer();
     totalBets = 0;
