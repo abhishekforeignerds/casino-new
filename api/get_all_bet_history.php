@@ -154,34 +154,47 @@ $allPresent   = false;
 $allSame      = false;
 $minvalue;
 
+
+$conditionTaken = '';
+
 // Case A: No data at all
 if (empty($uniqueCardTypes)) {
-    $choosenindex = rand(0, 11);
-    $userwins     = 'no';
+    $choosenindex     = rand(0, 11);
+    $userwins         = 'no';
+    $conditionTaken   = sprintf(
+        'Case A (no data): winningPercentage=%s, currentwinningPercentage=%s',
+        $winningPercentage,
+        $currentwinningPercentage
+    );
 
 // Case B: We have some data
-} 
-
-else {
-   
+} else {
     // Check if every card 0–11 is present
     $allPresent = (count($uniqueCardTypes) === 12);
 
     if ($allPresent) {
-        $amounts = array_values($uniqueCardTypes);
-        $allSame = (count(array_unique($amounts)) === 1);
+        $amounts  = array_values($uniqueCardTypes);
+        $allSame  = (count(array_unique($amounts)) === 1);
 
         if ($allSame) {
             // all amounts equal → random pick among 0–11
-            $choosenindex = rand(0, 11);
+            $choosenindex   = rand(0, 11);
+            $conditionTaken = sprintf(
+                'Case B1 (allPresent & allSame): winning=%s, current=%s',
+                $winningPercentage,
+                $currentwinningPercentage
+            );
         } else {
             // pick the card_type key that has the minimum amount
             $minAmount     = min($amounts);
-            // array_keys() on the original associative array to keep key relation
             $typesWithMin  = array_keys($uniqueCardTypes, $minAmount, true);
-            // if multiple, just take the first
-            $choosenindex  = $typesWithMin[0];
-            $$minvalue  = $typesWithMin[0];
+            $choosenindex  = $typesWithMin[array_rand($typesWithMin)];
+            $conditionTaken = sprintf(
+                'Case B2 (allPresent & differing amounts – minAmount=%s): winning=%s, current=%s',
+                $minAmount,
+                $winningPercentage,
+                $currentwinningPercentage
+            );
         }
 
         // if we got here, user “wins”
@@ -189,30 +202,57 @@ else {
 
     } else {
         // Not all cards are present
-        // You presumably have $winningPercentage and $currentwinningPercentage available
+        if ($currentwinningPercentage < ($winningPercentage / 2)) {
+            $choosenindex   = array_rand($uniqueCardTypes);
+            $userwins       = 'yes';
+            $conditionTaken = sprintf(
+                'Case C1 (low current < half): winning=%s, current=%s',
+                $winningPercentage,
+                $currentwinningPercentage
+            );
 
-         if (($currentwinningPercentage < ($winningPercentage / 2))) {
-            $choosenindex = array_rand($uniqueCardTypes);
-            $userwins     = 'yes';
+        } elseif (
+            $currentwinningPercentage > ($winningPercentage / 2)
+            && $currentwinningPercentage < ($winningPercentage - 10)
+        ) {
+            $choosenindex   = rand(0, 11);
+            $userwins       = 'random';
+            $conditionTaken = sprintf(
+                'Case C2 (mid-range current): winning=%s, current=%s',
+                $winningPercentage,
+                $currentwinningPercentage
+            );
 
-        } elseif (($currentwinningPercentage > ($winningPercentage / 2)) && ($currentwinningPercentage < ($winningPercentage - 10))) {
-            $choosenindex = rand(0, 11);
-            $userwins     = 'random';
-        } 
-        elseif ($currentwinningPercentage > ($winningPercentage - 10) && $currentwinningPercentage < ($winningPercentage)) {
+        } elseif (
+            $currentwinningPercentage > ($winningPercentage - 10)
+            && $currentwinningPercentage < $winningPercentage
+        ) {
             // pick a random from those already present
-            $choosenindex = array_rand($uniqueCardTypes);
-            $userwins     = 'yes';
-        } elseif ($currentwinningPercentage > ($winningPercentage)) {
+            $choosenindex   = array_rand($uniqueCardTypes);
+            $userwins       = 'yes';
+            $conditionTaken = sprintf(
+                'Case C3 (approaching win threshold): winning=%s, current=%s',
+                $winningPercentage,
+                $currentwinningPercentage
+            );
+
+        } elseif ($currentwinningPercentage > $winningPercentage) {
             // pick from the missing ones, if any
             if (!empty($availableIndexes)) {
                 $choosenindex = $availableIndexes[array_rand($availableIndexes)];
             }
-            $userwins = 'no';
+            $userwins       = 'no';
+            $conditionTaken = sprintf(
+                'Case C4 (current > winning): winning=%s, current=%s, userwins=%s,choosenindex=%s',
+                $winningPercentage,
+                $currentwinningPercentage,
+                $userwins,
+                $choosenindex,
+            );
         }
-    
     }
 }
+
 
 // Finally, compute the “allSametxt” and “minvalue” only if we have data:
 if (!empty($uniqueCardTypes)) {
@@ -224,16 +264,26 @@ if (!empty($uniqueCardTypes)) {
         $allSametxt = 'no';
         // the minimum key
          $amounts = array_values($uniqueCardTypes);
-         $minAmount = min($amounts);
-            // array_keys() on the original associative array to keep key relation
+         $minAmount     = min($amounts);
+        // Get all card types with the minimum amount
         $typesWithMin  = array_keys($uniqueCardTypes, $minAmount, true);
 
-        $minvalue = $typesWithMin[0];
+        // Pick one at random instead of always taking the first
+        if ($userwins == 'no') {
+           
+            $choosenindex  = $choosenindex;
+            $minvalue      = $choosenindex ?? 0;
+        } else {
+
+            $choosenindex  = $typesWithMin[array_rand($typesWithMin)];
+            $minvalue      = $choosenindex;
+        }
+
     }
 } else {
     // no data → set defaults
     $allSametxt = 'no';
-    $minvalue   = null;
+    $minvalue   = 0;
 }
 
 // Now you have $choosenindex, $userwins, $allSametxt, $minvalue
@@ -318,6 +368,6 @@ if (!$stmt->execute()) {
 $stmt->close();
 echo json_encode([
     'status'       => 'success',
-    'data'         => $fullTimestamp,
+    'data'         => $conditionTaken,
    
 ]);

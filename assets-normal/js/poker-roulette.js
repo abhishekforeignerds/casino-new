@@ -433,6 +433,7 @@ updatewinPointsDisplay();
 
 // AJAX helper to update bank value on server
 function updateBankValue() {
+  console.log('balance',balance)
   fetch('../../api/update_bank.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -515,7 +516,10 @@ document.querySelectorAll(".grid-card").forEach(card => {
 
     const index = parseInt(this.getAttribute("data-index"));
     if (selectedCoin === null) return;
-    if (balance < selectedCoin) return;
+    if (balance < selectedCoin) {
+      alert("Not Enough Balance to Place Bet");
+    return;
+    }
 
     if (totalBets + selectedCoin > maxBetamount) {
       alert("Max bet amount is 10000");
@@ -568,7 +572,10 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     const suit = this.textContent.trim();
     const betKey = "suit-" + suit;
     if (selectedCoin === null) return;
-    if (balance < selectedCoin) return;
+    if (balance < selectedCoin * 3){
+      alert("Not Enough Balance to Place Bet");
+    return;
+    }
 
     if (totalBets + (selectedCoin * 3) > maxBetamount) {
       alert("Max bet amount is 10000");
@@ -649,7 +656,10 @@ document.querySelectorAll(".grid-label").forEach(label => {
     const cardType = img.getAttribute("alt").split(" ")[0];
     const betKey = "cardType-" + cardType;
     if (selectedCoin === null) return;
-    if (balance < selectedCoin) return;
+    if (balance < selectedCoin * 4) {
+      alert("Not Enough Balance to Place Bet");
+    return;
+    }
 
     if (totalBets + (selectedCoin * 4) > maxBetamount) {
       alert("Max bet amount is 10000");
@@ -1140,11 +1150,11 @@ const cardDetails = [
 ];
 
 document.getElementById("spinBtn").addEventListener("click", function () {
-  if (typeof chosenIndex !== 'number' || chosenIndex < 0 || chosenIndex >= segmentCount) {
-    // Assign a random segment if chosenIndex is invalid or undefined
-    chosenIndex = Math.floor(Math.random() * segmentCount);
-    console.warn('chosenIndex was invalid; new random chosenIndex:', chosenIndex);
-  }
+  // if (typeof chosenIndex !== 'number' || chosenIndex < 0 || chosenIndex >= segmentCount) {
+  //   // Assign a random segment if chosenIndex is invalid or undefined
+  //   chosenIndex = Math.floor(Math.random() * segmentCount);
+  //   console.warn('chosenIndex was invalid; new random chosenIndex:', chosenIndex);
+  // }
   console.log('bets',bets)
   console.log('allbetamtinx',allbetamtinx)
   // fetchBetHistory(withdrawTime);
@@ -1359,13 +1369,18 @@ document.getElementById("spinBtn").addEventListener("click", function () {
   // --- After spin duration, finalize and determine results ---
   setTimeout(() => {
     // Normalize currentRotation and update transforms
-    currentRotation = currentRotation % 360;
-    wheel.style.transition = "none";
-    wheel.style.transform = "rotate(" + currentRotation + "deg)";
-    suitRing.style.transition = "none";
-    suitRing.style.transform = "rotate(" + (-currentRotation) + "deg)";
-    stickContainer.style.transition = "none";
-    stickContainer.style.transform = "rotate(" + currentRotation + "deg)";
+  currentRotation = currentRotation % 360;
+  // Add 15° more
+  currentRotation += 15;
+
+  wheel.style.transition = "none";
+  wheel.style.transform  = `rotate(${currentRotation}deg)`;
+
+  suitRing.style.transition = "none";
+  suitRing.style.transform  = `rotate(${-currentRotation + 30}deg)`;
+
+  stickContainer.style.transition = "none";
+  stickContainer.style.transform = `rotate(${currentRotation}deg)`;
 
     // Stop center text animation
     stopCenterTextAnimation();
@@ -1427,6 +1442,10 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     // --- Win calculation based on last bet ---
     
     let userWon = false;
+if (chosenIndex === undefined) {
+  // pick an integer from 0 up to and including 11
+  chosenIndex = Math.floor(Math.random() * 12);
+}
 
     function evaluateBet(allbetamtinx, chosenIndex) {
       // see if chosenIndex is a key in allbetamtinx
@@ -1441,7 +1460,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     }
     const result = evaluateBet(allbetamtinx, chosenIndex);
 
-    console.log(lastBet)
+    console.log('chosenIndex', chosenIndex);
         if (winamtValue > 0 && result.userWon) {
           console.log('true')
             winValue = result.winamt;
@@ -1459,37 +1478,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
         }
         
       
-      else if (result.userWon && winamtValue > 0 && lastBet.identifier.startsWith("cardType-")) {
-        if (lastBet.identifier === cardTypeKey) {
-          winValue = result.winamt;
-          userWon = true;
-        if (auto_claim) {
 
-          totalClaim = totalClaim + winValue;
-          updatewinPointsDisplay();
-          balance = balance + winValue;
-          updateBankValue();
-        } else {
-          totalUnclaim = totalUnclaim + winValue;
-          updateUnclaimPointsDisplay();
-        }
-        }
-      } else if (result.userWon == chosenIndex && winamtValue > 0 && lastBet.identifier.startsWith("suit-")) {
-        if (lastBet.identifier === suitKey) {
-          winValue = result.winamt;
-            userWon = true;
-          if (auto_claim) {
-
-            totalClaim = totalClaim + winValue;
-            updatewinPointsDisplay();
-            balance = balance + winValue;
-            updateBankValue();
-          } else {
-            totalUnclaim = totalUnclaim + winValue;
-            updateUnclaimPointsDisplay();
-          }
-        }
-      }
 
 
     if (userWon) {

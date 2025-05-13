@@ -232,75 +232,18 @@ $totalUnclaim = $totalUnclaim ?? 0;
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 
-<body data-bs-spy="scroll" data-bs-offset="170" data-bs-target=".privacy-policy-sidebar-menu">
+<body data-bs-spy="scroll" data-bs-offset="170" data-bs-target=".privacy-policy-sidebar-menu"  style="height:100vh;">
 
     <div class="overlay"></div>
     <div class="preloader">
         <div class="scene" id="scene">
             <input type="checkbox" id="andicator" />
-            <div class="cube">
-                <div class="cube__face cube__face--front"><i></i></div>
-                <div class="cube__face cube__face--back"><i></i><i></i></div>
-                <div class="cube__face cube__face--right">
-                    <i></i> <i></i> <i></i> <i></i> <i></i>
-                </div>
-                <div class="cube__face cube__face--left">
-                    <i></i> <i></i> <i></i> <i></i> <i></i> <i></i>
-                </div>
-                <div class="cube__face cube__face--top">
-                    <i></i> <i></i> <i></i>
-                </div>
-                <div class="cube__face cube__face--bottom">
-                    <i></i> <i></i> <i></i> <i></i>
-                </div>
+            Loading
             </div>
         </div>
     </div>
 
-    <div id="navbar-header" class="header">
-        <div class="container">
-            <div class="header-bottom">
-                <div class="header-bottom-area align-items-center">
-                    <div class="logo"><a href="index.php"><img src="assets/images/logo.png" alt="logo"></a></div>
-                    <ul class="menu">
-                        <li>
-                            <a href="index.php">Home</a>
-                        </li>
-                        <li>
-                            <a href="dashboard.php">Dashboard</a>
-                        </li>
-                        <li>
-                            <a href="games.php">Games <span class="badge badge--sm badge--base text-dark">NEW</span></a>
-                        </li>
-
-                        <li>
-                            <a href="contact.php">Contact</a>
-                        </li>
-                        <li>
-                            <a href="logout.php" class="cmn--btn active">Logout</a>
-
-                        </li>
-                        <li>
-                            <a class="text-center mt-3 gold-box">Welcome,
-                                <?php echo htmlspecialchars($_SESSION['fname']); ?>    <?php echo htmlspecialchars($_SESSION['lname']); ?> !
-                            </a>
-
-                        </li>
-                        <button class="btn-close btn-close-white d-lg-none"></button>
-                    </ul>
-                    <div class="header-trigger-wrapper d-flex d-lg-none align-items-center">
-                        <div class="header-trigger me-4">
-                            <span></span>
-                        </div>
-                        <a href="logout.php" class="cmn--btn active btn--md d-none d-sm-block">Logout</a>
-                    </div>
-                  <!-- Toggle Fullscreen Button with Icon -->
-                    
-
-                </div>
-            </div>
-        </div>
-    </div>
+    
     <div id="mini-nav">
         <button class="bordersboxes" id="fullscreenBtn" style="color:white;font-size: 32px;border: none;background: none;z-index: 1000;cursor: pointer;">
           <i class="fas fa-expand"></i>
@@ -318,13 +261,17 @@ $totalUnclaim = $totalUnclaim ?? 0;
     /> Auto‑claim Wins
   </label>
 </div>
-        <div class="bordersboxes" id="claim-display"> Claimed: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($totalClaim ?? 0); ?> </span> </div>
-        <div class="bordersboxes" id="unclaim-display"> Unclaimed: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($totalUnclaim ?? 0); ?> </span> </div>
+ <a href="logout.php" class="cmn--btn active btn--md d-none d-sm-block">Logout</a>
+    
+                            <a  class="cmn--btn active btn--md d-none d-sm-block" href="dashboard.php">Dashboard</a>
+                        
+        <div class="bordersboxes d-flex flex-column" id="claim-display"> Claimed <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($totalClaim ?? 0); ?> </span> </div>
+        <div class="bordersboxes d-flex flex-column" id="unclaim-display"> Unclaimed: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($totalUnclaim ?? 0); ?> </span> </div>
 
-        <div class="bordersboxes" id="balance-display"> Balance: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($points ?? 0); ?> </span> </div>
+        <div class="bordersboxes d-flex flex-column" id="balance-display"> Balance: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($points ?? 0); ?> </span> </div>
 
-        <div class="bordersboxes" id="currentbet-display"> Current Bet: <span style="color: gold; font-weight:800;">0</span> </div>
-        <div class="bordersboxes" id="totalbet-display"> Today's Bet: <span style="color: gold; font-weight:800;"> <?php echo htmlspecialchars($bettingPoints ?? 0); ?></span> </div>
+        <div class="bordersboxes d-flex flex-column" id="currentbet-display"> Current Bet: <span style="color: gold; font-weight:800;">0</span> </div>
+        <div class="bordersboxes d-flex flex-column" id="totalbet-display"> Today's Bet: <span style="color: gold; font-weight:800;"> <?php echo htmlspecialchars($bettingPoints ?? 0); ?></span> </div>
 
 
           
@@ -829,37 +776,7 @@ $('#auto-claim-toggle').on('change', function(){
     });
 
 </script>
-<div id="foter-div">
-<footer id="poker-footer" class="footer-section bg_img" style="background: url(assets/images/footer/bg.jpg) center;">
-            <div class="footer-top">
-                <div class="container">
-                    <div class="footer-wrapper d-flex flex-wrap align-items-center justify-content-md-between justify-content-center">
-                        <div class="logo mb-3 mb-md-0">
-                            <a href="index.php"><img src="assets/images/logo.png" alt="logo"></a>
-                        </div>
-                        <ul class="footer-links d-flex flex-wrap justify-content-center">
-                            <li><a href="games.php">Games</a></li>
-                            <li><a href="terms-conditions.php">Terms & Conditions</a></li>
-                            <li><a href="policy.php">Privacy Policy</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <div class="container">
-                    <div class="footer-wrapper d-flex flex-wrap justify-content-center align-items-center text-center">
-                        <p class="copyright text-white">
-                            Copyrights &copy; <?php echo date("Y"); ?> All Rights Reserved by
-                            <a href="#0" class="text--base ms-2">Viserlab</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="shapes">
-                <img src="assets/images/footer/shape.png" alt="footer" class="shape1">
-            </div>
-        </footer>
-</div>
+
    
 
         <!-- jQuery library -->
@@ -870,6 +787,6 @@ $('#auto-claim-toggle').on('change', function(){
         <script src="assets/js/lib/slick.min.js"></script>
         <!-- main js -->
         <script src="assets/js/main.js"></script>
-    </div>
+  
 </body>
 

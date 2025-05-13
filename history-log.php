@@ -55,16 +55,42 @@ $stmt->bind_result($bettingPoints);
 $stmt->fetch();
 $stmt->close();
 
+$stmt = $conn->prepare("SELECT * FROM game_results WHERE user_id = ? AND game_id = 1");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$gameResults = []; // Initialize empty array
+
+while ($row = $result->fetch_assoc()) {
+    $gameResults[] = $row; // Append each row to the array
+}
+
+$stmt->close();
+
+    $stmt = $conn->prepare("SELECT 
+    SUM(claim_point) AS total_claim, 
+    SUM(unclaim_point) AS total_unclaim 
+FROM claim_point_data 
+WHERE user_id = ? AND DATE(created_at) = CURDATE()");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($totalClaim, $totalUnclaim);
+$stmt->fetch();
+$stmt->close();
+
+$totalClaim = $totalClaim ?? 0;
+$totalUnclaim = $totalUnclaim ?? 0;
 
 $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $amount = trim($_POST['amount']);
-    $confirm = trim($_POST['confirm_amount']);
+    $amount = $totalUnclaim;
+    $confirm = $totalUnclaim;
     if ($amount !== $confirm) {
         $error = 'Amounts do not match.';
-    } elseif ($amount > $points) {
+    } elseif ($amount > $totalUnclaim) {
         $error = 'You do not have enough points to claim.';
     }
     else {
@@ -74,9 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_result($todayCount);
         $stmt->fetch();
         $stmt->close();
-        if ($todayCount > 0) {
-            $error = 'You have already claimed today.';
-        } else {
+        
             do {
                 $ref = '';
                 $chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -92,16 +116,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } while ($refExists > 0);
 
             $now = date('Y-m-d H:i:s');
-            $status = 'requested';
+            $status = 'claimed';
             $stmt = $conn->prepare("INSERT INTO user_points_claims (from_id, user_id, amount, reference_number, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmt->bind_param("iisssss", $user_id, $retailer_id, $amount, $ref, $status, $now, $now);
             if ($stmt->execute()) {
+                  $updatePointsQuery = "UPDATE user SET points = points + ? WHERE id = ?";
+                    $updateStmt = $conn->prepare($updatePointsQuery);
+                    $updateStmt->bind_param("ii", $amount, $user_id);
+                    $updateStmt->execute();
+
+                    $deleteQuery = "DELETE FROM claim_point_data WHERE user_id = ? AND unclaim_point > 0";
+    $deleteStmt = $conn->prepare($deleteQuery);
+    $deleteStmt->bind_param("i", $user_id);
+    $deleteStmt->execute();
                 $success = 'Points claim requested successfully. Reference: ' . $ref;
+
             } else {
                 $error = 'Database error. Please try again.';
             }
             $stmt->close();
-        }
+        
     }
 }
 ?>
@@ -125,6 +159,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Main css -->
         <link rel="stylesheet" href="assets/css/main.css">
+        <style>
+            tr.table-history .grid-card.d-flex.align-items-baseline.justify-content-around img.card {
+    width: 50px;
+    height: 44px;
+}
+        </style>
     </head>
     <body data-bs-spy="scroll" data-bs-offset="170"
         data-bs-target=".privacy-policy-sidebar-menu">
@@ -266,6 +306,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <span>Welcome</span>
                                     <h5 class="name">Munna Ahmed</h5>
                                     <h5 class="name">Your Balance <span style="color:#ffc124"><?php echo htmlspecialchars($points ?? 0); ?></span></h5>
+                                    <h5 class="name">Claimed Points <span style="color:#ffc124"><?php echo htmlspecialchars($totalClaim ?? 0); ?></span></h5>
+                                    <h5 class="name">Unclaimed Points <span style="color:#ffc124"><?php echo htmlspecialchars($totalUnclaim ?? 0); ?></span></h5>
                                     <ul class="user-option">
                                         <li>
                                             <a href="#0">
@@ -328,7 +370,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <div class="reset-header mb-5 text-center">
                                     <div class="icon"><i
                                             class="las la-lock"></i></div>
-                                    <h3 class="mt-3">Withdraw Points</h3>
+                                    <h3 class="mt-3">Claim Points</h3>
                                     <p>Note You can claim one time in a day, so claim carefully.</p>
                                 </div>
                                 <?php if ($error): ?>
@@ -339,54 +381,145 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                 <form method="post" autocomplete="off">
                                     <div class="form-group mb-3">
-                                        <label for="amount" class="form-label">Choose Amount</label>
-                                        <input id="amount" type="text" name="amount" class="form-control form--control" required autocomplete="off">
+                                        <!-- <label for="amount" class="form-label">Choose Amount</label> -->
+                                        <input id="amount" type="text" name="amount" class="form-control form--control" hidden autocomplete="off">
                                     </div>
 
                                     <div class="form-group mb-3">
-                                        <label for="confirm_amount" class="form-label">Confirm Amount</label>
-                                        <input id="confirm_amount" type="text" name="confirm_amount" class="form-control form--control" required autocomplete="off">
+                                        <!-- <label for="confirm_amount" class="form-label">Confirm Amount</label> -->
+                                        <input id="confirm_amount" type="text" name="confirm_amount" class="form-control form--control" hidden autocomplete="off">
                                     </div>
 
                                     <div class="form-group mt-4">
-                                        <button type="submit" class="cmn--btn active w-100">Withdraw Points</button>
+                                        <button type="submit" class="cmn--btn active w-100">Claim Points</button>
                                     </div>
                                 </form>
 
                             </div>
                         </div>
                         <div class="table--responsive--md">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Transection ID</th>
-                                    <th>Transection Type</th>
-                                    <th>Date</th>
-                                    <th>Amount</th>
-                                    <th>Status</th> 
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($user_points_claims as $claim): ?>
-                                    <tr>
-                                        <td class="trx-id" data-label="Transection ID">#<?= htmlspecialchars($claim['reference_number']) ?></td>
-                                        <td class="trx-type" data-label="Transection Type">Withdraw</td>
-                                        <td class="date" data-label="Date"><?= date("d M, y \\a\\t h:i A", strtotime($claim['created_at'])) ?></td>
-                                        <td class="amount" data-label="Amount">₹<?= number_format($claim['amount'], 2) ?></td>
-                                        <td class="status" data-label="Status">
-                                        <?php if ($claim['status'] === 'requested'): ?>
-                                            <small style="background-color: #87875f; padding: 2px 8px; border-radius: 5px; color: #fff;">Claim Requested</small>
-                                        <?php elseif ($claim['status'] === 'rejected'): ?>
-                                            <small style="background-color: #dc3545; padding: 2px 8px; border-radius: 5px; color: #fff;">Rejected</small>
-                                        <?php else: ?>
-                                            <small style="background-color: #28a745; padding: 2px 8px; border-radius: 5px; color: #fff;">Claimed</small>
-                                        <?php endif; ?>
+                 <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Card Number</th>
+                            <th>Bet Amount</th>
+                            <th>Win Value</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($gameResults as $result): ?>
+                            <?php
+                                $card_number = ($result['win_value'] > 0) ? $result['winning_number'] : $result['lose_number'];
+                                $userwins = ($result['win_value'] > 0) ? 'Yes' : 'No';
 
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                            ?>
+                            <tr class="table-history">
+                                <td data-label="Card">
+
+                                 <?php if ($card_number == 0): ?>
+                                    <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="0">
+                                        <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades">
+                                        <img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades">
+                                        <div class="cstm-ribbon">Play</div>
+                                    </div>
+                                <?php elseif ($card_number == 1): ?>
+                                    <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="1">
+                                        <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Diamonds">
+                                        <img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Diamonds">
+                                        <div class="cstm-ribbon">Play</div>
+                                    </div>
+                               
+                                <?php elseif ($card_number == 2): ?>
+                                   <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="2">
+                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Clubs">
+                    <img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Clubs">
+                    <div class="cstm-ribbon">Play</div>
+                </div>
+              
+                                <?php elseif ($card_number == 3): ?>
+                                    <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="3">
+                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Hearts">
+                    <img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Hearts">
+                    <div class="cstm-ribbon">Play</div>
+                </div>
+                                
+                                <?php elseif ($card_number == 4): ?>
+                                 <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="4">
+                     <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Spades">
+                     <img class="card" src="/assets-normal/img/spades-golden.png" alt="Queen of Spades">
+                     <div class="cstm-ribbon">Play</div>
+                </div>
+               
+                                
+                                <?php elseif ($card_number == 5): ?>
+                                 <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="5">
+                    <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Diamonds">
+                     <img class="card" src="/assets-normal/img/golden-diamond.png" alt="Queen of Diamonds">
+                    <div class="cstm-ribbon">Play</div>
+                </div>
+             
+                                
+                                <?php elseif ($card_number == 6): ?>
+                                 <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="6">
+                    <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Clubs">
+                    <img class="card" src="/assets-normal/img/clubs-golden.png" alt="Queen of Clubs">
+                    <div class="cstm-ribbon">Play</div>
+                </div>
+              
+                                
+                                <?php elseif ($card_number == 7): ?>
+                                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="7">
+                    <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Hearts">
+                    <img class="card" src="/assets-normal/img/golden-hearts.png" alt="Queen of Hearts">
+                    <div class="cstm-ribbon">Play</div>
+                </div>
+                                
+                                <?php elseif ($card_number == 8): ?>
+                                 <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="8">
+                    <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Spades">
+                     <img class="card" src="/assets-normal/img/spades-golden.png" alt="Jack of Spades">
+                        <div class="cstm-ribbon">Play</div>
+                </div>
+                
+               
+                                <?php elseif ($card_number == 9): ?>
+                         <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="9">
+                <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Diamonds">
+                     <img class="card" src="/assets-normal/img/golden-diamond.png" alt="Jack of Diamonds">
+                        <div class="cstm-ribbon">Play</div>
+                </div>
+               
+                                <?php elseif ($card_number == 10): ?>
+                               <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="10">
+                <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Clubs">
+                       <img class="card" src="/assets-normal/img/clubs-golden.png" alt="Jack of Clubs">
+                          <div class="cstm-ribbon">Play</div>
+                </div>
+               
+                                
+                                <?php elseif ($card_number == 11): ?>
+                                   <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="11">
+                <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Hearts">
+                        <img class="card" src="/assets-normal/img/golden-hearts.png" alt="Jack of Hearts">
+                           <div class="cstm-ribbon">Play</div>
+                </div>
+                                <?php endif; ?>
+                                </td>
+                                <td class="bet" data-label="Bet Amount">₹<?= number_format($result['bet'], 2) ?></td>
+                                <td class="win-value" data-label="Win Value">₹<?= number_format($result['win_value'], 2) ?></td>
+                                <td class="status" data-label="Status">
+                                    <?php if ($userwins === 'Yes'): ?>
+                                        <small style="background-color: #28a745; padding: 2px 8px; border-radius: 5px; color: #fff;">Win</small>
+                                    <?php else: ?>
+                                        <small style="background-color: #dc3545; padding: 2px 8px; border-radius: 5px; color: #fff;">Lose</small>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+
 
                         </div>
                     </div>
