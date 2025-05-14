@@ -236,34 +236,67 @@ $totalUnclaim = $totalUnclaim ?? 0;
 
     <div class="overlay"></div>
     <div class="preloader">
-        <div class="scene" id="scene">
-            <input type="checkbox" id="andicator" />
-            Loading
+            <div class="scene" id="scene">
+                <input type="checkbox" id="andicator" />
+                <div class="cube">
+                    <div class="cube__face cube__face--front"><i></i></div>
+                    <div
+                        class="cube__face cube__face--back"><i></i><i></i></div>
+                    <div class="cube__face cube__face--right">
+                        <i></i> <i></i> <i></i> <i></i> <i></i>
+                    </div>
+                    <div class="cube__face cube__face--left">
+                        <i></i> <i></i> <i></i> <i></i> <i></i> <i></i>
+                    </div>
+                    <div class="cube__face cube__face--top">
+                        <i></i> <i></i> <i></i>
+                    </div>
+                    <div class="cube__face cube__face--bottom">
+                        <i></i> <i></i> <i></i> <i></i>
+                    </div>
+                </div>
             </div>
         </div>
+
+    <style>
+  /* Full‑page overlay */
+ 
+
+</style>
+
+<div id="overlay">
+    <div id="overlay-items">
+  <p>Please go fullscreen to continue</p>
+  <button class="fullscreen-toggle cstm-ribbon"><i class="fas fa-expand"></i> Go Fullscreen</button>
     </div>
 
-    
+</div>
+
+
+
     <div id="mini-nav">
-        <button class="bordersboxes" id="fullscreenBtn" style="color:white;font-size: 32px;border: none;background: none;z-index: 1000;cursor: pointer;">
-          <i class="fas fa-expand"></i>
-        </button>
+       <!-- <button class="bordersboxes fullscreen-toggle"
+        style="color:white; font-size:32px; border:none; background:none; z-index:1000; cursor:pointer;">
+  <i class="fas fa-expand"></i>
+</button> -->
+  <a  class="cmn--btn active btn--md d-none d-sm-block" href="dashboard.php">Go to Dashboard</a>
+          <a href="logout.php" class="cmn--btn active btn--md d-none d-sm-block">Logout</a>
         <!-- <div id="betPoints-display">Betting Points: 
             <span style='color: gold;font-weight:800;'> 
                 <?php // echo htmlspecialchars($bettingPoints ?? 0); ?>
             </span>
         </div> -->
         <div class="bordersboxes">
-  <label>
-    <input
-      type="checkbox"
-      id="auto-claim-toggle"
-    /> Auto‑claim Wins
-  </label>
-</div>
- <a href="logout.php" class="cmn--btn active btn--md d-none d-sm-block">Logout</a>
+        <label>
+            <input
+            type="checkbox"
+            id="auto-claim-toggle"
+            /> Auto‑claim Wins
+        </label>
+    </div>
+
     
-                            <a  class="cmn--btn active btn--md d-none d-sm-block" href="dashboard.php">Dashboard</a>
+                          
                         
         <div class="bordersboxes d-flex flex-column" id="claim-display"> Claimed <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($totalClaim ?? 0); ?> </span> </div>
         <div class="bordersboxes d-flex flex-column" id="unclaim-display"> Unclaimed: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($totalUnclaim ?? 0); ?> </span> </div>
@@ -297,81 +330,58 @@ $totalUnclaim = $totalUnclaim ?? 0;
     <div id="main-container">
         <div id="stick-container"></div>
         <!-- Wheel Container -->
-        <div id="wheel-container">
-            <div id="wheel">
+    <div id="wheel-container">
+            <div id="wheel" style="transition: none; transform: rotate(60deg);">
                 <!-- SVG segments and lines -->
-                <svg id="segments-svg" width="350" height="350"></svg>
-                <svg id="lines-svg" width="350" height="350"></svg>
+                <svg id="segments-svg" width="100%" height="100%" viewBox="0 0 400 400"><path fill="#201cb2" d="M 200 200 L 393.18516525781365 148.23619097949586 A 200 200 0 0 1 393.18516525781365 251.76380902050414 Z" class=""></path><path fill="#5c1166" d="M 200 200 L 393.18516525781365 251.76380902050414 A 200 200 0 0 1 341.4213562373095 341.4213562373095 Z" class=""></path><path fill="#5c1110" d="M 200 200 L 341.4213562373095 341.4213562373095 A 200 200 0 0 1 251.76380902050414 393.18516525781365 Z" class=""></path><path fill="#201cb2" d="M 200 200 L 251.76380902050414 393.18516525781365 A 200 200 0 0 1 148.23619097949583 393.18516525781365 Z" class=""></path><path fill="#5c1166" d="M 200 200 L 148.23619097949583 393.18516525781365 A 200 200 0 0 1 58.57864376269052 341.4213562373095 Z"></path><path fill="#5c1110" d="M 200 200 L 58.57864376269052 341.4213562373095 A 200 200 0 0 1 6.814834742186349 251.7638090205042 Z" class=""></path><path fill="#201cb2" d="M 200 200 L 6.814834742186349 251.7638090205042 A 200 200 0 0 1 6.814834742186321 148.23619097949592 Z"></path><path fill="#5c1166" d="M 200 200 L 6.814834742186321 148.23619097949592 A 200 200 0 0 1 58.57864376269046 58.57864376269052 Z" class=""></path><path fill="#5c1110" d="M 200 200 L 58.57864376269046 58.57864376269052 A 200 200 0 0 1 148.23619097949586 6.814834742186349 Z" class=""></path><path fill="#201cb2" d="M 200 200 L 148.23619097949586 6.814834742186349 A 200 200 0 0 1 251.76380902050423 6.814834742186349 Z"></path><path fill="#5c1166" d="M 200 200 L 251.76380902050423 6.814834742186349 A 200 200 0 0 1 341.4213562373095 58.57864376269046 Z" class="blink"></path><path fill="#5c1110" d="M 200 200 L 341.4213562373095 58.57864376269046 A 200 200 0 0 1 393.18516525781365 148.23619097949586 Z" class=""></path></svg>
+                <svg id="lines-svg" width="100%" height="100%" viewBox="0 0 400 400"><line x1="227.0459231360939" y1="207.24693326287058" x2="393.18516525781365" y2="251.76380902050414" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="219.79898987322332" y1="219.79898987322332" x2="341.4213562373095" y2="341.4213562373095" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="207.24693326287058" y1="227.0459231360939" x2="251.76380902050414" y2="393.18516525781365" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="192.75306673712942" y1="227.0459231360939" x2="148.23619097949583" y2="393.18516525781365" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="180.20101012677668" y1="219.79898987322332" x2="58.57864376269052" y2="341.4213562373095" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="172.9540768639061" y1="207.24693326287058" x2="6.814834742186349" y2="251.7638090205042" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="172.9540768639061" y1="192.75306673712942" x2="6.814834742186321" y2="148.23619097949592" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="180.20101012677665" y1="180.20101012677668" x2="58.57864376269046" y2="58.57864376269052" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="192.75306673712942" y1="172.9540768639061" x2="148.23619097949586" y2="6.814834742186349" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="207.24693326287058" y1="172.9540768639061" x2="251.76380902050423" y2="6.814834742186349" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="219.79898987322332" y1="180.20101012677665" x2="341.4213562373095" y2="58.57864376269046" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="227.0459231360939" y1="192.75306673712942" x2="393.18516525781365" y2="148.23619097949586" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line></svg>
                 <!-- Card wrappers -->
                 <!-- Kings Row -->
-                <div class="card-wrapper" style="left: 166px;top: 0px;" data-initial-rotation="171">
-                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades"
-                        style="transform: rotate(171deg);">
+                <div class="card-wrapper" style="left: 43%;top: 3%;" data-initial-rotation="171">
+                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades" style="transform: rotate(171deg);">
                 </div>
-                <div class="card-wrapper" style="left: 249px;top: 22px;" data-initial-rotation="205">
-                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Diamonds"
-                        style="transform: rotate(205deg);">
+                <div class="card-wrapper" style="left: 65%;top: 8%;" data-initial-rotation="205">
+                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Diamonds" style="transform: rotate(205deg);">
                 </div>
-                <div class="card-wrapper" style="left: 312px;top: 82px;" data-initial-rotation="245">
-                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Clubs"
-                        style="transform: rotate(245deg);">
+                <div class="card-wrapper" style="left: 81%;top: 25%;" data-initial-rotation="245">
+                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Clubs" style="transform: rotate(245deg);">
                 </div>
-                <div class="card-wrapper" style="left: 335px;top: 161px;" data-initial-rotation="272">
-                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Hearts"
-                        style="transform: rotate(272deg);">
+                <div class="card-wrapper" style="left: 85%;top: 42%;" data-initial-rotation="272">
+                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Hearts" style="transform: rotate(272deg);">
                 </div>
                 <!-- Queens Row -->
-                <div class="card-wrapper" style="left: 313px;top: 242px;" data-initial-rotation="298">
-                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Spades"
-                        style="transform: rotate(298deg);">
+                <div class="card-wrapper" style="left: 80%;top: 64%;" data-initial-rotation="298">
+                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Spades" style="transform: rotate(298deg);">
                 </div>
-                <div class="card-wrapper" style="left: 255px;top: 301px;" data-initial-rotation="327">
-                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Diamonds"
-                        style="transform: rotate(327deg);">
+                <div class="card-wrapper" style="left: 66%;top: 78%;" data-initial-rotation="327">
+                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Diamonds" style="transform: rotate(327deg);">
                 </div>
-                <div class="card-wrapper" style="left: 174px;top: 325px;" data-initial-rotation="3">
-                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Clubs"
-                        style="transform: rotate(3deg);">
+                <div class="card-wrapper" style="left: 46%;to;top: 84%;" data-initial-rotation="3">
+                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Clubs" style="transform: rotate(3deg);">
                 </div>
-                <div class="card-wrapper" style="left: 94px;top: 303px;" data-initial-rotation="30">
-                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Hearts"
-                        style="transform: rotate(30deg);">
+                <div class="card-wrapper" style="left: 27%;top: 79%;" data-initial-rotation="30">
+                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Hearts" style="transform: rotate(30deg);">
                 </div>
                 <!-- Jacks Row -->
-                <div class="card-wrapper" style="left: 32px;top: 242px;" data-initial-rotation="61">
-                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Spades"
-                        style="transform: rotate(61deg);">
+                <div class="card-wrapper" style="left: 9%;top: 62%;" data-initial-rotation="61">
+                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Spades" style="transform: rotate(61deg);">
                 </div>
-                <div class="card-wrapper" style="left: 10px;top: 159px;" data-initial-rotation="98">
-                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Diamonds"
-                        style="transform: rotate(98deg);">
+                <div class="card-wrapper" style="left: 5%;top: 40%;" data-initial-rotation="98">
+                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Diamonds" style="transform: rotate(98deg);">
                 </div>
-                <div class="card-wrapper" style="left: 33px;top: 82px;" data-initial-rotation="116">
-                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Clubs"
-                        style="transform: rotate(116deg);">
+                <div class="card-wrapper winner" style="left: 12%;top: 23%;" data-initial-rotation="116">
+                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Clubs" style="transform: rotate(116deg);">
                 </div>
-                <div class="card-wrapper" style="left: 94px;top:22px;" data-initial-rotation="153">
-                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Hearts"
-                        style="transform: rotate(153deg);">
+                <div class="card-wrapper" style="left: 24%;to;top: 7%;" data-initial-rotation="153">
+                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Hearts" style="transform: rotate(153deg);">
                 </div>
             </div>
 
             <!-- Center Circle -->
-            <div id="center-circle"> <div class="center-text">N</div></div>
+            <div id="center-circle"><img src="/assets-normal/img/golden-j.png" style="width: 60px; height: auto;"><span style="font-size: 40px; display: block; text-align: center; color: black;">♣</span></div>
 
             <!-- Suit Ring -->
-            <div id="suit-ring" style="
-                position: absolute;
-                width: 100px;
-                height: 100px;
-                top: 50%;
-                left: 50%;
-                transform-origin: 50% 50%;
-                margin-left: -50px;
-                margin-top: -50px;
-                transform: rotate(-359deg);
-                transition: none;
-                " bis_skin_checked="1">
+            <div id="suit-ring" style="position: absolute; width: 100px; height: 100px; top: 50%; left: 50%; transform-origin: 50% 50%; margin-left: -50px; margin-top: -50px; transform: rotate(-30deg); transition: none;" bis_skin_checked="1">
                 <span class="suit-segment" style="
                 position: absolute;
                 left: 107.572px;
@@ -384,77 +394,57 @@ $totalUnclaim = $totalUnclaim ?? 0;
                 top: 116.944px;
                 transform: rotate(332deg);
                 "><img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades"></span>
-                <span
-                    class="suit-segment" style="
+                <span class="suit-segment" style="
                 position: absolute;
                 left: 55.6283px;
                 top: 128.633px;
                 transform: rotate(80deg);
-                "><img class="card" src="/assets-normal/img/golden-diamond.png"
-                        alt="King of Spades" /></span><span
-                    class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades"></span><span class="suit-segment" style="
                 position: absolute;
                 left: -17.78181px;
                 top: 102.572px;
                 transform: rotate(22deg);
-                "><img class="card" src="/assets-normal/img/spades-golden.png"
-                        alt="King of Spades" /></span><span
-                    class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades"></span><span class="suit-segment" style="
                 position: absolute;
                 left: -39.944px;
                 top: 69.8509px;
                 transform: rotate(54deg);
-                "><img class="card" src="/assets-normal/img/golden-hearts.png"
-                        alt="King of Spades" /></span><span
-                    class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades"></span><span class="suit-segment" style="
                 position: absolute;
                 left: -43.6327px;
                 top: 19.6283px;
                 transform: rotate(77deg);
-                "><img class="card" src="/assets-normal/img/clubs-golden.png"
-                        alt="King of Spades" /></span><span
-                    class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades"></span><span class="suit-segment" style="
                 position: absolute;
                 left: -44.5723px;
                 top: 9.21819px;
                 transform: rotate(200deg);
-                "><img class="card" src="/assets-normal/img/golden-diamond.png"
-                        alt="King of Spades" /></span><span
-                    class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades"></span><span class="suit-segment" style="
                 position: absolute;
                 left: 8.1491px;
                 top: -41.944px;
                 transform: rotate(146deg);
-                "><img class="card" src="/assets-normal/img/spades-golden.png"
-                        alt="King of Spades" /></span><span
-                    class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades"></span><span class="suit-segment" style="
                 position: absolute;
                 left: 55.3717px;
                 top: -44.6327px;
                 transform: rotate(175deg);
-                "><img class="card" src="/assets-normal/img/golden-hearts.png"
-                        alt="King of Spades" /></span><span
-                    class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades"></span><span class="suit-segment" style="
                 position: absolute;
                 left: 93.7818px;
                 top: -25.5723px;
                 transform: rotate(213deg);
-                "><img class="card" src="/assets-normal/img/clubs-golden.png"
-                        alt="King of Spades" /></span><span
-                    class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades"></span><span class="suit-segment" style="
                 position: absolute;
                 left: 108.944px;
                 top: -17.8509px;
                 transform: rotate(320deg);
-                "><img class="card" src="/assets-normal/img/golden-diamond.png"
-                        alt="King of Spades" /></span><span
-                    class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades"></span><span class="suit-segment" style="
                 position: absolute;
                 left: 121.633px;
                 top: 55.3717px;
                 transform: rotate(267deg);
-                "><img class="card" src="/assets-normal/img/spades-golden.png"
-                        alt="King of Spades" /></span>
+                "><img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades"></span>
             </div>
 
             <!-- Marker -->
@@ -591,9 +581,9 @@ $totalUnclaim = $totalUnclaim ?? 0;
 
         <div id="div-spin-btns">
             <div id="div-buttons">
-                <button id="clear-bets" class="cmn--btn active w-100 m-3" style="border: 2px solid white;">Clear</button>
-                <button id="double-bets" class="cmn--btn active w-100 m-3" style="border: 2px solid white;">Double</button>
-                <button id="repeat-bet" class="cmn--btn active w-100 m-3" style="border: 2px solid white;">Repeat</button>
+                <button id="clear-bets" class="cmn--btn active w-100 m-3" style="border:4px solid #ea1515;">Clear</button>
+                <button id="double-bets" class="cmn--btn active w-100 m-3" style="border:4px solid #ea1515;">Double</button>
+                <button id="repeat-bet" class="cmn--btn active w-100 m-3" style="border:4px solid #ea1515;">Repeat</button>
             </div>
             <div id="auto-spin-countdown" style="font-size: 18px; text-align: center;">
                 <svg id="circular-timer" width="200" height="200" viewBox="0 0 200 200"></svg>

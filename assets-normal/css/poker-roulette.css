@@ -80,15 +80,16 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 /* Main Container */
 #image-roulette #main-container {
     display: flex;
-    gap: 40px;
-    align-items: top;
+    /* gap: 40px; */
+    align-items: center;
     justify-content: space-around;
-    margin-bottom: 30px;
+    margin: 0px;
     flex-direction: row-reverse;
+    height: 50%;
 }
 
 /* Wheel Container (350x350) */
-#image-roulette #wheel-container {
+/* #image-roulette #wheel-container {
     position: relative;
     width: 350px;
     height: 350px;
@@ -96,7 +97,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
     overflow: hidden;
     background: #fff;
     box-shadow: rgb(250, 230, 21) 0px 0px 0px 3px, rgb(92 17 16) 0px 0px 0px 6px, rgb(92 17 16) 0px 0px 0px 9px, rgb(92 17 102) 0px 0px 0px 12px, rgb(92 17 102) 0px 0px 0px 15px, 0 60px 80px #198754, 0 45px 26px #ff9c19;
-}
+} */
 
 #image-roulette #wheel-container::after {
   content: "";
@@ -118,13 +119,14 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 }
 /* Rotating Wheel */
 #image-roulette #wheel {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
-    z-index: 10;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: center center;
+  transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+  z-index: 10;
 }
 
 /* SVG layers */
@@ -283,6 +285,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
   
 }
 
+
 /* Spin Button */
 #image-roulette #spinBtn {
     padding: 12px 25px;
@@ -304,13 +307,14 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 /* History Box */
 #image-roulette #history-box {
     margin-top: 0;
-    max-width: 800px;
-    height: 175px;
+    max-width: 100%;
+    height: 10%;
     border: 2px solid var(--primary-color);
-    padding: 10px;
+    /* padding: 10px; */
     background: #ffffff00;
-    margin-bottom: 30px;
-    width: 800px;
+    /* margin-bottom: 30px; */
+    width: 91%;
+    margin: 0 auto;
 }
 
 #image-roulette #history-box h3 {
@@ -325,11 +329,13 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
     gap: 5px;
     justify-content: center;
     flex-direction: row-reverse;
+    height: 95%;
+    padding: 5px;
 }
 
 #image-roulette .history-card {
-    width: 30px;
-    height: 35px;
+    width: 25%;
+    height: 22%;
     /* box-shadow: var(--card-shadow); */
     object-fit: cover;
 }
@@ -365,16 +371,27 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
     font-weight: bold;
 }
 
-#image-roulette #wheel-container {
-    position: relative;
-    width: 400px;  /* increased from 350px */
-    height: 400px; /* increased from 350px */
-    top: 2px;
-    border-radius: 50%;
-    overflow: hidden;
-    left: -60px;
-    background: #fff;
-    box-shadow: rgb(250, 230, 21) 0px 0px 0px 3px, rgb(92 17 16) 0px 0px 0px 6px, rgb(92 17 16) 0px 0px 0px 9px, rgb(92 17 102) 0px 0px 0px 12px, rgb(255 213 0) 0px 0px 0px 15px, 0 60px 80px #198754, 0 45px 26px #ff9c19;
+#wheel-container {
+  /* scale the wheel to 80% of its parent’s width (you can tweak this) */
+  width: 80%;
+  max-width: 400px;      /* optional cap */
+  
+  /* enforce 1:1 aspect ratio so height == width */
+  aspect-ratio: 1 / 1;
+  
+  position: relative;
+  border-radius: 50%;    /* makes it a circle */
+  overflow: hidden;
+  background: #fff;
+  box-shadow:
+    0 0 0 3px #fae615,
+    0 0 0 6px #5c1110,
+    0 0 0 9px #5c1110,
+    0 0 0 12px #5c1166,
+    0 0 0 15px #ffd500,
+    0 60px 80px #198754,
+    0 45px 26px #ff9c19;
+  margin: auto;
 }
 
 #image-roulette #wheel-container::after {
@@ -398,8 +415,8 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 /* Update the SVG dimensions accordingly */
 #image-roulette #segments-svg,
 #image-roulette #lines-svg {
-    width: 400px;
-    height: 400px;
+    width: 100%;
+    height: 100%;
 }
 .container-chip-child {
             display: flex;
@@ -436,12 +453,13 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
             display: grid;
             grid-template-columns: auto repeat(4, 1fr);
             gap: 15px;
-            max-width: 800px;
+            max-width: 100%;
             align-items: center;
             justify-items: center;
             margin: auto;
             padding: 6px 6px;
             border: 4px solid #ff9c19;
+            height: 100%;
         }
 
 /* Header cells at the top */
@@ -452,8 +470,9 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
     border: 3px solid #ff9c19;
     border-radius: 5px;
     /* padding: 0px 22px; */
-    width: 135px;
-    background: linear-gradient(to right, #ffd700, #ffd700);
+    width: 100%;
+    height: 100%;
+    /* background: linear-gradient(to right, #ffd700, #ffd700); */
 }
 
 /* The top left empty cell */
@@ -475,10 +494,12 @@ background: transparent;
     background: -webkit-linear-gradient(to right, #d19e1d, #ffd86e, #e3a812);
     /* background: linear-gradient(to right, #360738, #9d5159, #5c1123); */
     border-radius: 7px;
+    width: 85%;
+    height: 100%;
 }
 
 /* Existing card styles */
-#image-roulette .grid-card {position: relative;width: 124px;height: 120px;overflow: hidden;border-radius: 0px;box-shadow: var(--card-shadow);cursor: pointer;transition: transform 0.2s;background: antiquewhite;border: 3px solid #ff9c19;background: linear-gradient(to bottom, #ffd700, #ffd700, #ffd700);}
+#image-roulette .grid-card {position: relative;width: 100%;height: 100%;overflow: hidden;border-radius: 0px;box-shadow: var(--card-shadow);cursor: pointer;transition: transform 0.2s;background: antiquewhite;border: 3px solid #ff9c19;background: linear-gradient(to bottom, #ffd700, #ffd700, #ffd700);}
 
 #image-roulette .grid-card:hover {
 transform: scale(1.05);
@@ -491,18 +512,20 @@ object-fit: cover;
 opacity: 0.8;
 }
 #image-roulette .grid-header.empty {
-    height: 86px;
+    height: 100%;
+    width: 85%;
     display: flex;
     align-items: center;
     justify-content: center;
     background: black;
 }
 #grid-outer{
-    max-width: 932px;
+    max-width: 48%;
     align-items: center;
     justify-items: center;
     margin: auto;
-    width: 800px;
+    width: 100%;
+    height: 118%;
 }
 #grid-outer {
     position: relative;
@@ -593,22 +616,41 @@ opacity: 0.8;
     transition: transform 0.4s;
   }
   /* Adjust container if needed */
+
 #wheel-container {
-    position: relative;
-    width: 400px; /* increased width if necessary */
-    height: 400px; /* increased height if necessary */
-    margin: auto;
-    overflow: visible; /* allows sticks to extend outside */
-  }
-  
+  width: 65vh;
+  max-width: 600px;
+  aspect-ratio: 1 / 1;
+  margin: auto;
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff;
+  margin: auto;
+
+  box-shadow:
+    0 0 0 3px #fae615,
+    0 0 0 6px #5c1110,
+    0 0 0 9px #5c1110,
+    0 0 0 12px #5c1166,
+    0 0 0 15px #ffd500,
+    0 60px 80px #198754,
+    0 45px 26px #ff9c19;
+}
+
+
   /* The wheel itself (if you need it centered within a larger container) */
-  #wheel {
-    position: absolute;
-    top: 25px; /* adjust if container is larger */
-    left: 25px; /* adjust if container is larger */
-    width: 350px;
-    height: 350px;
-  }
+#wheel {
+  /* inset wheel to 85% so there’s a 7.5% pad on each side */
+  width: 85%;
+  height: 85%;
+  position: absolute;
+  top: 7.5%;
+  left: 7.5%;
+  transform-origin: center center;
+  transition: transform 4s cubic-bezier(0.33,1,0.68,1);
+  z-index: 10;
+}
  /* Stick container styled as a circle with a border (outer circle) */
  #stick-container {
     position: absolute;
@@ -717,14 +759,16 @@ div#mini-nav {
 #div-buttons{
     /* position: absolute; */
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: start;
 }
 
 div#div-spin-btns {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 50px;
+    justify-content: center;
+    gap: 0px;
+    flex-direction: column-reverse;
 }
 
 
@@ -850,7 +894,8 @@ div#suitIcon4  .bet-overlay {
     flex-direction: column;
     align-items: center;
     background: linear-gradient(45deg, #ffd700, #dca230);
-    width: 55px;
+    width: 7%;
+    height: auto;
   }
   
   .history-item:last-child {
@@ -861,7 +906,7 @@ border-right: none;
 
 background: linear-gradient(308deg, #eebd17, #b90707);
 
-width: 63px;
+width: 14%;
 }
 
 .horizontal-line {
@@ -942,7 +987,7 @@ text {
   
   .cstm-ribbon {
     position: absolute;
-    top: 75px;
+    top: 61%;
     right: -5%;
     padding: 6px 16px;
     background: linear-gradient(to right, #f51f1f, #de0b0b, #ce0000);
@@ -952,7 +997,7 @@ text {
     font-size: 0.85rem;
     text-align: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    width: 132px;
+    width: 110%;
     overflow: hidden;            /* contain the glow */
   }
   
@@ -1070,7 +1115,7 @@ svg#circular-timer {
     color: #1f1f23;
     padding: 0px 0px;
     font-weight: 500;
-    font-family: "Josefin Sans", sans-serif;
+    font-family: sans-serif;
     cursor: pointer;
     outline: none;
     -webkit-transition: all ease .3s;
@@ -1180,3 +1225,81 @@ div#suitIcon4  .bet-overlay {
     
 }
   
+div#image-roulette {
+    height: 100%;
+}
+
+ #overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+background-image: url('/assets-normal/img/overlay-bg-2.png');
+   background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    display: none;               /* hidden by default */
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    flex-direction: column;
+    color: #fff;
+  }
+
+#overlay button {
+    font-size: 1.2rem;
+    padding: 0.8rem 1.2rem;
+    border: none;
+    border-radius: 4px;
+    background: red;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    position: absolute;
+    top: 71%;
+    left: 30%;
+    width: 35%;
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+#overlay button:hover {
+    background: red;
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+#overlay button:active {
+    transform: scale(0.98);
+}
+
+div#overlay-items {
+    width: 50%;
+    height: 50%;
+    position: absolute;
+    top: 30%;
+    /* left: 50%; */
+    background: #17151533;
+    /* display: flex; */
+}
+
+div#overlay-items p {
+      position: absolute;
+      top: 50%;
+      left: 30%;
+      background: red;
+      padding: 5px 13px;
+      font-weight: 900;
+}
+@keyframes redGreen {
+  0%, 100% {
+    background-color: red !important;
+  }
+  50% {
+    background-color: green !important;
+  }
+}
+
+#image-roulette .winners {
+  /* 5s for a full red→green→red cycle, then repeat */
+  animation: redGreen 1s infinite;
+}

@@ -1,351 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Animated Wheel with Independent Text & Icons</title>
-    <style>
-        /* ---------- Container & Background ---------- */
-        #wheel-container {
-            position: relative;
-            width: 400px;
-            height: 400px;
-            margin: 40px auto;
-            border-radius: 50%;
-            overflow: hidden;
-            background: #fff;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Spinning background (SVG segments & lines) */
-        #wheel {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            transform-origin: center;
-            transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
-            z-index: 10;
-        }
-
-        /* SVG layers */
-        #segments-svg,
-        #lines-svg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-        }
-
-        #lines-svg {
-            z-index: 15;
-        }
-
-        /* ---------- Independent Layers for Icons & Texts ---------- */
-        /* Icons container rotates with the wheel (clockwise) and uses a 4s transition */
-        #icons-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            transform-origin: center;
-            transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
-            z-index: 20;
-        }
-
-        /* Each icon now has a colored circular background */
-        .icon-bg {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .icon {
-            font-size: 20px;
-            color: #b00;
-        }
-
-        /* Text container rotates opposite the wheel (anticlockwise) with a 2s transition */
-        #texts-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            transform-origin: center;
-            transition: transform 2s cubic-bezier(0.33, 1, 0.68, 1);
-            z-index: 30;
-        }
-
-        .text {
-            position: absolute;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        /* ---------- Center Circle & Marker ---------- */
-        #center-circle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #890e0e, #0b164bfa);
-            border: 3px solid #ffdc00;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 40;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        /* Marker – assumed the tip is exactly at top (0°) */
-        #marker {
-            position: absolute;
-            top: -38px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 13px;
-            height: 94px;
-            z-index: 50;
-            filter: drop-shadow(0 13px 9px rgba(0, 0, 0, 0.3));
-        }
-
-        #marker::before {
-            content: '';
-            position: absolute;
-            left: -20px;
-            top: 75px;
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 38px solid green;
-        }
-
-        #marker::after {
-            content: '';
-            position: absolute;
-            left: -20px;
-            bottom: 19px;
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-bottom: 38px solid var(--primary-color);
-        }
-
-        /* ---------- Spin Button ---------- */
-        #spinBtn {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        /* Optional: Highlight winning segment */
-        .winner {
-            outline: 3px solid red;
-            border-radius: 50%;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Responsive Spinning Wheel</title>
+  <style>
+    /* Container keeps a square aspect ratio and scales responsively */
+    #wheel-container {
+      width: 100%;
+      max-width: 600px;
+      aspect-ratio: 1;
+      position: relative;
+      margin: auto;
+    }
+    /* SVGs overlay each other and fill the container */
+    #wheel-container svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
 </head>
-
 <body>
-    <div id="wheel-container">
-        <!-- Spinning background: SVG segments & lines -->
-        <div id="wheel">
-            <svg id="segments-svg" width="400" height="400"></svg>
-            <svg id="lines-svg" width="400" height="400"></svg>
-        </div>
-        <!-- Independent containers for suit icons and rank texts -->
-        <div id="icons-container"></div>
-        <div id="texts-container"></div>
-        <!-- Center circle shows the winning result -->
-        <div id="center-circle">?</div>
-        <!-- Marker -->
-        <div id="marker"></div>
-    </div>
-    <button id="spinBtn">Spin</button>
+  <div id="wheel-container">
+    <svg id="segments-svg"></svg>
+    <svg id="lines-svg"></svg>
+  </div>
 
-    <script>
-        // ---------- CONFIGURABLE VARIABLES ----------
-        const segmentCount = 12;
-        const segmentAngle = 360 / segmentCount;  // 30° per segment
-        const segmentOffset = -15; // With this, midpoint of segment 0 is at 0°.
-        const centerX = 200, centerY = 200; // Center of a 400x400 container
-        const outerRadius = 200;  // For SVG segments
-        const innerRadius = 28;   // For radial lines
+  <script>
+    const segmentCount = 12;
+    const segmentAngle = 360 / segmentCount;  // 30° each
+    const segmentColors = ["#201cb2", "#5c1166", "#5c1110"];
 
-        // Colors for background segments (cycling)
-        const segmentColors = ["#dc9600", "#ffdc00", "#f5cd28"];
-        // Colors for icon backgrounds (cycling)
-        const iconBgColors = ["#ffcccc", "#ccffcc", "#ccccff", "#ffffcc"];
+    function drawWheel() {
+      const container = document.getElementById('wheel-container');
+      const size = Math.min(container.clientWidth, container.clientHeight);
+      const centerX = size / 2;
+      const centerY = size / 2;
+      const outerRadius = size / 2;
+      const innerRadius = size * 0.07;  // ~28px at 400px size
 
-        // ---------- DRAW BACKGROUND SEGMENTS & LINES ----------
-        function drawSegments() {
-            const svg = document.getElementById("segments-svg");
-            svg.innerHTML = '';
-            for (let i = 0; i < segmentCount; i++) {
-                const startDeg = segmentOffset + i * segmentAngle;
-                const endDeg = startDeg + segmentAngle;
-                const startRad = startDeg * Math.PI / 180;
-                const endRad = endDeg * Math.PI / 180;
-                const x1 = centerX + outerRadius * Math.cos(startRad);
-                const y1 = centerY + outerRadius * Math.sin(startRad);
-                const x2 = centerX + outerRadius * Math.cos(endRad);
-                const y2 = centerY + outerRadius * Math.sin(endRad);
-                const d = `M ${centerX} ${centerY} L ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 0 1 ${x2} ${y2} Z`;
-                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                path.setAttribute("fill", segmentColors[i % segmentColors.length]);
-                path.setAttribute("d", d);
-                svg.appendChild(path);
-            }
-        }
+      const svgSegments = document.getElementById('segments-svg');
+      const svgLines = document.getElementById('lines-svg');
+      svgSegments.setAttribute('viewBox', `0 0 ${size} ${size}`);
+      svgLines.setAttribute('viewBox', `0 0 ${size} ${size}`);
+      svgSegments.innerHTML = '';
+      svgLines.innerHTML = '';
 
-        function drawLines() {
-            const svg = document.getElementById("lines-svg");
-            svg.innerHTML = '';
-            for (let i = 0; i < segmentCount; i++) {
-                const angleDeg = segmentOffset + i * segmentAngle;
-                const angleRad = angleDeg * Math.PI / 180;
-                const x1 = centerX + innerRadius * Math.cos(angleRad);
-                const y1 = centerY + innerRadius * Math.sin(angleRad);
-                const x2 = centerX + outerRadius * Math.cos(angleRad);
-                const y2 = centerY + outerRadius * Math.sin(angleRad);
-                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute("x1", x1);
-                line.setAttribute("y1", y1);
-                line.setAttribute("x2", x2);
-                line.setAttribute("y2", y2);
-                line.setAttribute("stroke", "rgba(0,0,0,0.5)");
-                line.setAttribute("stroke-width", "2");
-                svg.appendChild(line);
-            }
-        }
-        drawSegments();
-        drawLines();
+      // Draw segments
+      for (let i = 0; i < segmentCount; i++) {
+        const startDeg = i * segmentAngle - segmentAngle / 2;
+        const endDeg   = i * segmentAngle + segmentAngle / 2;
+        const startRad = startDeg * Math.PI / 180;
+        const endRad   = endDeg * Math.PI / 180;
 
-        // ---------- CREATE INDEPENDENT ICONS & TEXTS ----------
-        // Ranks: segments 0-3: K, 4-7: Q, 8-11: J.
-        // Suits: cycle: ♠, ♦, ♣, ♥ (repeat 3 times)
-        function createIndependentElements() {
-            const iconsContainer = document.getElementById("icons-container");
-            const textsContainer = document.getElementById("texts-container");
-            iconsContainer.innerHTML = '';
-            textsContainer.innerHTML = '';
+        const x1 = centerX + outerRadius * Math.cos(startRad);
+        const y1 = centerY + outerRadius * Math.sin(startRad);
+        const x2 = centerX + outerRadius * Math.cos(endRad);
+        const y2 = centerY + outerRadius * Math.sin(endRad);
 
-            const suits = ['♠', '♦', '♣', '♥'];
-            for (let i = 0; i < segmentCount; i++) {
-                // Calculate the middle angle for this segment.
-                // With segmentOffset = -15, the center of segment 0 is at 0°.
-                const angle = i * segmentAngle + segmentOffset + segmentAngle / 2;
-                const angleRad = angle * Math.PI / 180;
+        const d = `M ${centerX} ${centerY} L ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 0 1 ${x2} ${y2} Z`;
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("fill", segmentColors[i % segmentColors.length]);
+        path.setAttribute("d", d);
+        svgSegments.appendChild(path);
+      }
 
-                // ----- Create suit icon element with its background -----
-                // Create a container for icon background.
-                const iconBg = document.createElement("div");
-                iconBg.className = "icon-bg";
-                iconBg.style.backgroundColor = iconBgColors[i % iconBgColors.length];
-                // Position this container (centered on computed coordinates).
-                const iconRadius = 80;
-                const iconX = centerX + iconRadius * Math.cos(angleRad);
-                const iconY = centerY + iconRadius * Math.sin(angleRad);
-                iconBg.style.position = "absolute";
-                iconBg.style.left = (iconX - 20) + "px"; // 40px width /2
-                iconBg.style.top = (iconY - 20) + "px";
-                // Now create the suit icon text inside.
-                const icon = document.createElement("div");
-                icon.className = "icon";
-                icon.textContent = suits[i % suits.length];
-                // Center the icon inside its background.
-                iconBg.appendChild(icon);
-                iconsContainer.appendChild(iconBg);
+      // Draw boundary lines
+      for (let i = 0; i < segmentCount; i++) {
+        const angleDeg = (i * segmentAngle) + (segmentAngle / 2);
+        const angleRad = angleDeg * Math.PI / 180;
+        const x1 = centerX + innerRadius * Math.cos(angleRad);
+        const y1 = centerY + innerRadius * Math.sin(angleRad);
+        const x2 = centerX + outerRadius * Math.cos(angleRad);
+        const y2 = centerY + outerRadius * Math.sin(angleRad);
 
-                // ----- Create rank text element -----
-                const text = document.createElement("div");
-                text.className = "text";
-                let rank;
-                if (i < 4) {
-                    rank = 'K';
-                } else if (i < 8) {
-                    rank = 'Q';
-                } else {
-                    rank = 'J';
-                }
-                text.textContent = rank;
-                // Position the text farther out (radius 140 for a bit more separation)
-                const textRadius = 140;
-                const textX = centerX + textRadius * Math.cos(angleRad);
-                const textY = centerY + textRadius * Math.sin(angleRad);
-                text.style.left = (textX - 15) + "px";
-                text.style.top = (textY - 15) + "px";
-                textsContainer.appendChild(text);
-            }
-        }
-        createIndependentElements();
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", x1);
+        line.setAttribute("y1", y1);
+        line.setAttribute("x2", x2);
+        line.setAttribute("y2", y2);
+        line.setAttribute("stroke", "rgba(0,0,0,0.5)");
+        line.setAttribute("stroke-width", "2");
+        svgLines.appendChild(line);
+      }
+    }
 
-        // ---------- SPIN FUNCTIONALITY & WINNING SEGMENT CALCULATION ----------
-        let currentRotation = 0;
-        /*  
-            With segmentOffset = -15, the midpoint of segment 0 is at 0°.
-            Thus, if no rotation, marker (at 0°) lies on segment 0.
-            We calculate the effective angle at marker as:
-              effectiveAngle = (360 - (currentRotation mod 360) + 15) mod 360,
-            and the winning index = floor(effectiveAngle / segmentAngle).
-        */
-        function getWinningIndex(rotationAngle) {
-            const r = rotationAngle % 360;
-            const effectiveAngle = (360 - r + 0) % 360;
-            return Math.floor(effectiveAngle / segmentAngle);
-        }
-
-        // Get element references.
-        const wheelElem = document.getElementById("wheel");
-        const iconsContainerElem = document.getElementById("icons-container");
-        const textsContainerElem = document.getElementById("texts-container");
-
-        document.getElementById("spinBtn").addEventListener("click", function () {
-            // Spin: add many full rotations plus a random extra angle.
-            const deltaAngle = 3600 + Math.floor(Math.random() * 360);
-            currentRotation += deltaAngle;
-
-            // Rotate background and suit icons (with a 4s transition).
-            wheelElem.style.transform = `rotate(${currentRotation}deg)`;
-            iconsContainerElem.style.transform = `rotate(${currentRotation}deg)`;
-            // Rotate texts container (with a faster 2s transition) to stop first.
-            textsContainerElem.style.transform = `rotate(${-currentRotation}deg)`;
-
-            // After the longer animation (4 seconds), determine the winning segment.
-            setTimeout(() => {
-                const winningIndex = getWinningIndex(currentRotation);
-                let winningRank;
-                if (winningIndex < 4) {
-                    winningRank = 'K';
-                } else if (winningIndex < 8) {
-                    winningRank = 'Q';
-                } else {
-                    winningRank = 'J';
-                }
-                const suits = ['♠', '♦', '♣', '♥'];
-                const winningSuit = suits[winningIndex % suits.length];
-                document.getElementById("center-circle").textContent = `${winningRank} ${winningSuit}`;
-            }, 4000);
-        });
-    </script>
+    // Redraw on resize
+    window.addEventListener('resize', drawWheel);
+    // Initial draw
+    drawWheel();
+  </script>
 </body>
-
 </html>

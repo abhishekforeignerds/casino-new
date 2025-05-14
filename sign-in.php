@@ -96,88 +96,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
         </div>
 
-    <div class="header">
-    <div class="container">
-        <div class="header-bottom">
-            <div class="header-bottom-area align-items-center">
-                <div class="logo"><a href="index.php"><img src="assets/images/logo.png" alt="logo"></a></div>
-                <ul class="menu">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="about.php">About</a>
-                    </li>
-                    <li>
-                        <a href="games.php">Games <span class="badge badge--sm badge--base text-dark">NEW</span></a>
-                    </li>
-                    <li>
-                        <a href="faq.php">Faq</a>
-                    </li>
-                    <li>
-                        <a href="#0">Pages</a>
-                        <ul class="sub-menu">
-                            <li>
-                                <a href="dashboard.php">User Dashboard</a>
-                            </li>
-                            <li>
-                                <a href="game-details.php">Game Details</a>
-                            </li>
-                            <li>
-                                <a href="policy.php">Privacy Policy</a>
-                            </li>
-                            <li>
-                                <a href="terms-conditions.php">Terms & Conditions</a>
-                            </li>
-                            <li>
-                                <a href="sign-in.php">Sign In</a>
-                            </li>
-                            <li>
-                                <a href="sign-up.php">Sign Up</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="#0">Blog</a>
-                        <ul class="sub-menu">
-                            <li><a href="blog.php">Blog</a></li>
-                            <li><a href="blog-details.php">Blog Details</a></li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="contact.php">Contact</a>
-                    </li>
-                    <button class="btn-close btn-close-white d-lg-none"></button>
-                </ul>
-                <div class="header-trigger-wrapper d-flex d-lg-none align-items-center">
-                    <div class="header-trigger me-4">
-                        <span></span>
-                    </div>
-                    <a href="sign-in.php" class="cmn--btn active btn--md d-none d-sm-block">Sign In</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
     <!-- inner hero section start -->
-<section class="inner-banner bg_img" style="background: url('assets/images/inner-banner/bg2.jpg') top;">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-7 col-xl-6 text-center">
-        <h2 class="title text-white">Sign In</h2>
-        <ul class="breadcrumbs d-flex flex-wrap align-items-center justify-content-center">
-          <li><a href="index.php">Home</a></li>
-          <li>Sign In</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
+
 <!-- inner hero section end -->
 
 
     <!-- Account Section Starts Here -->
-    <section class="account-section overflow-hidden" style="background:url(assets/images/account/bg.jpg)">
+    <section class="account-section overflow-hidden" style="height:80vh;background: url(assets-normal/img/wmremove-transformed.jpeg) center center no-repeat; background-size: cover;">
         <div class="container">
             <div class="account__main__wrapper">
                 <div class="account__form__wrapper">
@@ -219,9 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <div class="account__content__wrapper" >
                     <div class="content text-center text-white">
-                        <h3 class="title text--base mb-4">Welcome to Casinio</h3>
-                        <p class="">Sign in your Account. Atque, fuga sapiente, doloribus qui enim tempora?</p>
-                        <p class="account-switch mt-4">Don't have an Account yet ? <a class="text--base ms-2" href="sign-up.php">Sign Up</a></p>
+                      
                     </div>
                 </div>
             </div>
@@ -231,30 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
     <!-- Footer Section Starts Here -->
-<footer class="footer-section bg_img" style="background: url(assets/images/footer/bg.jpg) center;">
-    <div class="footer-top">
-        <div class="container">
-            <div class="footer-wrapper d-flex flex-wrap align-items-center justify-content-md-between justify-content-center">
-                <div class="logo mb-3 mb-md-0"><a href="index.php"><img src="assets/images/logo.png" alt="logo"></a></div>
-                <ul class="footer-links d-flex flex-wrap justify-content-center">
-                    <li><a href="games.php">Games</a></li>
-                    <li><a href="terms-conditions.php">Terms & Conditions</a></li>
-                    <li><a href="policy.php">Privacy Policy</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        <div class="container">
-            <div class="footer-wrapper d-flex flex-wrap justify-content-center align-items-center text-center">
-                <p class="copyright text-white">Copyrights &copy; 2021 All Rights Reserved by <a href="#0" class=" text--base ms-2">Viserlab</a></p>
-            </div>
-        </div>
-    </div>
-    <div class="shapes">
-        <img src="assets/images/footer/shape.png" alt="footer" class="shape1">
-    </div>
-</footer>
+
 <!-- Footer Section Ends Here -->
     
 

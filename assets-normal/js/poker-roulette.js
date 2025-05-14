@@ -10,51 +10,51 @@ const centerX = 200, centerY = 200, outerRadius = 200, innerRadius = 28;
 // Define colors for segments
 const segmentColors = ["#201cb2", "#5c1166", "#5c1110"];
 
-// Draw segments (each segment spans from (i*30° -15°) to (i*30° +15°))
-function drawSegments() {
-  const svg = document.getElementById("segments-svg");
-  svg.innerHTML = '';
-  for (let i = 0; i < segmentCount; i++) {
-    const startDeg = i * segmentAngle - 15;
-    const endDeg = i * segmentAngle + 15;
-    const startRad = startDeg * Math.PI / 180;
-    const endRad = endDeg * Math.PI / 180;
-    const x1 = centerX + outerRadius * Math.cos(startRad);
-    const y1 = centerY + outerRadius * Math.sin(startRad);
-    const x2 = centerX + outerRadius * Math.cos(endRad);
-    const y2 = centerY + outerRadius * Math.sin(endRad);
-    const d = `M ${centerX} ${centerY} L ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 0 1 ${x2} ${y2} Z`;
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("fill", segmentColors[i % segmentColors.length]);
-    path.setAttribute("d", d);
-    svg.appendChild(path);
-  }
-}
+// // Draw segments (each segment spans from (i*30° -15°) to (i*30° +15°))
+// function drawSegments() {
+//   const svg = document.getElementById("segments-svg");
+//   svg.innerHTML = '';
+//   for (let i = 0; i < segmentCount; i++) {
+//     const startDeg = i * segmentAngle - 15;
+//     const endDeg = i * segmentAngle + 15;
+//     const startRad = startDeg * Math.PI / 180;
+//     const endRad = endDeg * Math.PI / 180;
+//     const x1 = centerX + outerRadius * Math.cos(startRad);
+//     const y1 = centerY + outerRadius * Math.sin(startRad);
+//     const x2 = centerX + outerRadius * Math.cos(endRad);
+//     const y2 = centerY + outerRadius * Math.sin(endRad);
+//     const d = `M ${centerX} ${centerY} L ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 0 1 ${x2} ${y2} Z`;
+//     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+//     path.setAttribute("fill", segmentColors[i % segmentColors.length]);
+//     path.setAttribute("d", d);
+//     svg.appendChild(path);
+//   }
+// }
 
-// Draw radial boundary lines at (i*30° + 15°)
-function drawLines() {
-  const svg = document.getElementById("lines-svg");
-  svg.innerHTML = '';
-  for (let i = 0; i < segmentCount; i++) {
-    const angleDeg = 15 + i * segmentAngle;
-    const angleRad = angleDeg * Math.PI / 180;
-    const x1 = centerX + innerRadius * Math.cos(angleRad);
-    const y1 = centerY + innerRadius * Math.sin(angleRad);
-    const x2 = centerX + outerRadius * Math.cos(angleRad);
-    const y2 = centerY + outerRadius * Math.sin(angleRad);
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", x1);
-    line.setAttribute("y1", y1);
-    line.setAttribute("x2", x2);
-    line.setAttribute("y2", y2);
-    line.setAttribute("stroke", "rgba(0,0,0,0.5)");
-    line.setAttribute("stroke-width", "2");
-    svg.appendChild(line);
-  }
-}
+// // Draw radial boundary lines at (i*30° + 15°)
+// function drawLines() {
+//   const svg = document.getElementById("lines-svg");
+//   svg.innerHTML = '';
+//   for (let i = 0; i < segmentCount; i++) {
+//     const angleDeg = 15 + i * segmentAngle;
+//     const angleRad = angleDeg * Math.PI / 180;
+//     const x1 = centerX + innerRadius * Math.cos(angleRad);
+//     const y1 = centerY + innerRadius * Math.sin(angleRad);
+//     const x2 = centerX + outerRadius * Math.cos(angleRad);
+//     const y2 = centerY + outerRadius * Math.sin(angleRad);
+//     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+//     line.setAttribute("x1", x1);
+//     line.setAttribute("y1", y1);
+//     line.setAttribute("x2", x2);
+//     line.setAttribute("y2", y2);
+//     line.setAttribute("stroke", "rgba(0,0,0,0.5)");
+//     line.setAttribute("stroke-width", "2");
+//     svg.appendChild(line);
+//   }
+// }
 
-drawSegments();
-drawLines();
+// drawSegments();
+// drawLines();
 
 const balanceDisplay = document.getElementById("balance-display");
 const winPointsDisplay = document.getElementById("claim-display");
@@ -908,8 +908,8 @@ function addHistoryCard(src, suit) {
   const wintimesSpan = document.createElement("span");
   suitSpan.textContent = suit;
   wintimesSpan.textContent = 'N'; // Use the appropriate win times value if needed
-  suitSpan.style.fontSize = "30px";
-  wintimesSpan.style.fontSize = "30px";
+  suitSpan.style.fontSize = "20px";
+  wintimesSpan.style.fontSize = "15";
   suitSpan.style.marginLeft = "5px";
   wintimesSpan.style.marginLeft = "5px";
 
@@ -964,13 +964,13 @@ function displayHistoryCard(src, suit, wintimes) {
 
   const suitSpan = document.createElement("span");
   suitSpan.textContent = suit;
-  suitSpan.style.fontSize = "30px";
+  suitSpan.style.fontSize = "20px";
   suitSpan.style.marginLeft = "5px";
   suitSpan.style.color = (suit === "♥" || suit === "♦") ? "red" : "black";
 
   const wintimesSpan = document.createElement("span");
   wintimesSpan.textContent = wintimes;
-  wintimesSpan.style.fontSize = "30px";
+  wintimesSpan.style.fontSize = "15px";
   wintimesSpan.style.marginLeft = "5px";
   wintimesSpan.style.color = "black";
 
@@ -1421,7 +1421,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     }
     const winningGridCard = document.querySelector(`.grid-card[data-index="${gridIndex}"]`);
     if (winningGridCard) {
-      winningGridCard.classList.add("winner");
+      winningGridCard.classList.add("winners");
     }
     const wheelCards = document.querySelectorAll(".card-wrapper");
     const winningWheelCard = wheelCards[winningIndex];
@@ -1630,48 +1630,75 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-const fullscreenBtn = document.getElementById("fullscreenBtn");
-const footer = document.getElementById("foter-div");
-const navbar = document.getElementById("navbar-header");
-const stickContainer = document.getElementById("stick-container");
+const stickContainer  = document.getElementById("stick-container");
+const overlay         = document.getElementById("overlay");
+
+// Grab _all_ fullscreen buttons
+const fullscreenBtns = document.querySelectorAll(".fullscreen-toggle");
+
+function updateButtons() {
+  const isFull = !!document.fullscreenElement;
+  fullscreenBtns.forEach(btn => {
+    btn.innerHTML = isFull
+      ? '<i class="fas fa-compress"></i> Exit Fullscreen'
+      : '<i class="fas fa-expand"></i> Go Fullscreen';
+  });
+}
+
+function enterFullscreen() {
+  stickContainer.style.top = "5.5rem";
+  document.documentElement.requestFullscreen()
+    .then(() => {
+      overlay.style.display        = "none";
+      document.body.style.overflow = "";
+      updateButtons();
+    })
+    .catch(err => console.warn("FS error:", err));
+}
+
+function exitFullscreen() {
+  stickContainer.style.top = "12.2rem";
+  overlay.style.display        = "flex";
+  document.body.style.overflow = "hidden";
+  updateButtons();
+}
 
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
-    // Request fullscreen mode
-    stickContainer.style.top = "5.5rem";
-    document.documentElement.requestFullscreen().catch(err => console.warn("Error attempting to enable fullscreen:", err));
+    enterFullscreen();
   } else {
-    // Exit fullscreen mode
-    stickContainer.style.top = "12.2rem";
-    document.exitFullscreen().catch(err => console.warn("Error attempting to exit fullscreen:", err));
+    document.exitFullscreen().catch(err => console.warn("FS exit error:", err));
   }
 }
 
-// Toggle fullscreen on button click
-fullscreenBtn.addEventListener("click", toggleFullscreen);
+// On DOM ready, lock in the overlay
+document.addEventListener("DOMContentLoaded", () => {
+  overlay.style.display        = "flex";
+  document.body.style.overflow = "hidden";
+  updateButtons();
+});
 
-// Listen for F11 key press and prevent the default browser action
-document.addEventListener("keydown", function (e) {
+// Wire up every button to the same toggle handler
+fullscreenBtns.forEach(btn =>
+  btn.addEventListener("click", toggleFullscreen)
+);
+
+// F11 support
+document.addEventListener("keydown", e => {
   if (e.key === "F11" || e.keyCode === 122) {
-    e.preventDefault();  // Prevent the default F11 behavior (which may vary by browser)
+    e.preventDefault();
     toggleFullscreen();
   }
 });
-
-// Listen for fullscreen change events to update the UI
-document.addEventListener("fullscreenchange", () => {
-  if (!document.fullscreenElement) {
-    // Exited fullscreen mode
-
-    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-    navbar.style.display = 'block';
-    stickContainer.style.top = "12.2rem";
-    footer.style.display = 'block';
-  } else {
-    // Entered fullscreen mode
-    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-    navbar.style.display = 'none';
-    stickContainer.style.top = "5.5rem";
-    footer.style.display = 'none';
-  }
+[
+  "fullscreenchange",
+  "webkitfullscreenchange",
+  "mozfullscreenchange",
+  "MSFullscreenChange"
+].forEach(evt => {
+  document.addEventListener(evt, () => {
+    if (!document.fullscreenElement) {
+      exitFullscreen();
+    }
+  });
 });
