@@ -1,6 +1,4 @@
- <!-- meta tags and other links -->
-   <!-- meta tags and other links -->
- <?php
+<?php
 session_start();
 
 // Restrict access if the user is not logged in
@@ -10,6 +8,65 @@ if (!isset($_SESSION['user_id'])) {
 }
 include 'db.php'; // Database connection
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'claim_points') {
+    header('Content-Type: application/json');
+    $user_id = intval($_POST['user_id']);
+    $claim_id = intval($_POST['claim_point_data_id']);
+
+    // 1) fetch current unclaimed_point from claim_point_data
+    $sql = "SELECT unclaim_point, claim_point FROM claim_point_data WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('i', $claim_id);
+    $stmt->execute();
+    $stmt->bind_result($unclaimed, $already_claimed);
+    if (!$stmt->fetch()) {
+        echo json_encode(['success' => false, 'message' => 'Claim record not found']);
+        exit;
+    }
+    $stmt->close();
+
+    if ($unclaimed <= 0) {
+        echo json_encode(['success' => false, 'message' => 'No points left to claim']);
+        exit;
+    }
+
+    // 2) update claim_point_data: add to claimed_point, zero out unclaimed_point
+    $new_claimed = $already_claimed + $unclaimed;
+    $sql = "UPDATE claim_point_data SET claim_point = ?, unclaim_point = 0 WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('ii', $new_claimed, $claim_id);
+    if (!$stmt->execute()) {
+        echo json_encode(['success' => false, 'message' => 'Failed updating claim data']);
+        exit;
+    }
+    $stmt->close();
+
+    // 3) fetch user’s existing points
+    $sql = "SELECT points FROM user WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    $stmt->bind_result($current_points);
+    if (!$stmt->fetch()) {
+        echo json_encode(['success' => false, 'message' => 'User not found']);
+        exit;
+    }
+    $stmt->close();
+
+    // 4) update user’s points
+    $new_points = $current_points + $unclaimed;
+    $sql = "UPDATE user SET points = ? WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('ii', $new_points, $user_id);
+    if (!$stmt->execute()) {
+        echo json_encode(['success' => false, 'message' => 'Failed updating user points']);
+        exit;
+    }
+    $stmt->close();
+
+    echo json_encode(['success' => true]);
+    exit;
+}
 
 $user_id = $_SESSION['user_id'];
 $game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 1; // Adjust as needed
@@ -45,6 +102,49 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $stmt->close();
+// fetch winning game_results
+$threshold = 0;
+// 1) Fetch ALL wins
+$stmt1 = $conn->prepare("SELECT * FROM game_results WHERE win_value > 0 ORDER BY id ASC");
+$stmt1->execute();
+$res1 = $stmt1->get_result();
+$game_results = $res1->fetch_all(MYSQLI_ASSOC);
+
+// 2) Fetch ALL claim_point_data rows
+$stmt2 = $conn->prepare("SELECT * FROM claim_point_data ORDER BY id ASC");
+$stmt2->execute();
+$res2 = $stmt2->get_result();
+$claim_list  = $res2->fetch_all(MYSQLI_ASSOC);
+
+// 3) Merge by index
+$mapped = [];
+foreach ($game_results as $idx => $gr) {
+    // take the claim-data with the same zero-based index,
+    // or fall back to a “blank” if there’s no matching row
+    $cpd = $claim_list[$idx] ?? [
+        'id'            => 0,
+        'user_id'       => $gr['user_id'],
+        'claim_point'   => 0,
+        'unclaim_point' => 0,
+        'balance'       => 0,
+        'auto_claim'    => 0,
+        'created_at'    => null,
+        'updated_at'    => null,
+    ];
+
+    $gr['claim_point_data'] = $cpd;
+    $gr['serial']           = $idx + 1;  // serial starts at 1
+    $mapped[]               = $gr;
+}
+
+
+
+// $rows now holds each game_results row,
+// with claim_point_data_* null for non‑winners
+
+// $rows now contains one entry per game_results row.
+// If win_value ≤ 0, all the cpd.* fields will be NULL.
+
 
 
 $stmt = $conn->prepare("SELECT SUM(bet) AS total_bet FROM game_results WHERE user_id = ? AND DATE(created_at) = CURDATE()");
@@ -391,134 +491,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     </div>
 
                                     <div class="form-group mt-4">
-                                        <button type="submit" class="cmn--btn active w-100">Claim Points</button>
+                                        <button type="button" class="cmn--btn active w-100 disabaled">Claim Points</button>
                                     </div>
                                 </form>
 
                             </div>
                         </div>
                         <div class="table--responsive--md">
-                 <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Card Number</th>
-                            <th>Bet Amount</th>
-                            <th>Win Value</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($gameResults as $result): ?>
-                            <?php
-                                $card_number = ($result['win_value'] > 0) ? $result['winning_number'] : $result['lose_number'];
-                                $userwins = ($result['win_value'] > 0) ? 'Yes' : 'No';
+                <table class="table">
+    <thead>
+        <tr>
+            <th>Card Number</th>
+            <th>Bet Amount</th>
+            <th>Win Value</th>
+            <th>Claimed Points</th>
+            <th>Unclaimed Points</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($mapped as $result): 
+        $cpd = $result['claim_point_data'] ?? [
+            'id'=>0, 'claim_point'=>0, 'unclaim_point'=>0
+        ];
+        // card to show
+        $card_number = $result['winning_number'] ?? $result['lose_number'];
+        // status text
+        $userwins    = $result['win_value'] > 0 ? 'Yes' : 'No';
+    ?>
+        <tr class="table-history">
+            <td data-label="Card Number"><?= htmlspecialchars($card_number) ?></td>
+            <td data-label="Bet Amount">₹<?= number_format($result['bet'], 2) ?></td>
+            <td data-label="Win Value">₹<?= number_format($result['win_value'], 2) ?></td>
+            <td data-label="Claimed Points"><?= number_format($cpd['claim_point'], 0) ?></td>
+            <td data-label="Unclaimed Points"><?= number_format($cpd['unclaim_point'], 0) ?></td>
+            <td data-label="Status">
+                <?php if ($userwins === 'Yes'): ?>
+                    <small class="btn-sm btn-success">Win</small>
+                <?php else: ?>
+                    <small class="btn btn-sm btn-danger">Lose</small>
+                <?php endif; ?>
 
-                            ?>
-                            <tr class="table-history">
-                                <td data-label="Card">
+                <?php if ($cpd['claim_point'] > 0): ?>
+                    <small class="btn-sm btn-success">Claimed</small>
+                <?php else: ?>
+                    <small class="btn-sm btn-danger">Unclaimed</small>
+                <?php endif; ?>
+            </td>
+            <td data-label="Action">
+                <?php if ($cpd['claim_point'] <= 0): ?>
+                   <button 
+  class="btn btn-sm btn-danger win-value claim-btn" 
+  data-user-id="<?= $result['user_id'] ?>" 
+  data-claim-id="<?= $cpd['id'] ?>">
+  Claim
+</button>
+                <?php else: ?>
+                    <button class="btn btn-sm btn-secondary" disabled>
+                        Claimed
+                    </button>
+                <?php endif; ?>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
 
-                                 <?php if ($card_number == 0): ?>
-                                    <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="0">
-                                        <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades">
-                                        <img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades">
-                                        <div class="cstm-ribbon">Play</div>
-                                    </div>
-                                <?php elseif ($card_number == 1): ?>
-                                    <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="1">
-                                        <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Diamonds">
-                                        <img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Diamonds">
-                                        <div class="cstm-ribbon">Play</div>
-                                    </div>
-                               
-                                <?php elseif ($card_number == 2): ?>
-                                   <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="2">
-                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Clubs">
-                    <img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Clubs">
-                    <div class="cstm-ribbon">Play</div>
-                </div>
-              
-                                <?php elseif ($card_number == 3): ?>
-                                    <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="3">
-                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Hearts">
-                    <img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Hearts">
-                    <div class="cstm-ribbon">Play</div>
-                </div>
-                                
-                                <?php elseif ($card_number == 4): ?>
-                                 <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="4">
-                     <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Spades">
-                     <img class="card" src="/assets-normal/img/spades-golden.png" alt="Queen of Spades">
-                     <div class="cstm-ribbon">Play</div>
-                </div>
-               
-                                
-                                <?php elseif ($card_number == 5): ?>
-                                 <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="5">
-                    <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Diamonds">
-                     <img class="card" src="/assets-normal/img/golden-diamond.png" alt="Queen of Diamonds">
-                    <div class="cstm-ribbon">Play</div>
-                </div>
-             
-                                
-                                <?php elseif ($card_number == 6): ?>
-                                 <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="6">
-                    <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Clubs">
-                    <img class="card" src="/assets-normal/img/clubs-golden.png" alt="Queen of Clubs">
-                    <div class="cstm-ribbon">Play</div>
-                </div>
-              
-                                
-                                <?php elseif ($card_number == 7): ?>
-                                <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="7">
-                    <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Hearts">
-                    <img class="card" src="/assets-normal/img/golden-hearts.png" alt="Queen of Hearts">
-                    <div class="cstm-ribbon">Play</div>
-                </div>
-                                
-                                <?php elseif ($card_number == 8): ?>
-                                 <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="8">
-                    <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Spades">
-                     <img class="card" src="/assets-normal/img/spades-golden.png" alt="Jack of Spades">
-                        <div class="cstm-ribbon">Play</div>
-                </div>
-                
-               
-                                <?php elseif ($card_number == 9): ?>
-                         <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="9">
-                <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Diamonds">
-                     <img class="card" src="/assets-normal/img/golden-diamond.png" alt="Jack of Diamonds">
-                        <div class="cstm-ribbon">Play</div>
-                </div>
-               
-                                <?php elseif ($card_number == 10): ?>
-                               <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="10">
-                <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Clubs">
-                       <img class="card" src="/assets-normal/img/clubs-golden.png" alt="Jack of Clubs">
-                          <div class="cstm-ribbon">Play</div>
-                </div>
-               
-                                
-                                <?php elseif ($card_number == 11): ?>
-                                   <div class="grid-card d-flex align-items-baseline justify-content-around" data-index="11">
-                <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Hearts">
-                        <img class="card" src="/assets-normal/img/golden-hearts.png" alt="Jack of Hearts">
-                           <div class="cstm-ribbon">Play</div>
-                </div>
-                                <?php endif; ?>
-                                </td>
-                                <td class="bet" data-label="Bet Amount">₹<?= number_format($result['bet'], 2) ?></td>
-                                <td class="win-value" data-label="Win Value">₹<?= number_format($result['win_value'], 2) ?></td>
-                                <td class="status" data-label="Status">
-                                    <?php if ($userwins === 'Yes'): ?>
-                                        <small style="background-color: #28a745; padding: 2px 8px; border-radius: 5px; color: #fff;">Win</small>
-                                    <?php else: ?>
-                                        <small style="background-color: #dc3545; padding: 2px 8px; border-radius: 5px; color: #fff;">Lose</small>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+
 
 
                         </div>
@@ -564,6 +604,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </footer>
         <!-- Footer Section Ends Here -->
+<!-- put this somewhere after you load jQuery on history‑log.php -->
+<script>
+  document.addEventListener('click', function(e) {
+    // only run when a .claim-btn is clicked
+    if (!e.target.matches('.claim-btn')) return;
+    e.preventDefault();
+
+    const btn     = e.target;
+    const userId  = btn.dataset.userId;     // grabs data-user-id
+    const claimId = btn.dataset.claimId;    // grabs data-claim-id
+
+    fetch('history-log.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        action: 'claim_points',
+        user_id: userId,
+        claim_point_data_id: claimId
+      })
+    })
+    .then(r => r.json())
+    .then(resp => {
+        location.reload();
+
+      if (resp.success) {
+        btn.textContent = 'Claimed';
+        btn.disabled    = true;
+        btn.classList.replace('btn-danger', 'btn-secondary');
+      } else {
+        alert('Error: ' + resp.message);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+    location.reload();
+
+    });
+  });
+</script>
 
         <!-- jQuery library -->
         <script src="assets/js/lib/jquery-3.6.0.min.js"></script>

@@ -12,6 +12,7 @@ if (!isset($_POST['src']) || !isset($_POST['suiticon']) || !isset($_POST['wintim
 $src = $_POST['src'];
 $suiticon = $_POST['suiticon'];
 $wintimes = $_POST['wintimes'];
+$withdrawTime = $_POST['withdrawTime'];
 
 // Retrieve existing history record for this game_id only (no user)
 $query = "SELECT id, history FROM game_history WHERE game_id = ?";
@@ -42,7 +43,8 @@ if (!is_array($historyArray)) {
 $newEntry = [
     "src"      => $src,
     "suiticon" => $suiticon,
-    "wintimes" => $wintimes
+    "wintimes" => $wintimes,
+    "withdrawTime" => $withdrawTime
 ];
 $historyArray[] = $newEntry;
 

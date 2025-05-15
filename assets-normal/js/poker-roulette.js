@@ -202,6 +202,9 @@ const resultDisplay = document.getElementById("result-display");
 //   return Math.floor(effectiveAngle / segmentAngle);
 // }
 
+
+    
+
 let countdowntemp = spinTimerDuration;
 let countdown;
 let timerInterval;
@@ -315,6 +318,7 @@ function fetchBetHistory(withdrawTime) {
 }
 
 function updateTimeDisplay() {
+   
   const now = new Date(getSyncedTime());
   const currentTime = now.toLocaleTimeString();
   countdown = getCountdown();
@@ -335,24 +339,63 @@ function updateTimeDisplay() {
     resultDisplay.style.display = 'none';
   }
 
-  if (countdown <= 5) {
+  if (countdown == 5) {
+     const bettingOversound = new Howl({
+      src: ['/assets-normal/img/betting-Over.mp3'],
+      volume: 0.9
+    });
+    // play it
+    bettingOversound.play();
     resultDisplay.textContent = "Betting Time is Over";
     resultDisplay.style.display = 'block';
+
   }
+    if (countdown == 15) {
+     const bettingOversound = new Howl({
+      src: ['/assets-normal/img/Last-time-to-bet.mp3'],
+      volume: 0.9
+    });
+    // play it
+    bettingOversound.play();
+
+        resultDisplay.textContent = "Last Time To Bet";
+    resultDisplay.style.display = 'block';
+    }
+    if (countdown == 110) {
+      resultDisplay.textContent = "Place Your Chips";
+    resultDisplay.style.display = 'block';
+  const bettingOversound = new Howl({
+    src: ['/assets-normal/img/place-chips.mp3'],
+    volume: 0.9
+  });
+
+  // Play the sound if needed
+  bettingOversound.play();
+
+  // Remove "winner" class from elements
+  document.querySelectorAll(".grid-card, .card-wrapper").forEach(el => 
+    el.classList.remove("winner")
+  );
+ document.querySelectorAll(".cstm-ribbon").forEach(el =>
+    el.classList.remove("blingbg")
+  );
+}
+
   if (countdown === 5) {
     updateBankValue();
   }
   if (countdown === 3) {
+     
     fetchBetHistory(withdrawTime);
   }
   if (countdown === 1) {
     getinsertedbetHistory(withdrawTime);
   }
-if (countdown <= 110) {
-    resultDisplay.textContent = "";
-    resultDisplay.style.display = 'none';
+// if (countdown <= 110) {
+//     resultDisplay.textContent = "";
+//     resultDisplay.style.display = 'none';
     
-  }
+//   }
   if (countdown === 0) {
     document.getElementById("spinBtn").click(); // auto-spin at 0
   }
@@ -892,16 +935,59 @@ document.getElementById("repeat-bet").addEventListener("click", function () {
   element.appendChild(overlay);
   betOverlays[identifier] = overlay;
 });
+function subtractMinutes(timeStr, minsToSubtract = 2) {
+  // split out the parts
+  let [time, modifier] = timeStr.split(' ');
+  let [hh, mm] = time.split(':').map(Number);
 
+  // adjust hours to 24h
+  if (modifier === 'PM' && hh < 12) hh += 12;
+  if (modifier === 'AM' && hh === 12) hh = 0;
+
+  // construct a Date and subtract minutes
+  let dt = new Date();
+  dt.setHours(hh, mm);
+  dt.setMinutes(dt.getMinutes() - minsToSubtract);
+
+  // get back hours/minutes
+  let newH = dt.getHours();
+  let newM = dt.getMinutes();
+
+  // decide AM/PM and convert to 12h
+  let newModifier = newH >= 12 ? 'PM' : 'AM';
+  newH = newH % 12 || 12;               // 0→12
+
+  // zero‑pad minutes
+  let newMStr = newM.toString().padStart(2, '0');
+
+  return `${newH}:${newMStr} ${newModifier}`;
+}
 
 // Add winning card image and suit icon to history (limit 12)
-function addHistoryCard(src, suit) {
+function addHistoryCard(src, suit, withdrawTime) {
   const historyContainer = document.getElementById("history-container");
   const wrapper = document.createElement("div");
   wrapper.classList.add("history-item");
 
-  const img = document.createElement("img");
-  img.src = src;
+   const timeSpan = document.createElement("span");
+timeSpan.textContent = subtractMinutes(withdrawTime, 2);
+  timeSpan.style.fontSize = "14px";
+  timeSpan.style.color = "black";
+
+   const img = document.createElement("span");
+
+  let imgtext;
+  if (src == '/assets-normal/img/golden-j.png') {
+    imgtext = 'J';
+  } else if(src == '/assets-normal/img/golden-q.png') {
+imgtext = 'Q';
+  } else{
+imgtext = 'K';
+  }
+  img.textContent = imgtext;
+   img.style.fontSize = "15px";
+  img.style.marginLeft = "5px";
+  img.style.color = "black";
   img.classList.add("history-card");
 
   const suitSpan = document.createElement("span");
@@ -917,6 +1003,7 @@ function addHistoryCard(src, suit) {
   suitSpan.style.color = (suit === "♥" || suit === "♦") ? "red" : "black";
   wintimesSpan.style.color = "black";
 
+  wrapper.appendChild(timeSpan);
   wrapper.appendChild(img);
   wrapper.appendChild(suitSpan);
   wrapper.appendChild(wintimesSpan);
@@ -928,17 +1015,18 @@ function addHistoryCard(src, suit) {
   }
 
   // Update the history in the database
-  updateHistory(src, suit, 'N');
+  updateHistory(src, suit, 'N',withdrawTime);
 }
 
 // AJAX function to update the game history in the database
-function updateHistory(src, suit, wintimes) {
+function updateHistory(src, suit, wintimes,withdrawTime) {
   const formData = new FormData();
   // You may set the game_id as needed
   formData.append('game_id', 1);
   formData.append('src', src);
   formData.append('suiticon', suit);
   formData.append('wintimes', wintimes);
+  formData.append('withdrawTime', withdrawTime);
 
   fetch('../../api/updateHistory.php', { method: 'POST', body: formData })
     .then(res => res.text())                // ← get raw text
@@ -953,33 +1041,86 @@ function updateHistory(src, suit, wintimes) {
     })
     .catch(err => console.error('Fetch error:', err));
 }
-function displayHistoryCard(src, suit, wintimes) {
+function displayHistoryCard(src, suit, wintimes,withdrawTime) {
   const historyContainer = document.getElementById("history-container");
+
+  // 1-based index of the new item
+  const newIndex = historyContainer.childNodes.length + 1;
+
+
+
+  // Build the wrapper
   const wrapper = document.createElement("div");
   wrapper.classList.add("history-item");
 
-  const img = document.createElement("img");
-  img.src = src;
+  // Time label
+
+
+  let [time, modifier] = withdrawTime.split(' ');
+  let [hh, mm] = time.split(':').map(Number);
+
+  // adjust hours to 24h
+  if (modifier === 'PM' && hh < 12) hh += 12;
+  if (modifier === 'AM' && hh === 12) hh = 0;
+
+  // construct a Date and subtract minutes
+  let dt = new Date();
+  dt.setHours(hh, mm);
+  dt.setMinutes(dt.getMinutes() - 2);
+
+  // get back hours/minutes
+  let newH = dt.getHours();
+  let newM = dt.getMinutes();
+
+  // decide AM/PM and convert to 12h
+  let newModifier = newH >= 12 ? 'PM' : 'AM';
+  newH = newH % 12 || 12;               // 0→12
+
+  // zero‑pad minutes
+  let newMStr = newM.toString().padStart(2, '0');
+
+  withdrawTime = `${newH}:${newMStr} ${newModifier}`;
+
+  const timeSpan = document.createElement("span");
+timeSpan.textContent = withdrawTime;
+  timeSpan.style.fontSize = "14px";
+  timeSpan.style.color = "black";
+
+  // Card face
+  const img = document.createElement("span");
+  let imgtext;
+  if (src === '/assets-normal/img/golden-j.png') {
+    imgtext = 'J';
+  } else if (src === '/assets-normal/img/golden-q.png') {
+    imgtext = 'Q';
+  } else {
+    imgtext = 'K';
+  }
+  img.textContent = imgtext;
+  img.style.fontSize = "15px";
+  img.style.marginRight = "5px";
+  img.style.color = "black";
   img.classList.add("history-card");
 
+  // Suit
   const suitSpan = document.createElement("span");
   suitSpan.textContent = suit;
   suitSpan.style.fontSize = "20px";
-  suitSpan.style.marginLeft = "5px";
+  suitSpan.style.marginRight = "5px";
   suitSpan.style.color = (suit === "♥" || suit === "♦") ? "red" : "black";
 
+  // Win times
   const wintimesSpan = document.createElement("span");
   wintimesSpan.textContent = wintimes;
   wintimesSpan.style.fontSize = "15px";
-  wintimesSpan.style.marginLeft = "5px";
+  wintimesSpan.style.marginRight = "5px";
   wintimesSpan.style.color = "black";
 
-  wrapper.appendChild(img);
-  wrapper.appendChild(suitSpan);
-  wrapper.appendChild(wintimesSpan);
+  // Assemble and append
+  wrapper.append(timeSpan, img, suitSpan, wintimesSpan);
   historyContainer.appendChild(wrapper);
 
-  // Ensure the DOM displays only the last 12 items
+  // Trim to last 12
   if (historyContainer.childNodes.length > 12) {
     historyContainer.removeChild(historyContainer.firstChild);
   }
@@ -996,7 +1137,7 @@ function fetchHistoryFromDB() {
       historyContainer.innerHTML = "";
       // historyArray is expected to be an array of objects
       historyArray.forEach(item => {
-        displayHistoryCard(item.src, item.suiticon, item.wintimes);
+        displayHistoryCard(item.src, item.suiticon, item.wintimes,item.withdrawTime);
       });
     })
     .catch(error => console.error("Error fetching history:", error));
@@ -1023,7 +1164,7 @@ function showCenterCard(src, suit, suitIconcolor) {
   centerCircle.appendChild(suitSpan);
 }
 
-// Draw suit ring with icons positioned at segment centers.
+// // Draw suit ring with icons positioned at segment centers.
 // function drawSuitRing() {
 //   const suitRing = document.getElementById("suit-ring");
 //   suitRing.innerHTML = "";
@@ -1043,7 +1184,7 @@ function showCenterCard(src, suit, suitIconcolor) {
 //   suitRing.style.transition = "none";
 
 //   // Adjust this value to change how far icons are from the center.
-//   const ringRadius = 90;
+//   const ringRadius = 110;
 //   // Angular offset to rotate the entire suit ring if needed.
 //   const baseAngleOffset = 5;
 
@@ -1150,6 +1291,12 @@ const cardDetails = [
 ];
 
 document.getElementById("spinBtn").addEventListener("click", function () {
+   const spinsound = new Howl({
+    src: ['/assets-normal/img/revolver-chamber-spin-ratchet-sound-90521.mp3'],
+    volume: 0.9
+  });
+  // play it
+ spinsound.play();
   // if (typeof chosenIndex !== 'number' || chosenIndex < 0 || chosenIndex >= segmentCount) {
   //   // Assign a random segment if chosenIndex is invalid or undefined
   //   chosenIndex = Math.floor(Math.random() * segmentCount);
@@ -1419,9 +1566,12 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     if (winningSegment) {
       winningSegment.classList.add("blink");
     }
-    const winningGridCard = document.querySelector(`.grid-card[data-index="${gridIndex}"]`);
-    if (winningGridCard) {
-      winningGridCard.classList.add("winners");
+      const winningRibbon = document.querySelector(
+      `.grid-card[data-index="${gridIndex}"] .cstm-ribbon`
+    );
+
+    if (winningRibbon) {
+      winningRibbon.classList.add("blingbg");
     }
     const wheelCards = document.querySelectorAll(".card-wrapper");
     const winningWheelCard = wheelCards[winningIndex];
@@ -1533,7 +1683,7 @@ if (chosenIndex === undefined) {
     // (The suit icon color is set based on red for hearts/diamonds, black otherwise.)
     const suitIconcolor = (suitIcon === '♥' || suitIcon === '♦') ? 'red' : 'black';
     showCenterCard(winningSrc, suitIcon, suitIconcolor);
-    addHistoryCard(winningSrc, suitIcon);
+    addHistoryCard(winningSrc, suitIcon, withdrawTime);
     let suiticonnum = 0;
     if (suitIcon === '♥') {
       suiticonnum = 1;
@@ -1567,7 +1717,14 @@ if (chosenIndex === undefined) {
     // startTimer();
     totalBets = 0;
     lastTotalBets = 0;
+    spinsound.stop();
+    const placechipssound = new Howl({
+    src: ['place-chips.mp3'],
+    volume: 0.9
+  });
+placechipssound.play();
   }, 4000);
+
 });
 
 function recordGameResult(winningSpin, betTotal, winValue = 0, suiticonnum, withdrawTime) {
@@ -1629,76 +1786,104 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
+  const stickContainer  = document.getElementById("stick-container");
+  const overlay         = document.getElementById("overlay");
 
-const stickContainer  = document.getElementById("stick-container");
-const overlay         = document.getElementById("overlay");
+  // Grab _all_ fullscreen buttons
+  const fullscreenBtns = document.querySelectorAll(".fullscreen-toggle");
 
-// Grab _all_ fullscreen buttons
-const fullscreenBtns = document.querySelectorAll(".fullscreen-toggle");
+  let fsEnforcerInterval;
 
-function updateButtons() {
-  const isFull = !!document.fullscreenElement;
-  fullscreenBtns.forEach(btn => {
-    btn.innerHTML = isFull
-      ? '<i class="fas fa-compress"></i> Exit Fullscreen'
-      : '<i class="fas fa-expand"></i> Go Fullscreen';
-  });
-}
-
-function enterFullscreen() {
-  stickContainer.style.top = "5.5rem";
-  document.documentElement.requestFullscreen()
-    .then(() => {
-      overlay.style.display        = "none";
-      document.body.style.overflow = "";
-      updateButtons();
-    })
-    .catch(err => console.warn("FS error:", err));
-}
-
-function exitFullscreen() {
-  stickContainer.style.top = "12.2rem";
-  overlay.style.display        = "flex";
-  document.body.style.overflow = "hidden";
-  updateButtons();
-}
-
-function toggleFullscreen() {
-  if (!document.fullscreenElement) {
-    enterFullscreen();
-  } else {
-    document.exitFullscreen().catch(err => console.warn("FS exit error:", err));
+  function updateButtons() {
+    const isFull = !!document.fullscreenElement;
+    fullscreenBtns.forEach(btn => {
+      btn.innerHTML = isFull
+        ? '<i class="fas fa-compress"></i> Exit Fullscreen'
+        : '<i class="fas fa-expand"></i> Go Fullscreen';
+    });
   }
-}
 
-// On DOM ready, lock in the overlay
-document.addEventListener("DOMContentLoaded", () => {
-  overlay.style.display        = "flex";
-  document.body.style.overflow = "hidden";
-  updateButtons();
-});
+  function enterFullscreen() {
+    stickContainer.style.top = "5.5rem";
+    document.documentElement.requestFullscreen()
+      .then(() => {
+        overlay.style.display        = "none";
+        document.body.style.overflow = "";
+        updateButtons();
 
-// Wire up every button to the same toggle handler
-fullscreenBtns.forEach(btn =>
-  btn.addEventListener("click", toggleFullscreen)
-);
-
-// F11 support
-document.addEventListener("keydown", e => {
-  if (e.key === "F11" || e.keyCode === 122) {
-    e.preventDefault();
-    toggleFullscreen();
+        // Stop polling once we're in fullscreen
+        clearInterval(fsEnforcerInterval);
+      })
+      .catch(err => console.warn("FS error:", err));
   }
-});
-[
-  "fullscreenchange",
-  "webkitfullscreenchange",
-  "mozfullscreenchange",
-  "MSFullscreenChange"
-].forEach(evt => {
-  document.addEventListener(evt, () => {
+
+  function exitFullscreen() {
+    stickContainer.style.top = "12.2rem";
+    overlay.style.display        = "flex";
+    document.body.style.overflow = "hidden";
+    updateButtons();
+
+    // restart polling so we re-enter if they exit again
+    startFullscreenEnforcer();
+  }
+
+  function toggleFullscreen() {
     if (!document.fullscreenElement) {
-      exitFullscreen();
+      enterFullscreen();
+
+      const bettingOversound = new Howl({
+        src: ['/assets-normal/img/place-chips.mp3'],
+        volume: 0.9
+      });
+      bettingOversound.play();
+    } else {
+      document.exitFullscreen().catch(err => console.warn("FS exit error:", err));
+    }
+  }
+
+  // Poll every second, and re-enter fullscreen if they've left
+  function startFullscreenEnforcer() {
+    // avoid multiple intervals
+    clearInterval(fsEnforcerInterval);
+    fsEnforcerInterval = setInterval(() => {
+      if (!document.fullscreenElement) {
+        enterFullscreen();
+      }
+    }, 1000);
+  }
+
+  // On DOM ready, lock in the overlay and start polling
+  document.addEventListener("DOMContentLoaded", () => {
+    overlay.style.display        = "flex";
+    document.body.style.overflow = "hidden";
+    updateButtons();
+
+    startFullscreenEnforcer();
+  });
+
+  // Wire up every button to the same toggle handler
+  fullscreenBtns.forEach(btn =>
+    btn.addEventListener("click", toggleFullscreen)
+  );
+
+  // F11 support
+  document.addEventListener("keydown", e => {
+    if (e.key === "F11" || e.keyCode === 122) {
+      e.preventDefault();
+      toggleFullscreen();
     }
   });
-});
+
+  // Listen for fullscreen changes (escape, browser menu, etc)
+  [
+    "fullscreenchange",
+    "webkitfullscreenchange",
+    "mozfullscreenchange",
+    "MSFullscreenChange"
+  ].forEach(evt => {
+    document.addEventListener(evt, () => {
+      if (!document.fullscreenElement) {
+        exitFullscreen();
+      }
+    });
+  });

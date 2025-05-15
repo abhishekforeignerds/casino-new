@@ -81,11 +81,12 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 #image-roulette #main-container {
     display: flex;
     /* gap: 40px; */
-    align-items: center;
+    align-items: self-end;
     justify-content: space-around;
     margin: 0px;
     flex-direction: row-reverse;
     height: 50%;
+    width: 100%;
 }
 
 /* Wheel Container (350x350) */
@@ -150,9 +151,9 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 
 /* Card */
 #image-roulette .card {
-    width: 49px;
+    width: 50px;
     height: 75px;
-    height: 70px;
+    height: 75px;
     display: block;
     /* border-radius: 50%; */
     display: block;
@@ -184,17 +185,63 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
  }
 /* Marker */
 #image-roulette #marker {
-    position: absolute;
-    top: 0px; /* adjust as needed */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0px;
-    height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-top: 30px solid #ffd700; /* marker color */
-    z-index: 10;
-  }
+  position: absolute;
+  top: 0; /* adjust as needed */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 30px;
+  /* clip into a downwardâ€pointing triangle */
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  /* two halves, each with its own gradient for light & shadow */
+  background:
+    /* left face (lit side) */
+    linear-gradient(
+      to bottom left,
+      rgba(255, 239, 102, 1) 0%,
+      rgba(255, 223, 33, 1) 100%
+    ) top left / 50% 100% no-repeat,
+    /* right face (shadow side) */
+    linear-gradient(
+      to bottom right,
+      rgba(204, 178, 0, 1) 0%,
+      rgb(222 198 14) 100%
+    ) top right / 50% 100% no-repeat;
+  /* subtle inner shadow to deepen the crease */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+  #image-roulette #marker2 {
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 30px;
+  /* clip a perfect equilateralâ€ish triangle */
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  /* two layered backgrounds: 
+     - the lower layer is the â€œbackâ€ face (darker) 
+     - the upper layer is the â€œfrontâ€ face (lighter), clipped to half the triangle */
+  background:
+    /* front face */
+    linear-gradient(
+      to bottom right,
+      #ffd700 0%,
+      rgba(100, 16, 16, 1) 100%
+    ) top left / 50% 100% no-repeat,
+    /* back face */
+    linear-gradient(
+      to bottom left,
+      rgba(80, 12, 12, 1) 0%,
+      #ea5455 100%
+    ) top right / 50% 100% no-repeat;
+  /* optional: a very subtle inner glow to simulate depth */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
   /* Bottom triangle (pointing down) */
 #image-roulette #marker::before {
 
@@ -212,6 +259,35 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 
 /* Top triangle (pointing up) */
 #image-roulette #marker::after {
+
+    position: absolute;
+    left: -32px;
+    bottom: -38px;
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 38px solid #013220; /* Same dark green color */
+    /* box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.4); */
+    transform: perspective(200px) rotateX(5deg);
+}
+
+#image-roulette #marker2::before {
+
+    position: absolute;
+    left: -32px;
+    top: 38px;
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 38px solid #013220; /* Single dark green color */
+    /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); */
+    transform: perspective(200px) rotateX(5deg);
+}
+
+/* Top triangle (pointing up) */
+#image-roulette #marker2::after {
 
     position: absolute;
     left: -32px;
@@ -313,7 +389,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
     /* padding: 10px; */
     background: #ffffff00;
     /* margin-bottom: 30px; */
-    width: 91%;
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -331,13 +407,16 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
     flex-direction: row-reverse;
     height: 95%;
     padding: 5px;
+    width: 100%;
 }
 
 #image-roulette .history-card {
-    width: 25%;
-    height: 22%;
+    margin-top: 5px;
+    width: 40%;
+    height: 30%;
     /* box-shadow: var(--card-shadow); */
     object-fit: cover;
+    margin-left: 20%;
 }
 
 
@@ -372,7 +451,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 }
 
 #wheel-container {
-  /* scale the wheel to 80% of its parent’s width (you can tweak this) */
+  /* scale the wheel to 80% of its parentâ€™s width (you can tweak this) */
   width: 80%;
   max-width: 400px;      /* optional cap */
   
@@ -452,7 +531,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
         #image-roulette #card-grid {
             display: grid;
             grid-template-columns: auto repeat(4, 1fr);
-            gap: 15px;
+            gap: 9px 4px;
             max-width: 100%;
             align-items: center;
             justify-items: center;
@@ -470,7 +549,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
     border: 3px solid #ff9c19;
     border-radius: 5px;
     /* padding: 0px 22px; */
-    width: 100%;
+    width: 95%;
     height: 100%;
     /* background: linear-gradient(to right, #ffd700, #ffd700); */
 }
@@ -494,12 +573,12 @@ background: transparent;
     background: -webkit-linear-gradient(to right, #d19e1d, #ffd86e, #e3a812);
     /* background: linear-gradient(to right, #360738, #9d5159, #5c1123); */
     border-radius: 7px;
-    width: 85%;
+    width: 100%;
     height: 100%;
 }
 
 /* Existing card styles */
-#image-roulette .grid-card {position: relative;width: 100%;height: 100%;overflow: hidden;border-radius: 0px;box-shadow: var(--card-shadow);cursor: pointer;transition: transform 0.2s;background: antiquewhite;border: 3px solid #ff9c19;background: linear-gradient(to bottom, #ffd700, #ffd700, #ffd700);}
+#image-roulette .grid-card {position: relative;width: 90%;height: 100%;overflow: hidden;border-radius: 0px;box-shadow: var(--card-shadow);cursor: pointer;transition: transform 0.2s;background: antiquewhite;border: 3px solid #ff9c19;background: linear-gradient(to bottom, #ffd700, #ffd700, #ffd700);}
 
 #image-roulette .grid-card:hover {
 transform: scale(1.05);
@@ -513,14 +592,14 @@ opacity: 0.8;
 }
 #image-roulette .grid-header.empty {
     height: 100%;
-    width: 85%;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     background: black;
 }
 #grid-outer{
-    max-width: 48%;
+    max-width: 50%;
     align-items: center;
     justify-items: center;
     margin: auto;
@@ -541,8 +620,8 @@ opacity: 0.8;
     rgba(88, 13, 95, 0.3),
     rgba(74, 10, 80, 0.3)
   );
-  background: #25262a;
-    top:25px;
+    background: #25262a;
+    top: 16%;
 }
 
 /* Increase border width from 2px to 4px */
@@ -619,6 +698,7 @@ opacity: 0.8;
 
 #wheel-container {
   width: 65vh;
+  top: 15%;
   max-width: 600px;
   aspect-ratio: 1 / 1;
   margin: auto;
@@ -627,21 +707,33 @@ opacity: 0.8;
   overflow: hidden;
   background: #fff;
   margin: auto;
+  /* box-shadow: 0 0 0 3px #fae615, 0 0 0 6px #cf2424, 0 0 0 9px #cf2424, 0 0 0 12px #cf2424, 0 0 0 15px #ffd500, 0 60px 80px #198754, 0 45px 26px #ff9c19; */
+    box-shadow:
+  /* existing inner rings */
+  0 0 0   3px  #fae615,
+  0 0 0   6px  #cf2424,
+  0 0 0   9px  #cf2424,
+  0 0 0  12px  #cf2424,
+  0 0 0  15px  #ffd500,
 
-  box-shadow:
-    0 0 0 3px #fae615,
-    0 0 0 6px #5c1110,
-    0 0 0 9px #5c1110,
-    0 0 0 12px #5c1166,
-    0 0 0 15px #ffd500,
-    0 60px 80px #198754,
-    0 45px 26px #ff9c19;
+  /* thicker blue fill (two rings) */
+  0 0 0  18px  blue,
+  0 0 0  21px  blue,
+
+  /* thicker green border (two rings) */
+  0 0 0  24px  #ffd700,
+  0 0 0  27px  #ffd700,
+
+  /* original glow dropshadow */
+  0 60px 80px #198754,
+  0 45px 26px #ff9c19;
+
 }
 
 
   /* The wheel itself (if you need it centered within a larger container) */
 #wheel {
-  /* inset wheel to 85% so there’s a 7.5% pad on each side */
+  /* inset wheel to 85% so thereâ€™s a 7.5% pad on each side */
   width: 85%;
   height: 85%;
   position: absolute;
@@ -690,6 +782,19 @@ opacity: 0.8;
     z-index: 10;
   }
   
+  #marker2 {
+    position: absolute;
+    top: -20px;  /* Adjust as needed relative to the wheel */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 0px solid transparent;
+    border-right: 0px solid transparent;
+    /* border-bottom: 20px solid red; */ /* Marker color */
+    z-index: 10;
+  }
+  
   /* Blinking animation for the winning suit icon */
   @keyframes blinkAnimation {
     0% { opacity: 1; }
@@ -717,10 +822,10 @@ opacity: 0.8;
 
 div#result-display {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 65%;
+    left: 78%;
     transform: translate(-50%, -50%);
-    min-width: 300px;
+    min-width: 400px;
     padding: 20px 30px;
     background: linear-gradient(145deg, #30042e, #4a0950);
     border-radius: 15px;
@@ -749,6 +854,7 @@ div#result-display {
 }
 
 div#mini-nav {
+    height: 15%;
     display: flex;
     align-items: center;
     justify-content: space-evenly;
@@ -837,22 +943,22 @@ div#grid-label-3 .bet-overlay {
 
 div#suitIcon1  .bet-overlay {
     position: absolute;
-    top: 10%;
-    left: 34%;
+    top: 11%;
+    left: 38%;
 }
 div#suitIcon2  .bet-overlay {
     position: absolute;
-    top: 10%;
-    left: 54%;
+    top: 11%;
+    left: 57%;
 }
 div#suitIcon3  .bet-overlay {
     position: absolute;
-    top: 10%;
-    left: 74%;
+    top: 11%;
+    left: 75%;
 }
 div#suitIcon4  .bet-overlay {
     position: absolute;
-    top: 10%;
+    top: 11%;
     left: 94%;
 }
 
@@ -898,16 +1004,7 @@ div#suitIcon4  .bet-overlay {
     height: auto;
   }
   
-  .history-item:last-child {
-
-border-right: none;
-
-/* border-right: 2px solid red; */
-
-background: linear-gradient(308deg, #eebd17, #b90707);
-
-width: 14%;
-}
+  .history-item:last-child {border-right: none;/* border-right: 2px solid red; */background: linear-gradient(308deg, #eebd17, #b90707);width: 10%;}
 
 .horizontal-line {
     display: inline-block;
@@ -939,8 +1036,8 @@ text {
     fill: white;
 }
 .play-circle {
-    width: 50px;
-    height: 50px;
+    width: 50%;
+    height: 65%;
     background-color: #d7b70e;
     color: black;
     font-weight: bold;
@@ -990,14 +1087,15 @@ text {
     top: 61%;
     right: -5%;
     padding: 6px 16px;
-    background: linear-gradient(to right, #f51f1f, #de0b0b, #ce0000);
+    background: #f51f1f;
     color: #fff;
     font-weight: bold;
     text-transform: uppercase;
-    font-size: 0.85rem;
+    font-size: 90%;
     text-align: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     width: 110%;
+    height: auto;
     overflow: hidden;            /* contain the glow */
   }
   
@@ -1030,6 +1128,15 @@ text {
   
   /* For devices with a max-width of 1024px (e.g. tablets, smaller desktops) */
 @media screen and (max-width: 1024px) {
+
+  div#image-roulette {
+    height: auto;
+}
+
+#image-roulette #main-container {
+
+    height: auto;
+}
     #image-roulette #main-container {
         flex-direction: column;
         align-items: center;
@@ -1221,8 +1328,18 @@ div#suitIcon4  .bet-overlay {
     top: 10%;
     left: 92%;
 }
-
-    
+    button#clear-bets, button#double-bets, button#repeat-bet {
+        width: 5rem !important;
+        height: 3rem !important;
+    }
+    div#result-display {
+    position: absolute;
+    top: 74%;
+    left: 51%;
+    }
+    div#auto-spin-countdown {
+      position: inherit;
+    }
 }
   
 div#image-roulette {
@@ -1290,16 +1407,54 @@ div#overlay-items p {
       padding: 5px 13px;
       font-weight: 900;
 }
-@keyframes redGreen {
-  0%, 100% {
-    background-color: red !important;
-  }
-  50% {
-    background-color: green !important;
-  }
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+#image-roulette .winner {
+  /* 5s for a full redâ†’greenâ†’red cycle, then repeat */
+  animation: blink 1s infinite;
 }
 
-#image-roulette .winners {
-  /* 5s for a full red→green→red cycle, then repeat */
-  animation: redGreen 1s infinite;
+div#auto-spin-countdown {
+ position: absolute;
+    bottom: 17%;
+    right: 34%;
+}
+@keyframes blinkcard {
+  0%, 10%, 20%, 30%, 40%, 50% { background: red; }
+  60%, 70%, 80%, 90%, 100%   { background: green; }
+}
+
+.blingbg {
+  /* 10s total, repeat forever */
+  animation: blinkcard 1s linear infinite;
+}
+.history-item:last-child .history-card {
+    margin-left: 33% !important;
+    font-size: 1.5rem !important;
+}
+.history-item:last-child span {
+  
+    font-size: 1.5rem !important;
+}
+.grid-label.d-flex.align-items-center.justify-content-around img.card {
+    width: 50%;
+    height: 75px;
+    height: 70%;
+    display: block;
+    /* border-radius: 50%; */
+    display: block;
+    box-shadow: var(--card-shadow);
+    transform-origin: center;
+    background-color: transparent;
+    border: 1px solid transparent;
+    box-shadow: none;
 }
