@@ -1457,3 +1457,147 @@ div#auto-spin-countdown {
     border: 1px solid transparent;
     box-shadow: none;
 }
+@media screen and (min-width: 768px) and (max-width: 1370px) {
+  #image-roulette #marker2 {
+    position: absolute;
+    top: 31%;
+  }
+  .history-item span {
+    font-size: 11px !important;
+}
+#grid-outer {
+height: 108%;
+}
+div#auto-spin-countdown {
+ position: absolute;
+ bottom: 10%;
+ right: 40%;
+}
+div.bordersboxes {
+    text-align: center;
+}
+#image-roulette .grid-label .play-circle {
+    width: 50%;
+    height: 70%;
+}
+.history-item:last-child span {
+    font-size: 0.8rem !important;
+}
+div#grid-label-3 .bet-overlay{
+
+  left: 19.5%;
+}
+div#grid-label-2 .bet-overlay{
+
+  left: 19.5%;
+}
+div#grid-label-1 .bet-overlay{
+
+  left: 19.5%;
+}
+#image-roulette .grid-label, #image-roulette .grid-header.empty  {
+  width: 80%;
+}
+#image-roulette .grid-card {
+
+    width: 116%;
+}
+}
+
+@media screen and (min-width: 1024px) and (max-width: 1920px){
+    #image-roulette #marker2 {
+        position: absolute;
+        top: 34%;
+    }
+        #image-roulette .grid-label, #image-roulette .grid-header.empty {
+        width: 100%;
+    }
+    #image-roulette .grid-card {
+        width: 99%;
+    }
+div#suitIcon1  .bet-overlay {
+    position: absolute;
+    top: 12%;
+    left: 34%;
+}
+div#suitIcon2  .bet-overlay {
+    position: absolute;
+    top: 12%;
+    left: 54%;
+}
+div#suitIcon3  .bet-overlay {
+    position: absolute;
+    top: 12%;
+    left: 73%;
+}
+div#suitIcon4  .bet-overlay {
+    position: absolute;
+    top: 12%;
+    left: 93%;
+}
+    #image-roulette .grid-label .play-circle {
+        width: 50%;
+        height: 85%;
+    }
+    .grid-header.d-flex.align-items-center.justify-content-around .play-circle {
+    width: 44%;
+    height: 76%;
+}
+  }
+
+
+
+@media screen and (min-width: 1920px) and (max-width: 2560px) {
+#wheel-container {
+    width: 75vh;
+    top: 15%;
+    max-width: 800px;
+}
+#image-roulette #marker2 {
+
+    top: 38%;
+}
+#image-roulette .grid-label .play-circle {
+    width: 58%;
+    height: 60%;
+}
+div#grid-label-3 .bet-overlay {
+    position: absolute;
+    top: 87%;
+    left: 10%;
+}
+div#grid-label-1 .bet-overlay {
+    position: absolute;
+    top: 36%;
+    left: 10%;
+}
+div#grid-label-2 .bet-overlay {
+    position: absolute;
+    top: 61%;
+    left: 10%;
+}
+div#suitIcon1 .bet-overlay {
+    position: absolute;
+    top: 12%;
+    left: 29%;
+}
+div#suitIcon2  .bet-overlay {
+    position: absolute;
+    top: 12%;
+    left: 51%;
+}
+div#suitIcon3  .bet-overlay {
+    position: absolute;
+    top: 12%;
+    left: 72%;
+}
+div#suitIcon4  .bet-overlay {
+    position: absolute;
+    top: 12%;
+    left: 93%;
+}
+#grid-outer {
+height: 122%;
+}
+}
+

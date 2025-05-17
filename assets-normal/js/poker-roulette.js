@@ -222,6 +222,7 @@ function updateTimeDisplay() {
     resultDisplay.style.display = 'block';
     }
     if (countdown == 110) {
+      document.getElementById("place-bets").disabled = false;
       resultDisplay.textContent = "Place Your Chips";
     resultDisplay.style.display = 'block';
   const bettingOversound = new Howl({
@@ -239,6 +240,10 @@ function updateTimeDisplay() {
  document.querySelectorAll(".cstm-ribbon").forEach(el =>
     el.classList.remove("blingbg")
   );
+}
+if (countdown === 5) {
+  document.getElementById("place-bets").click();
+  document.getElementById("place-bets").disabled = true;
 }
 
   if (countdown === 5) {
@@ -1387,6 +1392,12 @@ document.getElementById("spinBtn").addEventListener("click", function () {
   // }
   console.log('chosenIndex' , chosenIndex)
   console.log('userwins' , userwins)
+  if (chosenIndex < 0) {
+     chosenIndex = Math.floor(Math.random() * 12);
+    console.log('chosenIndexlast', chosenIndex);
+
+
+  }
   // Calculate rotation details so the winning segment is centered.
   const markerOffset = 0; // Adjust if the marker is not exactly at the top.
   const targetRotationMod = (360 - (chosenIndex * segmentAngle + segmentAngle / 2) + markerOffset) % 360;
@@ -1546,6 +1557,7 @@ if (chosenIndex === undefined) {
     const result = evaluateBet(allbetamtinx, chosenIndex);
 
     console.log('chosenIndex', chosenIndex);
+  
         if (winamtValue > 0 && result.userWon) {
           console.log('true')
             winValue = result.winamt;
