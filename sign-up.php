@@ -144,12 +144,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="container">
                 <div class="header-bottom">
                     <div class="header-bottom-area align-items-center">
-                        <div class="logo"><a href="index.php"><img
+                        <div class="logo"><a href="poker-roulette.php"><img
                                     src="assets/images/logo.png"
                                     alt="logo"></a></div>
                         <ul class="menu">
                             <li>
-                                <a href="index.php">Home</a>
+                                <a href="poker-roulette.php">Home</a>
                             </li>
                             <li>
                                 <a href="about.php">About</a>
@@ -223,7 +223,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <h2 class="title text-white">Sign Up</h2>
                         <ul
                             class="breadcrumbs d-flex flex-wrap align-items-center justify-content-center">
-                            <li><a href="index.php">Home</a></li>
+                            <li><a href="poker-roulette.php">Home</a></li>
                             <li>Sign Up</li>
                         </ul>
                     </div>
@@ -238,7 +238,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="container">
                 <div class="account__main__wrapper">
                     <div class="account__form__wrapper sign-up">
-                        <div class="logo"><a href="index.php"><img
+                        <div class="logo"><a href="poker-roulette.php"><img
                                     src="assets/images/logo.png"
                                     alt="logo"></a></div>
                                     <form class="account__form form row g-4" id="registerForm" action="sign-up.php" method="POST">
@@ -330,7 +330,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="container">
                     <div
                         class="footer-wrapper d-flex flex-wrap align-items-center justify-content-md-between justify-content-center">
-                        <div class="logo mb-3 mb-md-0"><a href="index.php"><img
+                        <div class="logo mb-3 mb-md-0"><a href="poker-roulette.php"><img
                                     src="assets/images/logo.png"
                                     alt="logo"></a></div>
                         <ul

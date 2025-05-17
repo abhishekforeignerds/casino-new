@@ -72,27 +72,79 @@ if ($winValue > 0) {
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
         $stmt->close();
-
         $auto_claim = $row['auto_claim'];
 
+        $dt = new DateTime($fullTimestamp);
+$dt->sub(new DateInterval('PT2M'));            // “PT2M” = period of time, 2 minutes
+$twoMinBefore = $dt->format('Y-m-d H:i:s');
+$userquery = "
+    SELECT *
+    FROM total_bet_history
+    WHERE user_id = ?
+      AND withdraw_time = ?
+";
+$stmt = $conn->prepare($userquery);
+
+// Bind two string parameters: user_id and fullTimestamp
+// If withdraw_time is stored as DATETIME/TIMESTAMP, pass it as a string in 'Y-m-d H:i:s' format.
+$stmt->bind_param("is", $user_id, $twoMinBefore);
+
+$stmt->execute();
+$result = $stmt->get_result();
+
+$totalhistory = [];
+
+// Fetch every row (all columns) that matches both conditions
+while ($row = $result->fetch_assoc()) {
+    $totalhistory[] = $row;
+}
+
+$stmt->close();
+
+
+    foreach ($totalhistory as $betTotal) {
+        $serial_number  = $betTotal['ticket_serial'];
 
         if ($auto_claim) {
-            $claimpoint    = $win_value;
-            $unclaimpoint  = 0;
+            if($betTotal['card_type'] == $winning_number) {
+                 $claimpoint    = $win_value;
+                $unclaimpoint  = 0;
+            } else {
+                    $claimpoint    = 0;
+                $unclaimpoint  = 0;
+            }
+           
             $auto_claim    = 1;
             $insertSql = "
-                INSERT INTO claim_point_data
-                    (user_id, claim_point, unclaim_point, balance, auto_claim, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+             INSERT INTO claim_point_data
+                    (user_id, claim_point, unclaim_point, balance, auto_claim,ticket_serial, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ";
         } else {
-            $claimpoint    = 0;
-            $unclaimpoint  = $win_value;
+            
+           $json = $betTotal['card_bet_amounts']; 
+            $cardBets = json_decode($json, true);
+
+            $claimpoint   = 0;
+            $unclaimpoint = 0;
+
+            // Loop through each card:index => bet_amount
+            foreach ($cardBets as $cardIndex => $betAmount) {
+                // cardIndex is a string, so cast or compare loosely
+                if ((int)$cardIndex === (int)$winning_number) {
+                    // when it matches, compute unclaimed points
+                    $unclaimpoint = floatval($betAmount) * 10;
+                    break;  // no need to check further once matched
+                } else {
+                                $claimpoint    = 0;
+                            $unclaimpoint  = 0;
+                        }
+            }
             $auto_claim    = 0;
             $insertSql = "
-                INSERT INTO claim_point_data
-                    (user_id, claim_point, unclaim_point, balance, auto_claim, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+               INSERT INTO claim_point_data
+                    (user_id, claim_point, unclaim_point, balance, auto_claim,ticket_serial, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ";
         }
         
@@ -100,12 +152,13 @@ if ($winValue > 0) {
             $stmt = $conn->prepare($insertSql);
             // types:    i         i           i            i         i           s           s
             $stmt->bind_param(
-                'iiiiiss',
+                'iiiiiiss',
                 $user_id,
                 $claimpoint,
                 $unclaimpoint,
-                $betTotal,
+                $betTotal['bet_amount'],
                 $auto_claim,
+                $serial_number,
                 $fullTimestamp,
                 $fullTimestamp
             );
@@ -120,7 +173,7 @@ if ($winValue > 0) {
             ]);
             exit;
         }
-        
+    }
 
 } else {
     $winning_number = null;

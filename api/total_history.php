@@ -56,6 +56,7 @@ $gameId       = isset($input['gameId'])       ? (int)$input['gameId'] : 1;
 $betKey       = $input['identifier'] ?? null;    // “identifier” from JS
 $amount       = isset($input['amount'])       ? (float)$input['amount'] : null;
 $withdrawTime = $input['withdrawTime'] ?? null;
+$ntrack = $input['ntrack'] ?? null;
 
 if (!$withdrawTime) {
     http_response_code(422);
@@ -85,9 +86,9 @@ if (!$userId || !$amount || !$withdrawTime) {
 // 6) Prepare & execute INSERT with mysqli
 $sql = "
     INSERT INTO total_bet_history
-      (user_id, game_id, card_type, bet_amount, withdraw_time, created_at)
+      (user_id, game_id, card_type, bet_amount, withdraw_time, ntrack, created_at)
     VALUES
-      (?, ?, ?, ?, ?, NOW())
+      (?, ?, ?, ?, ?, ?, NOW())
 ";
 
 if (!$stmt = mysqli_prepare($conn, $sql)) {
@@ -96,12 +97,13 @@ if (!$stmt = mysqli_prepare($conn, $sql)) {
 
 mysqli_stmt_bind_param(
     $stmt,
-    'iisss',          // i = integer, s = string
+    'iisssi',          // i = integer, s = string
     $userId,
     $gameId,
     $betKey,
     $amount,
-    $withdrawTime
+    $withdrawTime,
+    $ntrack,
 );
 
 if (!mysqli_stmt_execute($stmt)) {

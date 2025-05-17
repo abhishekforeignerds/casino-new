@@ -63,29 +63,60 @@ if (!$withdrawTime) {
 $currentDate   = date('Y-m-d');
 $fullTimestamp = date('Y-m-d H:i:s', strtotime("$currentDate $withdrawTime"));
 
-$salesSql    = "
-    SELECT COALESCE(SUM(amount), 0) AS total_sales
-    FROM user_points_sales
-    WHERE DATE(created_at) = CURDATE()
+// $salesSql    = "
+//     SELECT COALESCE(SUM(amount), 0) AS total_sales
+//     FROM user_points_sales
+//     WHERE DATE(created_at) = CURDATE()
+// ";
+// $salesResult = mysqli_query($conn, $salesSql);
+// if (! $salesResult) {
+//     throw new Exception('Sales query failed: ' . mysqli_error($conn));
+// }
+// $salesRow     = mysqli_fetch_assoc($salesResult);
+// $totalSaleToday   = (float) $salesRow['total_sales'];
+
+// $winsSql    = "
+//     SELECT COALESCE(SUM(win_value), 0) AS total_wins
+//     FROM game_results
+//     WHERE DATE(created_at) = CURDATE()
+// ";
+// $winsResult = mysqli_query($conn, $winsSql);
+// if (! $winsResult) {
+//     throw new Exception('Sales query failed: ' . mysqli_error($conn));
+// }
+// $winsRow     = mysqli_fetch_assoc($winsResult);
+// $totalWinToday   = (float) $winsRow['total_wins'];
+
+
+$salesSql = "
+    SELECT COALESCE(SUM(balance), 0) AS total_balance
+    FROM claim_point_data
+    WHERE user_id = $user_id
 ";
 $salesResult = mysqli_query($conn, $salesSql);
 if (! $salesResult) {
-    throw new Exception('Sales query failed: ' . mysqli_error($conn));
+    throw new Exception('Balance query failed: ' . mysqli_error($conn));
 }
-$salesRow     = mysqli_fetch_assoc($salesResult);
-$totalSaleToday   = (float) $salesRow['total_sales'];
+$salesRow = mysqli_fetch_assoc($salesResult);
+$totalSaleToday = (float) $salesRow['total_balance'];
 
-$winsSql    = "
-    SELECT COALESCE(SUM(win_value), 0) AS total_wins
-    FROM game_results
-    WHERE DATE(created_at) = CURDATE()
+
+$winsSql = "
+    SELECT 
+        COALESCE(SUM(claim_point), 0) AS total_claim,
+        COALESCE(SUM(unclaim_point), 0) AS total_unclaim
+    FROM claim_point_data
+    WHERE user_id = $user_id
 ";
 $winsResult = mysqli_query($conn, $winsSql);
 if (! $winsResult) {
-    throw new Exception('Sales query failed: ' . mysqli_error($conn));
+    throw new Exception('Claim point query failed: ' . mysqli_error($conn));
 }
-$winsRow     = mysqli_fetch_assoc($winsResult);
-$totalWinToday   = (float) $winsRow['total_wins'];
+$winsRow = mysqli_fetch_assoc($winsResult);
+
+// Total win is the sum of both claim_point and unclaim_point
+$totalWinToday = (float) $winsRow['total_claim'] + (float) $winsRow['total_unclaim'];
+
 
 if ($totalSaleToday > 0) {
     $currentwinningPercentage = ($totalWinToday / $totalSaleToday) * 100;

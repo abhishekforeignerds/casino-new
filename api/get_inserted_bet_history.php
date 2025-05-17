@@ -46,13 +46,16 @@ date_default_timezone_set('Asia/Kolkata');
 $currentDate   = date('Y-m-d');
 $fullTimestamp = date('Y-m-d H:i:s', strtotime("$currentDate $withdrawTime"));
 
-// Get distinct indexes
+// 1) Get distinct indexes already used today
 $listSql = "
     SELECT DISTINCT choosenindex
     FROM overall_game_record
     WHERE withdraw_time = ?
 ";
 $stmt = $conn->prepare($listSql);
+if (! $stmt) {
+    throw new Exception('Prepare failed (listSql): ' . $conn->error);
+}
 $stmt->bind_param('s', $fullTimestamp);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -63,69 +66,9 @@ while ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 
-if (empty($indexes)) {
-    // 1) Generate random index 0–11
-$choosenIndex = rand(0, 11);
-
-// 2) Prepare statement
-$insertSql = "
-    INSERT INTO overall_gm_rec_cpy (
-        choosenindex,
-        winningpoint,
-        currentwinningPercentage,
-        totalSaleToday,
-        totalWinToday,
-        winningPercentage,
-        overrideChance,
-        userwins,
-        allSametxt,
-        minvalue,
-        withdraw_time
-    )
-    SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-    FROM DUAL
-    WHERE NOT EXISTS (
-        SELECT 1
-        FROM overall_gm_rec_cpy
-        WHERE withdraw_time = ?
-    )
-";
-$stmt = $conn->prepare($insertSql);
-
-// 3) Bind with corrected types
-// types:  i  d  d  d  d  d  d  s  s  i  s  s
-$stmt->bind_param(
-    'iddddddissss',
-    $choosenIndex,           // i: 0–11
-    0.0,                      // d
-    75.0,                     // d
-    0.0,                      // d
-    0.0,                      // d
-    75.0,                     // d
-    0.3,                      // d
-    'no',                     // s
-    'no',                     // s
-    0,                        // i
-    $fullTimestamp,           // s (INSERT)
-    $fullTimestamp            // s (WHERE)
-);
 
 
-    if ( ! $stmt->execute() ) {
-        // Log the error
-        error_log("overall_gm_rec_cpy insert failed: {$stmt->error}");
-    }
-
-
-
-    if (!$stmt->execute()) {
-        http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => 'Insert failed: ' . $stmt->error]);
-        exit;
-    }
-    $stmt->close();
-} else {
-    $randomIndex = $indexes[array_rand($indexes)];
+    // 3) Fetch that record
     $selectSql = "
         SELECT
             choosenindex,
@@ -141,22 +84,37 @@ $stmt->bind_param(
             withdraw_time
         FROM overall_game_record
         WHERE withdraw_time = ?
-        AND choosenindex = ?
     ";
     $stmt = $conn->prepare($selectSql);
-    $stmt->bind_param('si', $fullTimestamp, $randomIndex);
+    if (! $stmt) {
+        throw new Exception('Prepare failed (select B): ' . $conn->error);
+    }
+    $stmt->bind_param('s', $fullTimestamp);
     $stmt->execute();
     $result = $stmt->get_result();
     $record = $result->fetch_assoc();
     $stmt->close();
 
-    if (!$record) {
-        http_response_code(404);
-        echo json_encode(['status' => 'error', 'message' => 'Record not found.']);
-        exit;
-    }
-    // Insert into overall_gm_rec_cpy if not exists (only by withdraw_time)
-    // Insert into overall_gm_rec_cpy if not exists (only by withdraw_time)
+  
+
+if (empty($indexes) || (! $record)) {
+    // --- Branch A: first time for this timestamp ---
+
+    // 2) Pick a random index 0–11
+    $ci   = rand(0, 11);
+    $wp   = 0.0;
+    $cwp  = 75.0;
+    $ts   = 0.0;
+    $tw   = 0.0;
+    $wpct = 75.0;
+    $oc   = 0.3;
+    $uw   = 'no';
+    $ast  = 'no';
+    $minv = 0;
+    $wt1  = $fullTimestamp;
+    $wt2  = $fullTimestamp;
+
+    // 3) Insert into overall_gm_rec_cpy if not exists
     $insertSql = "
         INSERT INTO overall_gm_rec_cpy (
             choosenindex,
@@ -180,62 +138,126 @@ $stmt->bind_param(
         )
     ";
     $stmt = $conn->prepare($insertSql);
-
-    // Bind types: 
-    // 1: choosenindex (s)
-    // 2–7: six doubles (d × 6)
-    // 8: userwins (s)
-    // 9: allSametxt (s)
-    // 10: minvalue (s)
-    // 11: withdraw_time for INSERT (s)
-    // 12: withdraw_time for WHERE (s)
+    if (! $stmt) {
+        throw new Exception('Prepare failed (insert A): ' . $conn->error);
+    }
     $stmt->bind_param(
-        'sddddddsssss',
-        $record['choosenindex'],
-        $record['winningpoint'],
-        $record['currentwinningPercentage'],
-        $record['totalSaleToday'],
-        $record['totalWinToday'],
-        $record['winningPercentage'],
-        $record['overrideChance'],
-        $record['userwins'],
-        $record['allSametxt'],
-        $record['minvalue'],
-        $record['withdraw_time'],   // INSERT
-        $record['withdraw_time']    // WHERE
+        'iddddddissss',
+        $ci, $wp, $cwp, $ts, $tw, $wpct, $oc, $uw, $ast, $minv, $wt1, $wt2
     );
+    if (! $stmt->execute()) {
+        error_log("overall_gm_rec_cpy insert failed: " . $stmt->error);
+    }
+    $stmt->close();
 
-    if ( ! $stmt->execute() ) {
-        // Log the error
-        error_log("overall_gm_rec_cpy insert failed: {$stmt->error}");
+} else {
+    // --- Branch B: reuse an existing index record ---
+
+    // 2) Pick one at random
+    $randomIndex = $indexes[array_rand($indexes)];
+
+    // 3) Fetch that record
+    $selectSql = "
+        SELECT
+            choosenindex,
+            winningpoint,
+            currentwinningPercentage,
+            totalSaleToday,
+            totalWinToday,
+            winningPercentage,
+            overrideChance,
+            userwins,
+            allSametxt,
+            minvalue,
+            withdraw_time
+        FROM overall_game_record
+        WHERE withdraw_time = ?
+          AND choosenindex = ?
+    ";
+    $stmt = $conn->prepare($selectSql);
+    if (! $stmt) {
+        throw new Exception('Prepare failed (select B): ' . $conn->error);
+    }
+    $stmt->bind_param('si', $fullTimestamp, $randomIndex);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $record = $result->fetch_assoc();
+    $stmt->close();
+
+    if (! $record) {
+        http_response_code(404);
+        echo json_encode(['status' => 'error', 'message' => 'Record not found.']);
+        exit;
     }
 
+    // 4) Unpack record into variables
+    $ci   = $record['choosenindex'];
+    $wp   = $record['winningpoint'];
+    $cwp  = $record['currentwinningPercentage'];
+    $ts   = $record['totalSaleToday'];
+    $tw   = $record['totalWinToday'];
+    $wpct = $record['winningPercentage'];
+    $oc   = $record['overrideChance'];
+    $uw   = $record['userwins'];
+    $ast  = $record['allSametxt'];
+    $minv = $record['minvalue'];
+    $wt1  = $record['withdraw_time'];
+    $wt2  = $record['withdraw_time'];
 
-
-    if (!$stmt->execute()) {
-        http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => 'Insert failed: ' . $stmt->error]);
-        exit;
+    // 5) Insert into overall_gm_rec_cpy if not exists
+    $insertSql = "
+        INSERT INTO overall_gm_rec_cpy (
+            choosenindex,
+            winningpoint,
+            currentwinningPercentage,
+            totalSaleToday,
+            totalWinToday,
+            winningPercentage,
+            overrideChance,
+            userwins,
+            allSametxt,
+            minvalue,
+            withdraw_time
+        )
+        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        FROM DUAL
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM overall_gm_rec_cpy
+            WHERE withdraw_time = ?
+        )
+    ";
+    $stmt = $conn->prepare($insertSql);
+    if (! $stmt) {
+        throw new Exception('Prepare failed (insert B): ' . $conn->error);
+    }
+    $stmt->bind_param(
+        'sddddddsssss',
+        $ci, $wp, $cwp, $ts, $tw, $wpct, $oc, $uw, $ast, $minv, $wt1, $wt2
+    );
+    if (! $stmt->execute()) {
+        error_log("overall_gm_rec_cpy insert failed: " . $stmt->error);
     }
     $stmt->close();
 }
 
-
-// Return the copied record
+// 6) Finally, return the inserted/copied record
 $selectSql = "
     SELECT *
     FROM overall_gm_rec_cpy
-    WHERE withdraw_time = ? 
+    WHERE withdraw_time = ?
 ";
 $stmt = $conn->prepare($selectSql);
+if (! $stmt) {
+    throw new Exception('Prepare failed (final select): ' . $conn->error);
+}
 $stmt->bind_param('s', $fullTimestamp);
 $stmt->execute();
 $result = $stmt->get_result();
-$final = $result->fetch_assoc();
+$final  = $result->fetch_assoc();
 $stmt->close();
 
 echo json_encode([
     'status' => 'success',
     'data'   => $final,
 ]);
-?>

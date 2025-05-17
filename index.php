@@ -58,7 +58,7 @@ session_start();
     <div class="container">
         <div class="header-bottom">
             <div class="header-bottom-area align-items-center">
-                <div class="logo"><a href="index.php"><img src="assets/images/logo.png" alt="logo"></a></div>
+                <div class="logo"><a href="poker-roulette.php"><img src="assets/images/logo.png" alt="logo"></a></div>
                 <ul class="menu">
                     <li>
                         <a href="/">Home</a>
@@ -748,7 +748,7 @@ if (isset($_SESSION['fname'])) {
     <div class="footer-top">
         <div class="container">
             <div class="footer-wrapper d-flex flex-wrap align-items-center justify-content-md-between justify-content-center">
-                <div class="logo mb-3 mb-md-0"><a href="index.php"><img src="assets/images/logo.png" alt="logo"></a></div>
+                <div class="logo mb-3 mb-md-0"><a href="poker-roulette.php"><img src="assets/images/logo.png" alt="logo"></a></div>
                 <ul class="footer-links d-flex flex-wrap justify-content-center">
                     <li><a href="games.php">Games</a></li>
                     <li><a href="terms-conditions.php">Terms & Conditions</a></li>

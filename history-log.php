@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
 session_start();
 
 // Restrict access if the user is not logged in
@@ -105,40 +107,88 @@ $stmt->close();
 // fetch winning game_results
 $threshold = 0;
 // 1) Fetch ALL wins
-$stmt1 = $conn->prepare("SELECT * FROM game_results WHERE win_value > 0 ORDER BY id ASC");
+// $stmt1 = $conn->prepare("SELECT * FROM game_results WHERE win_value > 0 ORDER BY id ASC");
+// $stmt1->execute();
+// $res1 = $stmt1->get_result();
+// $game_results = $res1->fetch_all(MYSQLI_ASSOC);
+
+// // 2) Fetch ALL claim_point_data rows
+// $stmt2 = $conn->prepare("SELECT * FROM claim_point_data ORDER BY id ASC");
+// $stmt2->execute();
+// $res2 = $stmt2->get_result();
+// $claim_list  = $res2->fetch_all(MYSQLI_ASSOC);
+
+// // 3) Merge by index
+// $mapped = [];
+// foreach ($game_results as $idx => $gr) {
+//     // take the claim-data with the same zero-based index,
+//     // or fall back to a “blank” if there’s no matching row
+//     $cpd = $claim_list[$idx] ?? [
+//         'id'            => 0,
+//         'user_id'       => $gr['user_id'],
+//         'claim_point'   => 0,
+//         'unclaim_point' => 0,
+//         'balance'       => 0,
+//         'auto_claim'    => 0,
+//         'created_at'    => null,
+//         'updated_at'    => null,
+//     ];
+
+//     $gr['claim_point_data'] = $cpd;
+//     $gr['serial']           = $idx + 1;  // serial starts at 1
+//     $mapped[]               = $gr;
+// }
+
+// 1) Fetch ALL claim_point_data rows first
+// 1) Fetch ALL claim_point_data rows for a specific user
+date_default_timezone_set('Asia/Kolkata');
+
+// assume $userId is already set (e.g. from session)
+$stmt2 = $conn->prepare("
+    SELECT *
+      FROM claim_point_data
+     WHERE user_id      = ?
+       AND DATE(created_at) = CURDATE()
+     ORDER
+        BY id DESC
+");
+$stmt2->bind_param("i", $user_id);
+$stmt2->execute();
+$res2 = $stmt2->get_result();
+$claim_list = $res2->fetch_all(MYSQLI_ASSOC);
+
+// 2) Fetch ALL game_results rows for a specific user where win_value > 0
+$stmt1 = $conn->prepare("SELECT * FROM game_results WHERE user_id = ? AND DATE(created_at) = CURDATE() AND win_value > 0 ORDER BY id DESC");
+$stmt1->bind_param("i", $user_id);
 $stmt1->execute();
 $res1 = $stmt1->get_result();
 $game_results = $res1->fetch_all(MYSQLI_ASSOC);
 
-// 2) Fetch ALL claim_point_data rows
-$stmt2 = $conn->prepare("SELECT * FROM claim_point_data ORDER BY id ASC");
-$stmt2->execute();
-$res2 = $stmt2->get_result();
-$claim_list  = $res2->fetch_all(MYSQLI_ASSOC);
 
-// 3) Merge by index
+// 3) Merge by index, starting from each claim
 $mapped = [];
-foreach ($game_results as $idx => $gr) {
-    // take the claim-data with the same zero-based index,
-    // or fall back to a “blank” if there’s no matching row
-    $cpd = $claim_list[$idx] ?? [
-        'id'            => 0,
-        'user_id'       => $gr['user_id'],
-        'claim_point'   => 0,
-        'unclaim_point' => 0,
-        'balance'       => 0,
-        'auto_claim'    => 0,
-        'created_at'    => null,
-        'updated_at'    => null,
+foreach ($claim_list as $idx => $cpd) {
+    // grab the “same-index” game-result, or fall back to a blank template
+    $gr = $game_results[$idx] ?? [
+        'id'         => 0,
+        'user_id'    => $cpd['user_id'],
+        'win_value'  => 0,
+        'created_at' => null,
+        'updated_at' => null,
+        // …add any other game_results fields here
     ];
 
-    $gr['claim_point_data'] = $cpd;
-    $gr['serial']           = $idx + 1;  // serial starts at 1
-    $mapped[]               = $gr;
+    // inject the game result into the claim
+    $cpd['game_result'] = $gr;
+
+    // optionally give each record a 1‑based serial
+    $cpd['serial'] = $idx + 1;
+
+    $mapped[] = $cpd;
 }
 
-
-
+// echo '<pre>';
+// print_r($mapped);die;
 // $rows now holds each game_results row,
 // with claim_point_data_* null for non‑winners
 
@@ -167,6 +217,63 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $stmt->close();
+
+$stmt = $conn->prepare("SELECT * FROM total_bet_history WHERE user_id = ? AND game_id = 1");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$total_bet_historys = [];
+while ($row = $result->fetch_assoc()) {
+    $total_bet_historys[] = $row;
+}
+$stmt->close();
+
+// 2) Index mapped claim data by winning_number
+$claimDataByNumber = [];
+foreach ($mapped as $gameResult) {
+
+    if($gameResult) {
+
+        $num = $gameResult['winning_number'];
+    } else {
+         $num = 0;
+    }
+    $claimDataByNumber[$num] = $gameResult['claim_point_data'];
+}
+
+// 3) Merge all bets, defaulting unmatched entries to zero
+$filteredBets = [];
+
+foreach ($total_bet_historys as $bet) {
+    // Determine lookup key (card_type matches winning_number)
+    $key = $bet['card_type'];
+
+    if (isset($claimDataByNumber[$key])) {
+        $claim = $claimDataByNumber[$key];
+
+        // populate from claim data
+        $bet['claim_point']   = $claim['claim_point'];
+        $bet['unclaim_point'] = $claim['unclaim_point'];
+        $bet['id']            = $claim['id'];
+        $bet['user_id']       = $claim['user_id'];
+    } else {
+        // default to zeros when no match
+        $bet['claim_point']   = 0;
+        $bet['unclaim_point'] = 0;
+        $bet['id']            = 0;
+        $bet['user_id']       = 0;
+    }
+
+    $filteredBets[] = $bet;
+}
+
+
+// now $filteredBets has only matching bets, each with claim_point & unclaim_point
+
+
+// echo '<pre>';
+// print_r($filteredBets);die;
 
     $stmt = $conn->prepare("SELECT 
     SUM(claim_point) AS total_claim, 
@@ -297,12 +404,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="container">
                 <div class="header-bottom">
                     <div class="header-bottom-area align-items-center">
-                        <div class="logo"><a href="index.php"><img
+                        <div class="logo"><a href="poker-roulette.php"><img
                                     src="assets/images/logo.png"
                                     alt="logo"></a></div>
                         <ul class="menu">
                             <li>
-                                <a href="index.php">Home</a>
+                                <a href="poker-roulette.php">Home</a>
                             </li>
                             <li>
                                 <a href="about.php">About</a>
@@ -370,29 +477,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
         </div>
-        <!-- inner hero section start -->
-        <section class="inner-banner bg_img"
-            style="background: url('assets/images/inner-banner/bg2.jpg') top;">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-7 col-xl-6 text-center">
-                        <h2 class="title text-white">Withdraw Logs</h2>
-                        <ul
-                            class="breadcrumbs d-flex flex-wrap align-items-center justify-content-center">
-                            <li><a href="index.php">Home</a></li>
-                            <li>Withdraw Log</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
+  
         <!-- inner hero section end -->
 
         <!-- Dashboard Section Starts Here -->
         <div class="dashboard-section padding-top padding-bottom">
             <div class="container">
                 <div class="row">
-                    <div class="col-lg-3">
+                    <!-- <div class="col-lg-3">
                         <div class="dashboard-sidebar">
                             <div class="close-dashboard d-lg-none">
                                 <i class="las la-times"></i>
@@ -456,107 +548,98 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </li>
                             </ul>
                         </div>
-                    </div>
-                    <div class="col-lg-9">
-                        <div
-                            class="user-toggler-wrapper d-flex align-items-center d-lg-none">
-                            <h4 class="title m-0">User Dashboard</h4>
-                            <div class="user-toggler">
-                                <i class="las la-sliders-h"></i>
-                            </div>
-                        </div>
-                        <div class="custom--card section-bg">
-                            <div class="card--body section-bg p-sm-5 p-3">
-                                <div class="reset-header mb-5 text-center">
-                                    <div class="icon"><i
-                                            class="las la-lock"></i></div>
-                                    <h3 class="mt-3">Claim Points</h3>
-                                    <p>Note You can claim one time in a day, so claim carefully.</p>
-                                </div>
-                                <?php if ($error): ?>
-                                    <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
-                                <?php elseif ($success): ?>
-                                    <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
-                                <?php endif; ?>
+                    </div> -->
+                    
+                    <div class="table--responsive--md">
 
-                                <form method="post" autocomplete="off">
-                                    <div class="form-group mb-3">
-                                        <!-- <label for="amount" class="form-label">Choose Amount</label> -->
-                                        <input id="amount" type="text" name="amount" class="form-control form--control" hidden autocomplete="off">
-                                    </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <!--<th>Card Number</th>-->
+                                    <th>Ticket ID</th>
+                                    <th>Bet Amount</th>
+                                    <th>Win Value</th>
+                                    <th>Claimed Points</th>
+                                    <th>Unclaimed Points</th>
+                                    <th>Status</th>
+                                      <th>Withdraw Time</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php foreach ($mapped as $result): 
+                                $cpd = $result['claim_point_data'] ?? [
+                                    'id'=>0, 'claim_point'=>0, 'unclaim_point'=>0
+                                ];
+                                // card to show
+                               $win_value = ($result['unclaim_point'] == 0 && $result['claim_point'] == 0)
+    ? 0
+    : ($result['unclaim_point'] ? $result['unclaim_point'] : $result['claim_point']);
 
-                                    <div class="form-group mb-3">
-                                        <!-- <label for="confirm_amount" class="form-label">Confirm Amount</label> -->
-                                        <input id="confirm_amount" type="text" name="confirm_amount" class="form-control form--control" hidden autocomplete="off">
-                                    </div>
+                                // status text
+                                $userwins = $win_value > 0 ? 'Yes' : 'No';
+                            ?>
+                                <tr class="table-history">
+                                  
+                                    <td data-label="Bet Amount">#<?= ($result['ticket_serial']) ?></td>
+                                    <td data-label="Bet Amount">₹<?= number_format($result['balance'], 2) ?></td>
+                                    <td data-label="Win Value">₹<?= number_format($win_value, 2) ?? 0 ?></td>
+                                    <td data-label="Claimed Points"><?= number_format($result['claim_point'], 0) ?? 0  ?></td>
+                                    <td data-label="Unclaimed Points"><?= number_format($result['unclaim_point'], 0) ?? 0  ?></td>
+                                    <td data-label="Status">
+                                        <?php if ($userwins === 'Yes'): ?>
+                                            <small class="btn-sm btn-success">Win</small>
+                                        <?php else: ?>
+                                            <small class="btn-sm btn-danger">Lose</small>
+                                        <?php endif; ?>
 
-                                    <div class="form-group mt-4">
-                                        <button type="button" class="cmn--btn active w-100 disabaled">Claim Points</button>
-                                    </div>
-                                </form>
+                                        <?php if ($result['claim_point'] > 0): ?>
+                                            <small class="btn-sm btn-danger">Claimed</small>
+                                        <?php else: ?>
+                                            <small class="btn-sm btn-success"><?php if($win_value <= 0): ?>
+                                                    Unclaimable
+                                                     <?php else: ?>
 
-                            </div>
-                        </div>
-                        <div class="table--responsive--md">
-                <table class="table">
-    <thead>
-        <tr>
-            <th>Card Number</th>
-            <th>Bet Amount</th>
-            <th>Win Value</th>
-            <th>Claimed Points</th>
-            <th>Unclaimed Points</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-    <?php foreach ($mapped as $result): 
-        $cpd = $result['claim_point_data'] ?? [
-            'id'=>0, 'claim_point'=>0, 'unclaim_point'=>0
-        ];
-        // card to show
-        $card_number = $result['winning_number'] ?? $result['lose_number'];
-        // status text
-        $userwins    = $result['win_value'] > 0 ? 'Yes' : 'No';
-    ?>
-        <tr class="table-history">
-            <td data-label="Card Number"><?= htmlspecialchars($card_number) ?></td>
-            <td data-label="Bet Amount">₹<?= number_format($result['bet'], 2) ?></td>
-            <td data-label="Win Value">₹<?= number_format($result['win_value'], 2) ?></td>
-            <td data-label="Claimed Points"><?= number_format($cpd['claim_point'], 0) ?></td>
-            <td data-label="Unclaimed Points"><?= number_format($cpd['unclaim_point'], 0) ?></td>
-            <td data-label="Status">
-                <?php if ($userwins === 'Yes'): ?>
-                    <small class="btn-sm btn-success">Win</small>
-                <?php else: ?>
-                    <small class="btn btn-sm btn-danger">Lose</small>
-                <?php endif; ?>
+Unclaimed
+                                                          <?php endif; ?></small>
+                                        <?php endif; ?>
+                                    </td>
+                                     <?php
+$created = $result['created_at'] ?? null;
+if ($created) {
+    $dt = new DateTime($created);
+    $dt->modify('-2 minutes');
+    $output = $dt->format('Y-m-d H:i:s');
+} else {
+    $output = 0;
+}
+?>
+<td data-label="Unclaimed Points"><?= $output ?></td>
 
-                <?php if ($cpd['claim_point'] > 0): ?>
-                    <small class="btn-sm btn-success">Claimed</small>
-                <?php else: ?>
-                    <small class="btn-sm btn-danger">Unclaimed</small>
-                <?php endif; ?>
-            </td>
-            <td data-label="Action">
-                <?php if ($cpd['claim_point'] <= 0): ?>
-                   <button 
-  class="btn btn-sm btn-danger win-value claim-btn" 
-  data-user-id="<?= $result['user_id'] ?>" 
-  data-claim-id="<?= $cpd['id'] ?>">
-  Claim
-</button>
-                <?php else: ?>
-                    <button class="btn btn-sm btn-secondary" disabled>
-                        Claimed
-                    </button>
-                <?php endif; ?>
-            </td>
-        </tr>
-    <?php endforeach; ?>
-    </tbody>
-</table>
+                                    <td data-label="Action">
+                                        <?php if ($result['claim_point'] <= 0 && $win_value > 0): ?>
+                                        <button 
+                                            class="btn btn-sm btn-danger win-value claim-btn" 
+                                            data-user-id="<?= $result['user_id'] ?>" 
+                                            data-claim-id="<?= $result['id'] ?>">
+                                            Claim
+                                        </button>
+                                        <?php else: ?>
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                 <?php if($win_value <= 0): ?>
+                                                    Unclaimable
+                                                     <?php else: ?>
+
+Claimed
+                                                          <?php endif; ?>
+                                            </button>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                  
 
 
 
@@ -569,40 +652,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- Dashboard Section Ends Here -->
 
         <!-- Footer Section Starts Here -->
-        <footer class="footer-section bg_img"
-            style="background: url(assets/images/footer/bg.jpg) center;">
-            <div class="footer-top">
-                <div class="container">
-                    <div
-                        class="footer-wrapper d-flex flex-wrap align-items-center justify-content-md-between justify-content-center">
-                        <div class="logo mb-3 mb-md-0"><a href="index.php"><img
-                                    src="assets/images/logo.png"
-                                    alt="logo"></a></div>
-                        <ul
-                            class="footer-links d-flex flex-wrap justify-content-center">
-                            <li><a href="games.php">Games</a></li>
-                            <li><a href="terms-conditions.php">Terms &
-                                    Conditions</a></li>
-                            <li><a href="policy.php">Privacy Policy</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <div class="container">
-                    <div
-                        class="footer-wrapper d-flex flex-wrap justify-content-center align-items-center text-center">
-                        <p class="copyright text-white">Copyrights &copy; 2021
-                            All Rights Reserved by <a href="#0"
-                                class=" text--base ms-2">Viserlab</a></p>
-                    </div>
-                </div>
-            </div>
-            <div class="shapes">
-                <img src="assets/images/footer/shape.png" alt="footer"
-                    class="shape1">
-            </div>
-        </footer>
+        
         <!-- Footer Section Ends Here -->
 <!-- put this somewhere after you load jQuery on history‑log.php -->
 <script>

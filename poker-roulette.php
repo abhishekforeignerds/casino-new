@@ -36,7 +36,7 @@ $stmt->execute();
 $stmt->bind_result($winningPoints);
 $stmt->fetch();
 $stmt->close();
-$stmt = $conn->prepare("SELECT SUM(bet) AS total_bet FROM game_results WHERE user_id = ? AND DATE(created_at) = CURDATE()");
+$stmt = $conn->prepare("SELECT SUM(bet_amount) AS total_bet FROM total_bet_history WHERE user_id = ? AND DATE(created_at) = CURDATE()");
 $stmt->bind_param("i", $user_id);
 
 $stmt->execute();
@@ -124,7 +124,7 @@ $totalClaim = $totalClaim ?? 0;
 $totalUnclaim = $totalUnclaim ?? 0;
 
     // today’s bets
-    $stmt = $conn->prepare("SELECT SUM(bet) AS total_bet FROM game_results WHERE user_id = ? AND DATE(created_at) = CURDATE()");
+    $stmt = $conn->prepare("SELECT SUM(bet_amount) AS total_bet FROM total_bet_history WHERE user_id = ? AND DATE(created_at) = CURDATE()");
     $stmt->bind_param("i", $user_id);
     $stmt->execute(); $stmt->bind_result($bettingPoints); $stmt->fetch(); $stmt->close();
 
@@ -279,6 +279,7 @@ $totalUnclaim = $totalUnclaim ?? 0;
   <a  class="cmn--btn active btn--md d-none d-sm-block" href="/poker-roulette.php">Refresh</a>
     <a  class="cmn--btn active btn--md d-none d-sm-block" href="/history-log.php">History</a>
   <a  class="cmn--btn active btn--md d-none d-sm-block" href="/dashboard.php">Go to Dashboard</a>
+  <a  class="cmn--btn active btn--md d-none d-sm-block" href="/account-log.php">Account</a>
           <a href="logout.php" class="cmn--btn active btn--md d-none d-sm-block">Logout</a>
         <!-- <div id="betPoints-display">Betting Points: 
             <span style='color: gold;font-weight:800;'> 
@@ -651,6 +652,7 @@ $totalUnclaim = $totalUnclaim ?? 0;
 
         <div id="div-spin-btns">
             <div id="div-buttons">
+                <button id="place-bets" class="cmn--btn active w-100 m-3" style="border:4px solid #ea1515;">Bet</button>
                 <button id="clear-bets" class="cmn--btn active w-100 m-3" style="border:4px solid #ea1515;">Clear</button>
                 <button id="double-bets" class="cmn--btn active w-100 m-3" style="border:4px solid #ea1515;">Double</button>
                 <button id="repeat-bet" class="cmn--btn active w-100 m-3" style="border:4px solid #ea1515;">Repeat</button>

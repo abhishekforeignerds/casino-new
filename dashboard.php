@@ -171,12 +171,12 @@ $stmt->close();
             <div class="container">
                 <div class="header-bottom">
                     <div class="header-bottom-area align-items-center">
-                        <div class="logo"><a href="index.php"><img
+                        <div class="logo"><a href="poker-roulette.php"><img
                                     src="assets/images/logo.png"
                                     alt="logo"></a></div>
                         <ul class="menu">
                             <li>
-                                <a href="index.php">Home</a>
+                                <a href="poker-roulette.php">Home</a>
                             </li>
                             <li>
                                 <a href="about.php">About</a>
@@ -229,21 +229,7 @@ $stmt->close();
             </div>
         </div>
         <!-- inner hero section start -->
-        <section class="inner-banner bg_img"
-            style="background: url('assets/images/inner-banner/bg2.jpg') top;">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-7 col-xl-6 text-center">
-                        <h2 class="title text-white">User Dashboard</h2>
-                        <ul
-                            class="breadcrumbs d-flex flex-wrap align-items-center justify-content-center">
-                            <li><a href="index.php">Home</a></li>
-                            <li>Dashboard</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
+
         <!-- inner hero section end -->
 
         <!-- Dashboard Section Starts Here -->
@@ -255,33 +241,7 @@ $stmt->close();
                             <div class="close-dashboard d-lg-none">
                                 <i class="las la-times"></i>
                             </div>
-                            <div class="dashboard-user">
-                                <div class="user-thumb">
-                                    <img src="assets/images/top/item1.png"
-                                        alt="dashboard">
-                                </div>
-                                <div class="user-content">
-                                    <span class="fs-sm">Welcome</span>
-                                    <h5 class="name">Munna Ahmed</h5>
-                                    <ul class="user-option">
-                                        <li>
-                                            <a href="#0">
-                                                <i class="las la-bell"></i>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#0">
-                                                <i class="las la-pen"></i>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#0">
-                                                <i class="las la-envelope"></i>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+                          
                             <ul class="user-dashboard-tab">
                                 <li>
                                     <a href="dashboard.php"
@@ -299,13 +259,7 @@ $stmt->close();
                                     <a href="transection.php">Game
                                         History</a>
                                 </li>
-                                <li>
-                                    <a href="profile.php">Account Settings</a>
-                                </li>
-                                <li>
-                                    <a href="change-pass.php">Security
-                                        Settings</a>
-                                </li>
+                             
                                 <li>
                                     <a href="logout.php">Sign Out</a>
                                 </li>
@@ -469,40 +423,7 @@ $stmt->close();
         <!-- Dashboard Section Ends Here -->
 
         <!-- Footer Section Starts Here -->
-        <footer class="footer-section bg_img"
-            style="background: url(assets/images/footer/bg.jpg) center;">
-            <div class="footer-top">
-                <div class="container">
-                    <div
-                        class="footer-wrapper d-flex flex-wrap align-items-center justify-content-md-between justify-content-center">
-                        <div class="logo mb-3 mb-md-0"><a href="index.php"><img
-                                    src="assets/images/logo.png"
-                                    alt="logo"></a></div>
-                        <ul
-                            class="footer-links d-flex flex-wrap justify-content-center">
-                            <li><a href="games.php">Games</a></li>
-                            <li><a href="terms-conditions.php">Terms &
-                                    Conditions</a></li>
-                            <li><a href="policy.php">Privacy Policy</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <div class="container">
-                    <div
-                        class="footer-wrapper d-flex flex-wrap justify-content-center align-items-center text-center">
-                        <p class="copyright text-white">Copyrights &copy; 2021
-                            All Rights Reserved by <a href="#0"
-                                class=" text--base ms-2">Viserlab</a></p>
-                    </div>
-                </div>
-            </div>
-            <div class="shapes">
-                <img src="assets/images/footer/shape.png" alt="footer"
-                    class="shape1">
-            </div>
-        </footer>
+       
         <!-- Footer Section Ends Here -->
 
         <!-- jQuery library -->

@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="container">
             <div class="account__main__wrapper">
                 <div class="account__form__wrapper">
-                    <div class="logo"><a href="index.php"><img src="assets/images/logo.png" alt="logo"></a></div>
+                    <div class="logo"><a href="poker-roulette.php"><img src="assets/images/logo.png" alt="logo"></a></div>
                     <form class="account__form form row g-4" action="sign-in.php" method="POST">
         <?php if(isset($error)) { echo '<p style="color:red;">' . $error . '</p>'; } ?>
         <div class="col-12">

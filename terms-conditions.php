@@ -51,12 +51,12 @@
             <div class="container">
                 <div class="header-bottom">
                     <div class="header-bottom-area align-items-center">
-                        <div class="logo"><a href="index.php"><img
+                        <div class="logo"><a href="poker-roulette.php"><img
                                     src="assets/images/logo.png"
                                     alt="logo"></a></div>
                         <ul class="menu">
                             <li>
-                                <a href="index.php">Home</a>
+                                <a href="poker-roulette.php">Home</a>
                             </li>
                             <li>
                                 <a href="about.php">About</a>
@@ -130,7 +130,7 @@
                         <h2 class="title text-white">Terms & Conditons</h2>
                         <ul
                             class="breadcrumbs d-flex flex-wrap align-items-center justify-content-center">
-                            <li><a href="index.php">Home</a></li>
+                            <li><a href="poker-roulette.php">Home</a></li>
                             <li>Terms & Conditions</li>
                         </ul>
                     </div>
@@ -308,7 +308,7 @@
                 <div class="container">
                     <div
                         class="footer-wrapper d-flex flex-wrap align-items-center justify-content-md-between justify-content-center">
-                        <div class="logo mb-3 mb-md-0"><a href="index.php"><img
+                        <div class="logo mb-3 mb-md-0"><a href="poker-roulette.php"><img
                                     src="assets/images/logo.png"
                                     alt="logo"></a></div>
                         <ul

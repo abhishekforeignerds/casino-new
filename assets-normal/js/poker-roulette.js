@@ -546,6 +546,8 @@ const GRID_COLUMNS = 5;
 // ----- PLACE BET ON GRID CARD -----
 // Global tracker for all bets by index
 let allbetamtinx = {}; // Global map to track index-wise bets
+let pcbets = {}; // Global map to track index-wise bets
+let n=0;
 
 document.querySelectorAll(".grid-card").forEach(card => {
   card.addEventListener("click", function () {
@@ -564,10 +566,10 @@ document.querySelectorAll(".grid-card").forEach(card => {
     return;
     }
 
-    if (totalBets + selectedCoin > maxBetamount) {
-      alert("Max bet amount is 10000");
-      return;
-    }
+    // if (totalBets + selectedCoin > maxBetamount) {
+    //   alert("Max bet amount is 10000");
+    //   return;
+    // }
 
     balance -= selectedCoin;
     updateBalanceDisplay();
@@ -583,11 +585,13 @@ document.querySelectorAll(".grid-card").forEach(card => {
 
     // Update allbetamtinx
     allbetamtinx[index] = (allbetamtinx[index] || 0) + selectedCoin;
+    pcbets[index] = (pcbets[index] || 0) + selectedCoin;
 
     const data = {
       user_id: user_id,
       identifier: index,
       amount: selectedCoin,
+      ntrack: n,
       withdrawTime: withdrawTime
     };
     fetch('../../api/total_history.php', {
@@ -620,10 +624,10 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     return;
     }
 
-    if (totalBets + (selectedCoin * 3) > maxBetamount) {
-      alert("Max bet amount is 10000");
-      return;
-    }
+    // if (totalBets + (selectedCoin * 3) > maxBetamount) {
+    //   alert("Max bet amount is 10000");
+    //   return;
+    // }
 
     balance -= (selectedCoin * 3);
     updateBalanceDisplay();
@@ -663,11 +667,13 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     // Update allbetamtinx
     identifiers.forEach(id => {
       allbetamtinx[id] = (allbetamtinx[id] || 0) + selectedCoin;
+      pcbets[id] = (pcbets[id] || 0) + selectedCoin;
 
       const data = {
         user_id: user_id,
         identifier: id,
         amount: selectedCoin,
+        ntrack: n,
         withdrawTime: withdrawTime
       };
       fetch('../../api/total_history.php', {
@@ -704,10 +710,10 @@ document.querySelectorAll(".grid-label").forEach(label => {
     return;
     }
 
-    if (totalBets + (selectedCoin * 4) > maxBetamount) {
-      alert("Max bet amount is 10000");
-      return;
-    }
+    // if (totalBets + (selectedCoin * 4) > maxBetamount) {
+    //   alert("Max bet amount is 10000");
+    //   return;
+    // }
 
     balance -= (selectedCoin * 4);
     updateBalanceDisplay();
@@ -744,11 +750,13 @@ document.querySelectorAll(".grid-label").forEach(label => {
     // Update allbetamtinx
     identifiers.forEach(id => {
       allbetamtinx[id] = (allbetamtinx[id] || 0) + selectedCoin;
+      pcbets[id] = (pcbets[id] || 0) + selectedCoin;
 
       const data = {
         user_id: user_id,
         identifier: id,
         amount: selectedCoin,
+        ntrack: n,
         withdrawTime: withdrawTime
       };
       fetch('../../api/total_history.php', {
@@ -801,12 +809,67 @@ document.querySelectorAll(".grid-label").forEach(label => {
 // }
 
 
+document.getElementById("place-bets").addEventListener("click", function () {
+if (Object.keys(pcbets).length < 1) {
+  resultDisplay.style.display = 'block';
+  resultDisplay.textContent = "No Bet was Placed.";
+  setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
+  return;
+} else{
+   
 
+  const formData = new FormData();
+  formData.append('withdrawTime', withdrawTime);
+  formData.append('n', n);
+
+  fetch('../../api/place_pc_bets.php', {
+  method: 'POST',
+  body: formData
+})
+  .then(res => res.json())
+  .then(data => {
+    console.log('API RESPONSE:', data);
+
+    if (data.status === 'success') {
+      console.log('Bet placed:', data.data.insertedId, 'totalBet:', data.data.totalBet);
+  const overlays = document.querySelectorAll('.bet-overlay');
+
+  overlays.forEach(overlay => {
+    // Get the bet amount from the coin's inner span.
+   
+    if (overlay.parentElement) {
+      overlay.parentElement.removeChild(overlay);
+    }
+  });
+   resultDisplay.style.display = 'block';
+  resultDisplay.textContent = "Bet was placed successfully with ID : "+ data.data.serial;
+  setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
+    }
+    else {
+      // on error, your API includes `message`
+      console.error('Error placing bet:', data.message || '(no message received)');
+    }
+  })
+  .catch(err => console.error('Fetch error:', err));
+
+}
+n +=1;
+  console.log('pcbets',pcbets);
+  console.log('n',n);
+  console.log('withdrawTime',withdrawTime);
+  pcbets={};
+  console.log('pcbets',pcbets);
+});
 
 // ----- CLEAR ALL BETS -----
 document.getElementById("clear-bets").addEventListener("click", function () {
   console.log('bets', bets);
   console.log('allbetamtinx', allbetamtinx);
+  console.log('pcbets', pcbets);
   console.log('totalBets', totalBets);
   console.log('lastTotalBets', lastTotalBets);
   console.log('lastBet', lastBet);
@@ -851,6 +914,7 @@ document.getElementById("clear-bets").addEventListener("click", function () {
   lastBet ={};
   console.log('bets',bets);
   console.log('allbetamtinx',allbetamtinx);
+  console.log('pcbets',pcbets);
   console.log('totalBets',totalBets);
   console.log('lastTotalBets',lastTotalBets);
   console.log('lastBet',lastBet);
@@ -971,7 +1035,7 @@ function addHistoryCard(src, suit, withdrawTime) {
 
    const timeSpan = document.createElement("span");
 timeSpan.textContent = subtractMinutes(withdrawTime, 2);
-  timeSpan.style.fontSize = "14px";
+  timeSpan.style.fontSize = "12px";
   timeSpan.style.color = "black";
 
    const img = document.createElement("span");
@@ -1083,7 +1147,7 @@ function displayHistoryCard(src, suit, wintimes,withdrawTime) {
 
   const timeSpan = document.createElement("span");
 timeSpan.textContent = withdrawTime;
-  timeSpan.style.fontSize = "14px";
+  timeSpan.style.fontSize = "12px";
   timeSpan.style.color = "black";
 
   // Card face
@@ -1304,6 +1368,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
   // }
   console.log('bets',bets)
   console.log('allbetamtinx',allbetamtinx)
+  console.log('pcbets',pcbets)
   // fetchBetHistory(withdrawTime);
 
   // let userwins;
@@ -1595,6 +1660,7 @@ document.getElementById("spinBtn").addEventListener("click", function () {
 if (chosenIndex === undefined) {
   // pick an integer from 0 up to and including 11
   chosenIndex = Math.floor(Math.random() * 12);
+  console.log('chosenIndexlast', chosenIndex);
 }
 
     function evaluateBet(allbetamtinx, chosenIndex) {
@@ -1652,9 +1718,9 @@ if (chosenIndex === undefined) {
     let msg;
     if (userWon) {
       balanceDisplay.innerHTML = "Balance: <span style='color: gold;font-weight:800;'>" + (balance) + "</span>";
-      msg = `You win ${winValue}!`;
+      msg = `Total Win ${winValue}!`;
     } else if (lastBet && Object.keys(lastBet).length > 0) {
-      msg = `You lose.`;
+      msg = `Lose.`;
     } else {
       msg = `No bet was placed.`;
     }
@@ -1675,7 +1741,7 @@ if (chosenIndex === undefined) {
   />
    </div>
   <p>${msg}</p>
-  <span><strong>Current Bet:</strong> ${totalBets}</span>
+  <span><strong>Total Bet:</strong> ${totalBets}</span>
 `;
 
 
