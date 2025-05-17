@@ -89,8 +89,8 @@ $fullTimestamp = date('Y-m-d H:i:s', strtotime("$currentDate $withdrawTime"));
 
 
 $salesSql = "
-    SELECT COALESCE(SUM(balance), 0) AS total_balance
-    FROM claim_point_data
+    SELECT COALESCE(SUM(amount), 0) AS total_balance
+    FROM user_points_sales
     WHERE user_id = $user_id
 ";
 $salesResult = mysqli_query($conn, $salesSql);

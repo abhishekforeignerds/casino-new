@@ -169,6 +169,7 @@ $stmt3 = $conn->prepare("
       FROM total_bet_history
      WHERE user_id = ?
        AND DATE(created_at) = CURDATE()
+       AND ticket_serial > 0
        AND withdraw_time  > NOW()
      ORDER BY id DESC
 ");
@@ -201,7 +202,8 @@ foreach ($claim_list as $idx => $cpd) {
 
     $mapped[] = $cpd;
 }
-
+// echo '<pre>';
+//                                 print_r($mapped[0]);die;
 // echo '<pre>';
 // print_r($mapped);die;
 // $rows now holds each game_results row,
@@ -426,50 +428,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <li>
                                 <a href="poker-roulette.php">Home</a>
                             </li>
-                            <li>
-                                <a href="about.php">About</a>
-                            </li>
+                          
                             <li>
                                 <a href="games.php">Games <span
                                         class="badge badge--sm badge--base text-dark">NEW</span></a>
                             </li>
-                            <li>
-                                <a href="faq.php">Faq</a>
-                            </li>
-                            <li>
-                                <a href="#0">Pages</a>
-                                <ul class="sub-menu">
-                                    <li>
-                                        <a href="dashboard.php">User
-                                            Dashboard</a>
-                                    </li>
-                                    <li>
-                                        <a href="game-details.php">Game
-                                            Details</a>
-                                    </li>
-                                    <li>
-                                        <a href="policy.php">Privacy Policy</a>
-                                    </li>
-                                    <li>
-                                        <a href="terms-conditions.php">Terms &
-                                            Conditions</a>
-                                    </li>
-                                    <li>
-                                        <a href="sign-in.php">Sign In</a>
-                                    </li>
-                                    <li>
-                                        <a href="sign-up.php">Sign Up</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="#0">Blog</a>
-                                <ul class="sub-menu">
-                                    <li><a href="blog.php">Blog</a></li>
-                                    <li><a href="blog-details.php">Blog
-                                            Details</a></li>
-                                </ul>
-                            </li>
+                          
                             <li>
                                         <a href="logout.php" class="cmn--btn active">Logout</a>
 
@@ -570,7 +534,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <!--<th>Card Number</th>-->
+                                    <th>Marker Card</th>
                                     <th>Ticket ID</th>
                                     <th>Bet Amount</th>
                                     <th>Win Value</th>
@@ -584,6 +548,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <tbody>
                                 <?php foreach ($bethistory  as $result): ?>
                                  <tr class="table-history">
+                                    <td data-label="Bet Amount">NA</td>
                                     <td data-label="Bet Amount">#<?= ($result['ticket_serial']) ?></td>
                                     <td data-label="Bet Amount">₹<?= number_format($result['bet_amount'], 2) ?></td>
                                     <td data-label="Win Value">NA</td>
@@ -605,9 +570,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                 // status text
                                 $userwins = $win_value > 0 ? 'Yes' : 'No';
+                                
                             ?>
                                 <tr class="table-history">
                                   
+                                    <td class="image-tr d-flex" data-label="Bet Amount"><?php
+                                    if ($result['game_result']['winning_number'] == NULL) {
+                                       $index = $result['game_result']['lose_number'];
+                                    } else {
+                                         $index = $result['game_result']['winning_number'];
+                                    }
+                                    ?>
+
+                                   <?php if ($index == 0): ?>
+                                        <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades">
+                                        <img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades">
+                                    <?php elseif ($index == 1): ?>
+                                        <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Diamonds">
+                                        <img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Diamonds">
+                                    <?php elseif ($index == 2): ?>
+                                        <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Clubs">
+                                        <img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Clubs">
+                                    <?php elseif ($index == 3): ?>
+                                        <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Hearts">
+                                        <img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Hearts">
+                                    <?php elseif ($index == 4): ?>
+                                        <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Spades">
+                                        <img class="card" src="/assets-normal/img/spades-golden.png" alt="Queen of Spades">
+                                    <?php elseif ($index == 5): ?>
+                                        <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Diamonds">
+                                        <img class="card" src="/assets-normal/img/golden-diamond.png" alt="Queen of Diamonds">
+                                    <?php elseif ($index == 6): ?>
+                                        <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Clubs">
+                                        <img class="card" src="/assets-normal/img/clubs-golden.png" alt="Queen of Clubs">
+                                    <?php elseif ($index == 7): ?>
+                                        <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Hearts">
+                                        <img class="card" src="/assets-normal/img/golden-hearts.png" alt="Queen of Hearts">
+                                    <?php elseif ($index == 8): ?>
+                                        <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Spades">
+                                        <img class="card" src="/assets-normal/img/spades-golden.png" alt="Jack of Spades">
+                                    <?php elseif ($index == 9): ?>
+                                        <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Diamonds">
+                                        <img class="card" src="/assets-normal/img/golden-diamond.png" alt="Jack of Diamonds">
+                                    <?php elseif ($index == 10): ?>
+                                        <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Clubs">
+                                        <img class="card" src="/assets-normal/img/clubs-golden.png" alt="Jack of Clubs">
+                                    <?php elseif ($index == 11): ?>
+                                        <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Hearts">
+                                        <img class="card" src="/assets-normal/img/golden-hearts.png" alt="Jack of Hearts">
+                                    <?php endif; ?>
+
+
+
+                                   
+                                    </td>
                                     <td data-label="Bet Amount">#<?= ($result['ticket_serial']) ?></td>
                                     <td data-label="Bet Amount">₹<?= number_format($result['balance'], 2) ?></td>
                                     <td data-label="Win Value">₹<?= number_format($win_value, 2) ?? 0 ?></td>
@@ -720,7 +736,12 @@ Claimed
     });
   });
 </script>
-
+<style>
+    tr.table-history img.card {
+    width: 50px;
+    height: 50px;
+}
+</style>
         <!-- jQuery library -->
         <script src="assets/js/lib/jquery-3.6.0.min.js"></script>
         <!-- bootstrap 5 js -->

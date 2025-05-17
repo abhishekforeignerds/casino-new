@@ -1458,6 +1458,7 @@ div#auto-spin-countdown {
     box-shadow: none;
 }
 @media screen and (min-width: 768px) and (max-width: 1370px) {
+
   #image-roulette #marker2 {
     position: absolute;
     top: 31%;
@@ -1500,11 +1501,11 @@ div#grid-label-1 .bet-overlay{
 }
 #image-roulette .grid-card {
 
-    width: 116%;
+    width: 98%;
 }
 }
 
-@media screen and (min-width: 1024px) and (max-width: 1920px){
+@media screen and (min-width: 1370px) and (max-width: 1920px){
     #image-roulette #marker2 {
         position: absolute;
         top: 34%;
