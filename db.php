@@ -1,8 +1,8 @@
 <?php
 $host = "localhost";
-$user = "u861477996_casinogame"; // Change to your database username
-$pass = "LbCy5b6*U";     // Change to your database password
-$dbname = "u861477996_casinogame";
+$user = "root"; // Change to your database username
+$pass = "";     // Change to your database password
+$dbname = "casino-game";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
 

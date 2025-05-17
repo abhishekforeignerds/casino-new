@@ -277,9 +277,9 @@ $totalUnclaim = $totalUnclaim ?? 0;
   <i class="fas fa-expand"></i>
 </button> -->
   <a  class="cmn--btn active btn--md d-none d-sm-block" href="/poker-roulette.php">Refresh</a>
-    <a  class="cmn--btn active btn--md d-none d-sm-block" href="/history-log.php">History</a>
-  <a  class="cmn--btn active btn--md d-none d-sm-block" href="/dashboard.php">Go to Dashboard</a>
-  <a  class="cmn--btn active btn--md d-none d-sm-block" href="/account-log.php">Account</a>
+    <a  class="cmn--btn active btn--md d-none d-sm-block" target="_blank" href="/history-log.php">History</a>
+  <a  class="cmn--btn active btn--md d-none d-sm-block" target="_blank" href="/dashboard.php">Go to Dashboard</a>
+  <a  class="cmn--btn active btn--md d-none d-sm-block" target="_blank" href="/account-log.php">Account</a>
           <a href="logout.php" class="cmn--btn active btn--md d-none d-sm-block">Logout</a>
         <!-- <div id="betPoints-display">Betting Points: 
             <span style='color: gold;font-weight:800;'> 

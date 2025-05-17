@@ -164,6 +164,21 @@ $stmt1->execute();
 $res1 = $stmt1->get_result();
 $game_results = $res1->fetch_all(MYSQLI_ASSOC);
 
+$stmt3 = $conn->prepare("
+    SELECT *
+      FROM total_bet_history
+     WHERE user_id = ?
+       AND DATE(created_at) = CURDATE()
+       AND withdraw_time  > NOW()
+     ORDER BY id DESC
+");
+$stmt3->bind_param("i", $user_id);
+$stmt3->execute();
+
+$res3 = $stmt3->get_result(); // Corrected from $stmt2 to $stmt3
+$bethistory = $res3->fetch_all(MYSQLI_ASSOC); // This gives you an array of results
+
+
 
 // 3) Merge by index, starting from each claim
 $mapped = [];
@@ -567,6 +582,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </tr>
                             </thead>
                             <tbody>
+                                <?php foreach ($bethistory  as $result): ?>
+                                 <tr class="table-history">
+                                    <td data-label="Bet Amount">#<?= ($result['ticket_serial']) ?></td>
+                                    <td data-label="Bet Amount">₹<?= number_format($result['bet_amount'], 2) ?></td>
+                                    <td data-label="Win Value">NA</td>
+                                    <td data-label="Claimed Points">NA</td>
+                                    <td data-label="Unclaimed Points">NA</td>
+                                    <td data-label="Unclaimed Points">  <small class="btn-sm btn-success">Bet Placed</small></td>
+                                    <td data-label="Unclaimed Points"><?= ($result['withdraw_time']) ?? ''  ?></td>
+                                      <td data-label="Unclaimed Points">  <small class="btn btn-success">Unclaimable</small></td>
+                                     <tr>
+                                                          <?php endforeach; ?>
                             <?php foreach ($mapped as $result): 
                                 $cpd = $result['claim_point_data'] ?? [
                                     'id'=>0, 'claim_point'=>0, 'unclaim_point'=>0
