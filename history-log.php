@@ -181,6 +181,21 @@ foreach ($game_results as $gr) {
     $grByTimestamp[$gr['created_at']] = $gr;
 }
 
+
+$stmt3 = $conn->prepare("
+    SELECT *
+      FROM total_bet_history
+     WHERE user_id = ?
+       AND DATE(created_at) = CURDATE()
+       AND ticket_serial > 0
+       AND withdraw_time  > NOW()
+     ORDER BY id DESC
+");
+$stmt3->bind_param("i", $user_id);
+$stmt3->execute();
+
+$res3 = $stmt3->get_result(); // Corrected from $stmt2 to $stmt3
+$bethistory = $res3->fetch_all(MYSQLI_ASSOC); 
 // 4) Now merge, but matching by created_at instead of array index
 $mapped = [];
 foreach ($claim_list as $idx => $cpd) {
