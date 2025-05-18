@@ -10,51 +10,6 @@ const centerX = 200, centerY = 200, outerRadius = 200, innerRadius = 28;
 // Define colors for segments
 const segmentColors = ["#201cb2", "#5c1166", "#5c1110"];
 
-// // Draw segments (each segment spans from (i*30° -15°) to (i*30° +15°))
-// function drawSegments() {
-//   const svg = document.getElementById("segments-svg");
-//   svg.innerHTML = '';
-//   for (let i = 0; i < segmentCount; i++) {
-//     const startDeg = i * segmentAngle - 15;
-//     const endDeg = i * segmentAngle + 15;
-//     const startRad = startDeg * Math.PI / 180;
-//     const endRad = endDeg * Math.PI / 180;
-//     const x1 = centerX + outerRadius * Math.cos(startRad);
-//     const y1 = centerY + outerRadius * Math.sin(startRad);
-//     const x2 = centerX + outerRadius * Math.cos(endRad);
-//     const y2 = centerY + outerRadius * Math.sin(endRad);
-//     const d = `M ${centerX} ${centerY} L ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 0 1 ${x2} ${y2} Z`;
-//     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-//     path.setAttribute("fill", segmentColors[i % segmentColors.length]);
-//     path.setAttribute("d", d);
-//     svg.appendChild(path);
-//   }
-// }
-
-// // Draw radial boundary lines at (i*30° + 15°)
-// function drawLines() {
-//   const svg = document.getElementById("lines-svg");
-//   svg.innerHTML = '';
-//   for (let i = 0; i < segmentCount; i++) {
-//     const angleDeg = 15 + i * segmentAngle;
-//     const angleRad = angleDeg * Math.PI / 180;
-//     const x1 = centerX + innerRadius * Math.cos(angleRad);
-//     const y1 = centerY + innerRadius * Math.sin(angleRad);
-//     const x2 = centerX + outerRadius * Math.cos(angleRad);
-//     const y2 = centerY + outerRadius * Math.sin(angleRad);
-//     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-//     line.setAttribute("x1", x1);
-//     line.setAttribute("y1", y1);
-//     line.setAttribute("x2", x2);
-//     line.setAttribute("y2", y2);
-//     line.setAttribute("stroke", "rgba(0,0,0,0.5)");
-//     line.setAttribute("stroke-width", "2");
-//     svg.appendChild(line);
-//   }
-// }
-
-// drawSegments();
-// drawLines();
 
 const balanceDisplay = document.getElementById("balance-display");
 const winPointsDisplay = document.getElementById("claim-display");
@@ -646,40 +601,6 @@ document.querySelectorAll(".grid-label").forEach(label => {
 
 
 
-// ----- Helper: second-largest override -----
-// function applySecondLargestRule() {
-//   const keys = Object.keys(bets);
-//   let relevantValues = null;
-
-//   // 12 grid cells
-//   //   const gridKeys = keys.filter(k => !isNaN(k) && +k < GRID_COLUMNS * GRID_ROWS);
-//   // console.log(Object.keys(bets).length, 'betslength');
-
-//   if (Object.keys(bets).length > 11) {
-//     allcardsbeted = true;
-//     console.log(allcardsbeted);
-//   }
-
-//   // 3 card types
-//   else if (["cardType-Jack", "cardType-Queen", "cardType-King"].every(k => bets[k] !== undefined)) {
-//     relevantValues = ["cardType-Jack", "cardType-Queen", "cardType-King"].map(k => bets[k] / 4);
-//     allcardsbeted = true;
-//   }
-//   // 4 suits
-//   else if (["suit-♠", "suit-♦", "suit-♣", "suit-♥"].every(k => bets[k] !== undefined)) {
-//     relevantValues = ["suit-♠", "suit-♦", "suit-♣", "suit-♥"].map(k => bets[k] / 3);
-//     allcardsbeted = true;
-//   }
-
-//   if (relevantValues) {
-//     // Sort desc and pick second element
-//     const sorted = relevantValues.slice().sort((a, b) => b - a);
-//     const second = sorted[1] !== undefined ? sorted[1] : sorted[0];
-//     lastBet.amount = second;
-//     lastBetHistory.amount = second;
-//   }
-// }
-
 
 document.getElementById("place-bets").addEventListener("click", function () {
 if (Object.keys(pcbets).length < 1) {
@@ -1102,66 +1023,6 @@ function showCenterCard(src, suit, suitIconcolor) {
   centerCircle.appendChild(suitSpan);
 }
 
-// // Draw suit ring with icons positioned at segment centers.
-// function drawSuitRing() {
-//   const suitRing = document.getElementById("suit-ring");
-//   suitRing.innerHTML = "";
-
-//   // Assuming the container is a 100x100 box centered in the parent.
-//   const containerSize = 100;
-//   const center = containerSize / 2; // 50px
-//   suitRing.style.position = "absolute";
-//   suitRing.style.width = containerSize + "px";
-//   suitRing.style.height = containerSize + "px";
-//   suitRing.style.top = "50%";
-//   suitRing.style.left = "50%";
-//   suitRing.style.transformOrigin = "50% 50%";
-//   suitRing.style.marginLeft = `-${center}px`;
-//   suitRing.style.marginTop = `-${center}px`;
-//   suitRing.style.transform = "rotate(0deg)";
-//   suitRing.style.transition = "none";
-
-//   // Adjust this value to change how far icons are from the center.
-//   const ringRadius = 110;
-//   // Angular offset to rotate the entire suit ring if needed.
-//   const baseAngleOffset = 5;
-
-
-//   const suits = [
-//     '<img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades">',
-//     '<img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades">',
-//     '<img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades">',
-//     '<img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades">',
-//   ];
-  
-
-//   for (let i = 0; i < segmentCount; i++) {
-//     const angleDeg = i * segmentAngle + halfSegment + baseAngleOffset;
-//     const angleRad = angleDeg * Math.PI / 180;
-//     const x = ringRadius * Math.cos(angleRad) + center - 10;
-//     const y = ringRadius * Math.sin(angleRad) + center - 10;
-
-//     const span = document.createElement("span");
-//     span.className = "suit-segment";
-//     span.style.position = "absolute";
-//     span.style.left = x + "px";
-//     span.style.top = y + "px";
-//     span.style.transform = `rotate(${angleDeg}deg)`;
-
-//     // inject the <img> HTML
-//     span.innerHTML = suits[i % suits.length];
-
-//     suitRing.appendChild(span);
-//   }
-// }
-
-// drawSuitRing();
-
-// ---- Timer Setup for Rotating Wheel ----
-// Change this value to modify the timer duration for the wheel (in seconds)
-
-
-// Create circular timer sticks
 
 
 for (let i = 0; i < segmentCountTimer; i++) {
@@ -1233,92 +1094,13 @@ document.getElementById("spinBtn").addEventListener("click", function () {
     src: ['/assets-normal/img/revolver-chamber-spin-ratchet-sound-90521.mp3'],
     volume: 0.9
   });
-  // play it
+
  spinsound.play();
-  // if (typeof chosenIndex !== 'number' || chosenIndex < 0 || chosenIndex >= segmentCount) {
-  //   // Assign a random segment if chosenIndex is invalid or undefined
-  //   chosenIndex = Math.floor(Math.random() * segmentCount);
-  //   console.warn('chosenIndex was invalid; new random chosenIndex:', chosenIndex);
-  // }
+ 
   console.log('bets',bets)
   console.log('allbetamtinx',allbetamtinx)
   console.log('pcbets',pcbets)
-  // fetchBetHistory(withdrawTime);
-
-  // let userwins;
-  // let gmlen = gameResults.length;
-  // if (gmlen ==  0) {
-  //   gmlen = 1;
-  // }
-  // Define an override chance (10% chance to override the "default" outcome)
-
-  // console.log(gmlen, 'gamelenght')
-  // let currentWinPercentage = totalBets > 0 ? (winningPoints / bettingPoints) * 100 : 0;
-  // currentWinPercentage = Math.round(currentWinPercentage * 100) / 100;
-  // if ((gmlen > 4 || totalWinValue > 100)) {
-
-  //   if (currentWinPercentage > winningPercentage) {
-  //     // Default outcome for a high win ratio is to lose ('no').
-  //     // But with a small chance, override to win.
-  //     console.log(currentWinPercentage, 'currentWinPercentage-no')
   
-  //     console.log(winningPercentage, 'winningPercentage-no')
-      
-  //     userwins = Math.random() < overrideChance ? 'yes' : 'no';
-  //   } else if (currentWinPercentage < winningPercentage) {
-  //     // Default outcome for a low win ratio is to win ('yes').
-  //     // But with a small chance, override to lose.
- 
-  //     console.log(currentWinPercentage, 'currentWinPercentage-yes')
-  
-  //     console.log(winningPercentage, 'winningPercentage-yes')
-
-  //     userwins = Math.random() < overrideChance ? 'no' : 'yes';
-  //   } else if (currentWinPercentage < winningPercentage) {
-  //     // Default outcome for a low win ratio is to win ('yes').
-  //     // But with a small chance, override to lose.
-
-  //     console.log(currentWinPercentage, 'currentWinPercentage-strino')
-  
-  //     console.log(winningPercentage, 'winningPercentage-strino')
-
-  //     userwins = Math.random() < overrideChance ? 'no' : 'yes';
-  //   }
-  //   else if (currentWinPercentage > winningPercentage * 2) {
-  //     // Default outcome for a low win ratio is to win ('yes').
-  //     // But with a small chance, override to lose.
-
-  //     console.log(currentWinPercentage, 'currentWinPercentage-x-no')
-  
-  //     console.log(winningPercentage, 'winningPercentage-x-no')
-
-  //     userwins = 'no';
-  //   }
-  //   else {
-  //     // When currentWinPercentage exactly equals winningPercentage,
-  //     // use a standard evaluation. (Or you could also randomize here if desired.)
-  //     userwins = currentWinPercentage >= winningPercentage ? 'yes' : 'no';
-  //   }
-
-  //   console.log(totalBet, 'totalBet')
-  //   console.log(totalWinValue, 'totalWinValue')
-  //   console.log(currentWinPercentage, 'currentWinPercentage')
-
-  //   console.log(winningPercentage, 'winningPercentage')
-
-  //   console.log(overrideChance, 'overrideChance')
-
-  // } else {
-  //   // If gameResults length is 10 or less AND totalWinValue is 200 or less, fallback to 'random'.
-  //   userwins = Math.random() < overrideChance ? 'yes' : 'random';
-  // }
-  // if (currentWinPercentage > winningPercentage && lastBet.amount > 20) {
-  //   userwins = 'no';
-  // }
-
-  // if (allcardsbeted) {
-  //   userwins = 'yes';
-  // }
 
 
   console.log(userwins, 'userwins')
@@ -1339,57 +1121,8 @@ document.getElementById("spinBtn").addEventListener("click", function () {
   const suitRing = document.getElementById("suit-ring");
   let betTotal = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
-  // --- Calculate rotation so that the winning segment is centered ---
   const segmentAngle = 360 / segmentCount;
 
-  // Initially choose a random index (0 to segmentCount - 1)
-  // let chosenIndex = Math.floor(Math.random() * segmentCount);
-
-  // --- Override chosenIndex based on the userwins flag and last bet, if a bet exists ---
-  // if (lastBet && Object.keys(lastBet).length > 0) {
-  //   let possibleIndices = [];
-
-  //   // If the bet identifier is numeric, assume it is a specific grid card index.
-  //   if (!isNaN(lastBet.identifier)) {
-  //     possibleIndices = [parseInt(lastBet.identifier, 10)];
-  //   }
-  //   // If the bet is on a card type (e.g. "cardType-King")
-  //   else if (lastBet.identifier.startsWith("cardType-")) {
-  //     const betCardType = lastBet.identifier.split("-")[1]; // "King", "Queen", or "Jack"
-  //     possibleIndices = cardDetails
-  //       .map((cd, index) => (cd.card === betCardType ? index : -1))
-  //       .filter(index => index !== -1);
-  //   }
-  //   // If the bet is on a suit (e.g. "suit-♠")
-  //   else if (lastBet.identifier.startsWith("suit-")) {
-  //     const betSuit = lastBet.identifier.split("-")[1]; // "♠", "♦", etc.
-  //     possibleIndices = cardDetails
-  //       .map((cd, index) => (cd.suit === betSuit ? index : -1))
-  //       .filter(index => index !== -1);
-  //   }
-
-  //   // If there is at least one matching index, override chosenIndex
-  //   if (possibleIndices.length > 0) {
-  //     if (userwins == 'yes') {
-  //       // Pick one of the matching indices at random.
-  //       // chosenIndex = possibleIndices[Math.floor(Math.random() * possibleIndices.length)];
-  //       console.log('chosenIndex' , chosenIndex)
-  //       console.log('userwins' , userwins)
-  //     } else if (userwins === 'random') {
-  //       chosenIndex = Math.floor(Math.random() * segmentCount);
-  //       console.log('chosenIndex' , chosenIndex)
-  //       console.log('userwins' , userwins)
-  //     } else {
-  //       // Force a loss: if the current random choice is one of the matching indices,
-  //       // shift it (here, we simply increment mod segmentCount until it doesn't match).
-  //       while (possibleIndices.includes(chosenIndex)) {
-  //         // chosenIndex = (chosenIndex + 1) % segmentCount;
-  //         console.log('chosenIndex' , chosenIndex)
-  //         console.log('userwins' , userwins)
-  //       }
-  //     }
-  //   }
-  // }
   console.log('chosenIndex' , chosenIndex)
   console.log('userwins' , userwins)
   if (chosenIndex < 0) {
