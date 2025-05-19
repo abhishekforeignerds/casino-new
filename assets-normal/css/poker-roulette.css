@@ -191,7 +191,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
   transform: translateX(-50%);
   width: 30px;
   height: 30px;
-  /* clip into a downwardâ€pointing triangle */
+  /* clip into a downwardÃ¢â‚¬Âpointing triangle */
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   /* two halves, each with its own gradient for light & shadow */
   background:
@@ -219,11 +219,11 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
   transform: translateX(-50%);
   width: 30px;
   height: 30px;
-  /* clip a perfect equilateralâ€ish triangle */
+  /* clip a perfect equilateralÃ¢â‚¬Âish triangle */
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
   /* two layered backgrounds: 
-     - the lower layer is the â€œbackâ€ face (darker) 
-     - the upper layer is the â€œfrontâ€ face (lighter), clipped to half the triangle */
+     - the lower layer is the Ã¢â‚¬Å“backÃ¢â‚¬Â face (darker) 
+     - the upper layer is the Ã¢â‚¬Å“frontÃ¢â‚¬Â face (lighter), clipped to half the triangle */
   background:
     /* front face */
     linear-gradient(
@@ -451,7 +451,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 }
 
 #wheel-container {
-  /* scale the wheel to 80% of its parentâ€™s width (you can tweak this) */
+  /* scale the wheel to 80% of its parentÃ¢â‚¬â„¢s width (you can tweak this) */
   width: 80%;
   max-width: 400px;      /* optional cap */
   
@@ -733,7 +733,7 @@ opacity: 0.8;
 
   /* The wheel itself (if you need it centered within a larger container) */
 #wheel {
-  /* inset wheel to 85% so thereâ€™s a 7.5% pad on each side */
+  /* inset wheel to 85% so thereÃ¢â‚¬â„¢s a 7.5% pad on each side */
   width: 85%;
   height: 85%;
   position: absolute;
@@ -1419,7 +1419,7 @@ div#overlay-items p {
     }
 }
 #image-roulette .winner {
-  /* 5s for a full redâ†’greenâ†’red cycle, then repeat */
+  /* 5s for a full redÃ¢â€ â€™greenÃ¢â€ â€™red cycle, then repeat */
   animation: blink 1s infinite;
 }
 
@@ -1550,7 +1550,7 @@ div#suitIcon4  .bet-overlay {
 
 @media screen and (min-width: 1920px) and (max-width: 2560px) {
 #wheel-container {
-    width: 75vh;
+    width: 65vh;
     top: 15%;
     max-width: 800px;
 }
