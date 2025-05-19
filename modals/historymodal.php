@@ -1,5 +1,30 @@
-<?php
-ini_set('display_errors', '0');
+
+
+<!-- Full-screen, Scrollable Modal -->
+<div
+  class="modal fade"
+  id="historyModal"
+  tabindex="-1"
+  aria-labelledby="historyModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-fullscreen modal-dialog-scrollable" style="background: #350b2d;">
+<div class="modal-content" style="
+    background: #350b2d;
+">
+      <div class="modal-header">
+        <h5 class="modal-title" id="historyModalLabel">History Log</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        style="color: #white;"></button>
+      </div>
+      <div class="modal-body">
+      <?php
+
+        ini_set('display_errors', '0');
 error_reporting(E_ALL);
 session_start();
 
@@ -106,41 +131,7 @@ while ($row = $result->fetch_assoc()) {
 $stmt->close();
 // fetch winning game_results
 $threshold = 0;
-// 1) Fetch ALL wins
-// $stmt1 = $conn->prepare("SELECT * FROM game_results WHERE win_value > 0 ORDER BY id ASC");
-// $stmt1->execute();
-// $res1 = $stmt1->get_result();
-// $game_results = $res1->fetch_all(MYSQLI_ASSOC);
 
-// // 2) Fetch ALL claim_point_data rows
-// $stmt2 = $conn->prepare("SELECT * FROM claim_point_data ORDER BY id ASC");
-// $stmt2->execute();
-// $res2 = $stmt2->get_result();
-// $claim_list  = $res2->fetch_all(MYSQLI_ASSOC);
-
-// // 3) Merge by index
-// $mapped = [];
-// foreach ($game_results as $idx => $gr) {
-//     // take the claim-data with the same zero-based index,
-//     // or fall back to a “blank” if there’s no matching row
-//     $cpd = $claim_list[$idx] ?? [
-//         'id'            => 0,
-//         'user_id'       => $gr['user_id'],
-//         'claim_point'   => 0,
-//         'unclaim_point' => 0,
-//         'balance'       => 0,
-//         'auto_claim'    => 0,
-//         'created_at'    => null,
-//         'updated_at'    => null,
-//     ];
-
-//     $gr['claim_point_data'] = $cpd;
-//     $gr['serial']           = $idx + 1;  // serial starts at 1
-//     $mapped[]               = $gr;
-// }
-
-// 1) Fetch ALL claim_point_data rows first
-// 1) Fetch ALL claim_point_data rows for a specific user
 date_default_timezone_set('Asia/Kolkata');
 
 // assume $conn is your mysqli connection and $user_id is defined…
@@ -236,18 +227,106 @@ foreach ($claim_list as $idx => $cpd) {
 
     $mapped[] = $cpd;
 }
-// echo '<pre>';
-//                                 print_r($mapped[0]);die;
-// echo '<pre>';
-// print_r($mapped);die;
-// $rows now holds each game_results row,
-// with claim_point_data_* null for non‑winners
+if (isset($_GET['action']) && $_GET['action'] === 'fetchHistory') {
+$threshold = 0;
 
-// $rows now contains one entry per game_results row.
-// If win_value ≤ 0, all the cpd.* fields will be NULL.
+date_default_timezone_set('Asia/Kolkata');
 
+// assume $conn is your mysqli connection and $user_id is defined…
 
+// 1) Fetch all of today’s claim_point_data for this user
+$stmt2 = $conn->prepare("
+    SELECT *
+      FROM claim_point_data
+     WHERE user_id      = ?
+       AND DATE(created_at) = CURDATE()
+     ORDER
+        BY created_at DESC, id DESC
+");
+$stmt2->bind_param("i", $user_id);
+$stmt2->execute();
+$res2 = $stmt2->get_result();
+$claim_list = $res2->fetch_all(MYSQLI_ASSOC);
 
+// 2) Fetch today’s game_results that actually have a win_value > 0
+$stmt1 = $conn->prepare("
+    SELECT *
+      FROM game_results
+     WHERE user_id      = ?
+       AND DATE(created_at) = CURDATE()
+       AND win_value   > 0
+     ORDER BY created_at DESC, id DESC
+");
+$stmt1->bind_param("i", $user_id);
+$stmt1->execute();
+$res1 = $stmt1->get_result();
+$game_results = $res1->fetch_all(MYSQLI_ASSOC);
+
+// 3) Build a lookup from created_at → game_result row
+$grByTimestamp = [];
+foreach ($game_results as $gr) {
+    // If there are multiple wins at the exact same timestamp,
+    // you could push them into an array. Here we assume one‐to‐one.
+    $grByTimestamp[$gr['created_at']] = $gr;
+}
+$stmt3 = $conn->prepare("
+    SELECT *
+      FROM total_bet_history
+     WHERE user_id = ?
+       AND DATE(created_at) = CURDATE()
+       AND ticket_serial > 0
+       AND withdraw_time  > NOW()
+     ORDER BY id DESC
+");
+$stmt3->bind_param("i", $user_id);
+$stmt3->execute();
+
+$res3 = $stmt3->get_result(); // Corrected from $stmt2 to $stmt3
+$bethistory = $res3->fetch_all(MYSQLI_ASSOC); 
+// 4) Now merge, but matching by created_at instead of array index
+$mapped = [];
+foreach ($claim_list as $idx => $cpd) {
+    $ts = $cpd['created_at'];
+
+    if (isset($grByTimestamp[$ts])) {
+        // We found a winning game_result at exactly the same timestamp
+        $matchedGR = $grByTimestamp[$ts];
+    } else {
+        // No winning row for this timestamp → use a default “no‐win” template
+        $matchedGR = [
+            'id'         => 0,
+            'user_id'    => $cpd['user_id'],
+            'game_id'    => null,
+            'winning_number' => null,
+            'lose_number'    => null,
+            'suiticonnum'    => null,
+            'bet'            => 0.00,
+            'win_value'      => 0,
+            'created_at'     => null,
+            'updated_at'     => null,
+            // …and any other fields you expect from game_results
+        ];
+    }
+
+    // Decide which “index” you want to display: if winning_number is null, use lose_number; else use winning_number
+    if (empty($matchedGR['winning_number'])) {
+        $index = $matchedGR['lose_number'];
+    } else {
+        $index = $matchedGR['winning_number'];
+    }
+
+    // Inject the game_result into the claim_row
+    $cpd['game_result'] = $matchedGR;
+    // Optionally store the computed “index” for your view:
+    $cpd['display_index'] = $index;
+
+    // Optionally assign a 1‐based serial number for UI
+    $cpd['serial'] = $idx + 1;
+
+    $mapped[] = $cpd;
+}
+
+}
 $stmt = $conn->prepare("SELECT SUM(bet) AS total_bet FROM game_results WHERE user_id = ? AND DATE(created_at) = CURDATE()");
 $stmt->bind_param("i", $user_id);
 
@@ -320,11 +399,6 @@ foreach ($total_bet_historys as $bet) {
 }
 
 
-// now $filteredBets has only matching bets, each with claim_point & unclaim_point
-
-
-// echo '<pre>';
-// print_r($filteredBets);die;
 
     $stmt = $conn->prepare("SELECT 
     SUM(claim_point) AS total_claim, 
@@ -397,175 +471,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Casino - Online Casino Platform</title>
-        <link rel="icon" type="image/png" href="assets/images/favicon.png"
-            sizes="16x16">
-        <!-- bootstrap 5  -->
-        <link rel="stylesheet" href="assets/css/lib/bootstrap.min.css">
-        <!-- Icon Link  -->
-        <link rel="stylesheet" href="assets/css/all.min.css">
-        <link rel="stylesheet" href="assets/css/line-awesome.min.css">
-        <link rel="stylesheet" href="assets/css/lib/animate.css">
 
-        <!-- Plugin Link -->
-        <link rel="stylesheet" href="assets/css/lib/slick.css">
-
-        <!-- Main css -->
-        <link rel="stylesheet" href="assets/css/main.css">
-        <style>
-            tr.table-history .grid-card.d-flex.align-items-baseline.justify-content-around img.card {
-    width: 50px;
-    height: 44px;
-}
-        </style>
-    </head>
-    <body data-bs-spy="scroll" data-bs-offset="170"
-        data-bs-target=".privacy-policy-sidebar-menu">
-
-        <div class="overlay"></div>
-        <div class="preloader">
-            <div class="scene" id="scene">
-                <input type="checkbox" id="andicator" />
-                <div class="cube">
-                    <div class="cube__face cube__face--front"><i></i></div>
-                    <div
-                        class="cube__face cube__face--back"><i></i><i></i></div>
-                    <div class="cube__face cube__face--right">
-                        <i></i> <i></i> <i></i> <i></i> <i></i>
-                    </div>
-                    <div class="cube__face cube__face--left">
-                        <i></i> <i></i> <i></i> <i></i> <i></i> <i></i>
-                    </div>
-                    <div class="cube__face cube__face--top">
-                        <i></i> <i></i> <i></i>
-                    </div>
-                    <div class="cube__face cube__face--bottom">
-                        <i></i> <i></i> <i></i> <i></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="header">
-            <div class="container">
-                <div class="header-bottom">
-                    <div class="header-bottom-area align-items-center">
-                        <div class="logo"><a href="poker-roulette.php"><img
-                                    src="assets/images/logo.png"
-                                    alt="logo"></a></div>
-                        <ul class="menu">
-                            <li>
-                                <a href="poker-roulette.php">Home</a>
-                            </li>
-                          
-                            <li>
-                                <a href="games.php">Games <span
-                                        class="badge badge--sm badge--base text-dark">NEW</span></a>
-                            </li>
-                          
-                            <li>
-                                        <a href="logout.php" class="cmn--btn active">Logout</a>
-
-                                    </li>
-                                    <li>
-                                        <a class="text-center mt-3 gold-box">Welcome,
-                                            <?php echo htmlspecialchars($_SESSION['fname']); ?> !
-                                        </a>
-
-                                    </li>
-                                    <button class="btn-close btn-close-white d-lg-none"></button>
-                                </ul>
-                                <div class="header-trigger-wrapper d-flex d-lg-none align-items-center">
-                                    <div class="header-trigger me-4">
-                                        <span></span>
-                                    </div>
-                                    <a href="sign-in.php" class="cmn--btn active btn--md d-none d-sm-block">Sign In</a>
-                                </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-  
-        <!-- inner hero section end -->
-
-        <!-- Dashboard Section Starts Here -->
-        <div class="dashboard-section padding-top padding-bottom">
+<div class="dashboard-section padding-top padding-bottom">
             <div class="container">
                 <div class="row">
-                    <!-- <div class="col-lg-3">
-                        <div class="dashboard-sidebar">
-                            <div class="close-dashboard d-lg-none">
-                                <i class="las la-times"></i>
-                            </div>
-                            <div class="dashboard-user">
-                                <div class="user-thumb">
-                                    <img src="assets/images/top/item1.png"
-                                        alt="dashboard">
-                                </div>
-                                <div class="user-content">
-                                    <span>Welcome</span>
-                                    <h5 class="name">Munna Ahmed</h5>
-                                    <h5 class="name">Your Balance <span style="color:#ffc124"><?php echo htmlspecialchars($points ?? 0); ?></span></h5>
-                                    <h5 class="name">Claimed Points <span style="color:#ffc124"><?php echo htmlspecialchars($totalClaim ?? 0); ?></span></h5>
-                                    <h5 class="name">Unclaimed Points <span style="color:#ffc124"><?php echo htmlspecialchars($totalUnclaim ?? 0); ?></span></h5>
-                                    <ul class="user-option">
-                                        <li>
-                                            <a href="#0">
-                                                <i class="las la-bell"></i>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#0">
-                                                <i class="las la-pen"></i>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#0">
-                                                <i class="las la-envelope"></i>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <ul class="user-dashboard-tab">
-                                <li>
-                                    <a href="dashboard.php"
-                                        class="active">Dashboard</a>
-                                </li>
-                                <li>
-                                    <a href="deposit-log.php">Deposit
-                                        History</a>
-                                </li>
-                                <li>
-                                    <a href="withdraw-log.php">Withdraw
-                                        History</a>
-                                </li>
-                                <li>
-                                    <a href="transection.php">Game
-                                        History</a>
-                                </li>
-                                <li>
-                                    <a href="profile.php">Account Settings</a>
-                                </li>
-                                <li>
-                                    <a href="change-pass.php">Security
-                                        Settings</a>
-                                </li>
-                                <li>
-                                    <a href="#0">Sign Out</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div> -->
+                    
                     
                     <div class="table--responsive--md">
 
-                        <table class="table">
+                       <table class="table" id="history-table">
                             <thead>
                                 <tr>
                                     <th>Marker Card</th>
@@ -579,7 +493,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="history-body">
                                 <?php foreach ($bethistory  as $result): ?>
                                  <tr class="table-history">
                                     <td data-label="Bet Amount">NA</td>
@@ -593,19 +507,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                       <td data-label="Unclaimed Points">  <small class="btn btn-success disabled">Unclaimable</small></td>
                                      <tr>
                                                           <?php endforeach; ?>
-                            <?php foreach ($mapped as $result): 
-                                $cpd = $result['claim_point_data'] ?? [
-                                    'id'=>0, 'claim_point'=>0, 'unclaim_point'=>0
-                                ];
-                                // card to show
-                               $win_value = ($result['unclaim_point'] == 0 && $result['claim_point'] == 0)
-    ? 0
-    : ($result['unclaim_point'] ? $result['unclaim_point'] : $result['claim_point']);
+                                    <?php foreach ($mapped as $result): 
+                                        $cpd = $result['claim_point_data'] ?? [
+                                            'id'=>0, 'claim_point'=>0, 'unclaim_point'=>0
+                                        ];
+                                        // card to show
+                                    $win_value = ($result['unclaim_point'] == 0 && $result['claim_point'] == 0)
+                                            ? 0
+                                            : ($result['unclaim_point'] ? $result['unclaim_point'] : $result['claim_point']);
 
-                                // status text
-                                $userwins = $win_value > 0 ? 'Yes' : 'No';
-                                
-                            ?>
+                                        // status text
+                                        $userwins = $win_value > 0 ? 'Yes' : 'No';
+                                        
+                                    ?>
                                 <tr class="table-history">
                                   
                                     <td class="image-tr d-flex" data-label="Bet Amount"><?php
@@ -616,45 +530,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     }
                                     ?>
 
-                                   <?php if ($index == 0): ?>
-                                        <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades">
-                                        <img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades">
-                                    <?php elseif ($index == 1): ?>
-                                        <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Diamonds">
-                                        <img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Diamonds">
-                                    <?php elseif ($index == 2): ?>
-                                        <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Clubs">
-                                        <img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Clubs">
-                                    <?php elseif ($index == 3): ?>
-                                        <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Hearts">
-                                        <img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Hearts">
-                                    <?php elseif ($index == 4): ?>
-                                        <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Spades">
-                                        <img class="card" src="/assets-normal/img/spades-golden.png" alt="Queen of Spades">
-                                    <?php elseif ($index == 5): ?>
-                                        <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Diamonds">
-                                        <img class="card" src="/assets-normal/img/golden-diamond.png" alt="Queen of Diamonds">
-                                    <?php elseif ($index == 6): ?>
-                                        <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Clubs">
-                                        <img class="card" src="/assets-normal/img/clubs-golden.png" alt="Queen of Clubs">
-                                    <?php elseif ($index == 7): ?>
-                                        <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Hearts">
-                                        <img class="card" src="/assets-normal/img/golden-hearts.png" alt="Queen of Hearts">
-                                    <?php elseif ($index == 8): ?>
-                                        <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Spades">
-                                        <img class="card" src="/assets-normal/img/spades-golden.png" alt="Jack of Spades">
-                                    <?php elseif ($index == 9): ?>
-                                        <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Diamonds">
-                                        <img class="card" src="/assets-normal/img/golden-diamond.png" alt="Jack of Diamonds">
-                                    <?php elseif ($index == 10): ?>
-                                        <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Clubs">
-                                        <img class="card" src="/assets-normal/img/clubs-golden.png" alt="Jack of Clubs">
-                                    <?php elseif ($index == 11): ?>
-                                        <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Hearts">
-                                        <img class="card" src="/assets-normal/img/golden-hearts.png" alt="Jack of Hearts">
-                                    <?php endif; ?>
-
-
+                                   
 
                                    
                                     </td>
@@ -677,21 +553,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                     Unclaimable
                                                      <?php else: ?>
 
-Unclaimed
+                                    Unclaimed
                                                           <?php endif; ?></small>
                                         <?php endif; ?>
                                     </td>
                                      <?php
-$created = $result['created_at'] ?? null;
-if ($created) {
-    $dt = new DateTime($created);
-    $dt->modify('-2 minutes');
-    $output = $dt->format('Y-m-d H:i:s');
-} else {
-    $output = 0;
-}
-?>
-<td data-label="Unclaimed Points"><?= $output ?></td>
+                                    $created = $result['created_at'] ?? null;
+                                    if ($created) {
+                                        $dt = new DateTime($created);
+                                        $dt->modify('-2 minutes');
+                                        $output = $dt->format('Y-m-d H:i:s');
+                                    } else {
+                                        $output = 0;
+                                    }
+                                    ?>
+                                    <td data-label="Unclaimed Points"><?= $output ?></td>
 
                                     <td data-label="Action">
                                         <?php if ($result['claim_point'] <= 0 && $win_value > 0): ?>
@@ -707,7 +583,7 @@ if ($created) {
                                                     Unclaimable
                                                      <?php else: ?>
 
-Claimed
+                                                Claimed
                                                           <?php endif; ?>
                                             </button>
                                         <?php endif; ?>
@@ -726,12 +602,7 @@ Claimed
                 </div>
             </div>
         </div>
-        <!-- Dashboard Section Ends Here -->
-
-        <!-- Footer Section Starts Here -->
-        
-        <!-- Footer Section Ends Here -->
-<!-- put this somewhere after you load jQuery on history‑log.php -->
+      
 <script>
   document.addEventListener('click', function(e) {
     // only run when a .claim-btn is clicked
@@ -776,15 +647,42 @@ Claimed
     height: 50px;
 }
 </style>
-        <!-- jQuery library -->
-        <script src="assets/js/lib/jquery-3.6.0.min.js"></script>
-        <!-- bootstrap 5 js -->
-        <script src="assets/js/lib/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  // how often to refresh (in milliseconds)
+  const REFRESH_INTERVAL = 30 * 1000; // e.g. every 30 seconds
 
-        <!-- Pluglin Link -->
-        <script src="assets/js/lib/slick.min.js"></script>
+  function refreshHistory() {
+    $.ajax({
+      url: window.location.pathname,
+      data: { action: 'fetchHistory' },
+      success: function(html) {
+        // replace the entire tbody
+        $('#history-body').html(html);
+      },
+      error: function() {
+        console.error('Failed to fetch history');
+      }
+    });
+  }
 
-        <!-- main js -->
-        <script src="assets/js/main.js"></script>
-    </body>
-</html>
+  // initial load after DOM ready
+  $(function() {
+    setInterval(refreshHistory, REFRESH_INTERVAL);
+  });
+</script>
+
+<div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+        >
+          Close
+        </button>
+      </div>
+      
+      </div>
+    </div>
+  </div>
+</div>

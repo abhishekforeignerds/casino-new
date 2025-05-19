@@ -13,9 +13,9 @@ if ($conn->connect_error) {
 
 <?php
 // $host = "localhost";
-// $user = "u861477996_casino"; // Change to your database username
-// $pass = "Tm@1tlcQf/3";     // Change to your database password
-// $dbname = "u861477996_casino";
+// $user = "u861477996_casinogame"; // Change to your database username
+// $pass = "F~m985!v0";     // Change to your database password
+// $dbname = "u861477996_casinogame";
 
 // $conn = new mysqli($host, $user, $pass, $dbname);
 

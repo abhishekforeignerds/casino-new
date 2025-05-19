@@ -13,7 +13,7 @@ const segmentColors = ["#201cb2", "#5c1166", "#5c1110"];
 
 const balanceDisplay = document.getElementById("balance-display");
 const winPointsDisplay = document.getElementById("claim-display");
-const totalUnclaimdisplay = document.getElementById("unclaim-display");
+
 const resultDisplay = document.getElementById("result-display");
 
 
@@ -278,22 +278,23 @@ let currentRotation = 0;
 let selectedCoin = null;
 let bets = {};
 
-
+// let totalClaimvalue;
+// let totalUnclaimvalue;
 
 function updateBalanceDisplay() {
   balanceDisplay.innerHTML = "Balance: <span style='color: gold;font-weight:800;'>" + balance + "</span>";
 
 }
-function updatewinPointsDisplay() {
-  winPointsDisplay.innerHTML = "Claimed: <span style='color: gold;font-weight:800;'>" + totalClaim + "</span>";
+// function updatewinPointsDisplay() {
+//   winPointsDisplay.innerHTML = "Claimed: <span style='color: gold;font-weight:800;'>" + totalClaimvalue + "</span>";
 
-}
-function updateUnclaimPointsDisplay() {
-  totalUnclaimdisplay.innerHTML = "Unclaimed: <span style='color: gold;font-weight:800;'>" + totalUnclaim + "</span>";
+// }
+// function updateUnclaimPointsDisplay() {
+//   totalUnclaimdisplay.innerHTML = "Unclaimed: <span style='color: gold;font-weight:800;'>" + totalUnclaimvalue + "</span>";
 
-}
-updateBalanceDisplay();
-updatewinPointsDisplay();
+// }
+// updateBalanceDisplay();
+// updatewinPointsDisplay();
 
 // AJAX helper to update bank value on server
 function updateBankValue() {
@@ -357,82 +358,26 @@ function addOrMergeOverlay(cell, coinAmount) {
     cell.appendChild(overlay);
   }
 }
-// ----- COOKIE HELPERS -----
-// Set a cookie with given name, value, and expiration in days
-function setCookie(name, value, days) {
-  let expires = "";
-  if (days) {
-    const date = new Date();
-    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    expires = "; expires=" + date.toUTCString();
-  }
-  document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/";
-}
-
-// Get the value of a cookie by name
-function getCookie(name) {
-  const nameEQ = name + "=";
-  const ca = document.cookie.split(";");
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === " ") c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
-  }
-  return null;
-}
-
-// Delete a cookie by name
-function deleteCookie(name) {
-  document.cookie = name + "=; Max-Age=-99999999; path=/";
-}
-
-// Save the current game state (all relevant variables) into a cookie named "gameState"
-function saveStateToCookie() {
-  const state = {
-    lastBetHistory,
-    lastBet,
-    allbetamtinx,
-    pcbets,
-    n,
-    bets,
-    totalBets,
-    totalCurrBets,
-    withdrawTime,
-    user_id,
-    selectedCoin,
-    balance
-  };
-  setCookie("gameState", JSON.stringify(state), 1); // expires in 1 day
-}
-
-// ----- INITIAL VARIABLES -----
-let lastBetHistory = {};
-let lastBet = {};
+lastBetHistory = {};
+lastBet = {};
 // Utility to get grid cells from the grid container.
 const gridCells = Array.from(document.querySelectorAll("#card-grid > div"));
 // Assume the grid is defined with 5 columns.
 const GRID_COLUMNS = 5;
+// ----- PLACE BET ON GRID CARD -----
+// ----- PLACE BET ON GRID CARD (with merging logic) -----
+// ----- PLACE BET ON GRID CARD -----
 // Global tracker for all bets by index
 let allbetamtinx = {}; // Global map to track index-wise bets
-let pcbets = {};       // Global map to track index-wise bets
-let n = 0;
+let pcbets = {}; // Global map to track index-wise bets
+let n=0;
 
-         // Tracks bets per index or key
-     // Total bet amount across all rounds
-   // Total bet amount for the current round
-  // Some timestamp or identifier
-     // Current user ID
- // The coin value currently selected for betting
-     // Remaining betting time
-// ---------------------------------------------------------------------------
-
-// ----- PLACE BET ON GRID CARD -----
-document.querySelectorAll(".grid-card").forEach((card) => {
+document.querySelectorAll(".grid-card").forEach(card => {
   card.addEventListener("click", function () {
-    console.log("countdown", countdown);
+    console.log('countdown', countdown)
     const resultDisplay = document.getElementById("result-display");
     if (countdown <= 5) {
-      resultDisplay.style.display = "block";
+      resultDisplay.style.display = 'block';
       resultDisplay.textContent = "Betting time is over.";
       return;
     }
@@ -441,8 +386,13 @@ document.querySelectorAll(".grid-card").forEach((card) => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin) {
       alert("Not Enough Balance to Place Bet");
-      return;
+    return;
     }
+
+    // if (totalBets + selectedCoin > maxBetamount) {
+    //   alert("Max bet amount is 10000");
+    //   return;
+    // }
 
     balance -= selectedCoin;
     updateBalanceDisplay();
@@ -453,21 +403,14 @@ document.querySelectorAll(".grid-card").forEach((card) => {
     totalCurrBets += selectedCoin;
     addOrMergeOverlay(this, selectedCoin);
     updateTotalBetDisplay();
+    updateTotalBetDisplay();
 
-    lastBet = {
-      identifier: index,
-      amount: selectedCoin,
-      element: this,
-      overlayHTML: this.querySelector(".bet-overlay").outerHTML
-    };
+    lastBet = { identifier: index, amount: selectedCoin, element: this, overlayHTML: this.querySelector(".bet-overlay").outerHTML };
     lastBetHistory = { ...lastBet };
 
-    // Update allbetamtinx and pcbets
+    // Update allbetamtinx
     allbetamtinx[index] = (allbetamtinx[index] || 0) + selectedCoin;
     pcbets[index] = (pcbets[index] || 0) + selectedCoin;
-
-    // Persist state after every change
-    saveStateToCookie();
 
     const data = {
       user_id: user_id,
@@ -476,24 +419,24 @@ document.querySelectorAll(".grid-card").forEach((card) => {
       ntrack: n,
       withdrawTime: withdrawTime
     };
-    fetch("../../api/total_history.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    fetch('../../api/total_history.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     })
-      .then((response) => response.json())
-      .then((result) => console.log("Server response:", result))
-      .catch((error) => console.error("Error sending data:", error));
+    .then(response => response.json())
+    .then(result => console.log('Server response:', result))
+    .catch(error => console.error('Error sending data:', error));
   });
 });
 
 // ----- PLACE BET ON GRID HEADER (suit) -----
-document.querySelectorAll(".grid-header:not(.empty)").forEach((header) => {
+document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
   header.addEventListener("click", function () {
-    console.log("countdown", countdown);
+    console.log('countdown', countdown)
     const resultDisplay = document.getElementById("result-display");
     if (countdown <= 5) {
-      resultDisplay.style.display = "block";
+      resultDisplay.style.display = 'block';
       resultDisplay.textContent = "Betting time is over.";
       return;
     }
@@ -501,21 +444,27 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach((header) => {
     const suit = this.textContent.trim();
     const betKey = "suit-" + suit;
     if (selectedCoin === null) return;
-    if (balance < selectedCoin * 3) {
+    if (balance < selectedCoin * 3){
       alert("Not Enough Balance to Place Bet");
-      return;
+    return;
     }
 
-    balance -= selectedCoin * 3;
+    // if (totalBets + (selectedCoin * 3) > maxBetamount) {
+    //   alert("Max bet amount is 10000");
+    //   return;
+    // }
+
+    balance -= (selectedCoin * 3);
     updateBalanceDisplay();
 
-    if (bets[betKey] === undefined) bets[betKey] = selectedCoin * 3;
-    else bets[betKey] += selectedCoin * 3;
-    totalBets += selectedCoin * 3;
-    totalCurrBets += selectedCoin * 3;
+    if (bets[betKey] === undefined) bets[betKey] = (selectedCoin * 3);
+    else bets[betKey] += (selectedCoin * 3);
+    totalBets += (selectedCoin * 3);
+    totalCurrBets += (selectedCoin * 3);
+    updateTotalBetDisplay();
     updateTotalBetDisplay();
 
-    const clickedIndex = gridCells.findIndex((cell) => cell === this); // Not used further
+    const clickedIndex = gridCells.findIndex(cell => cell === this); // <- Not used anymore
     const col = clickedIndex % GRID_COLUMNS;
     gridCells.forEach((cell, idx) => {
       if (idx % GRID_COLUMNS === col) addOrMergeOverlay(cell, selectedCoin);
@@ -526,23 +475,24 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach((header) => {
 
     let identifiers = [];
     switch (lastBet.element.id) {
-      case "suitIcon1":
+      case 'suitIcon1':
         identifiers = [0, 4, 8];
         break;
-      case "suitIcon2":
+      case 'suitIcon2':
         identifiers = [1, 5, 9];
         break;
-      case "suitIcon3":
+      case 'suitIcon3':
         identifiers = [2, 6, 10];
         break;
-      case "suitIcon4":
+      case 'suitIcon4':
         identifiers = [3, 7, 11];
         break;
       default:
-        console.warn("Unknown suit icon:", lastBet.element);
+        console.warn('Unknown suit icon:', lastBet.element);
     }
 
-    identifiers.forEach((id) => {
+    // Update allbetamtinx
+    identifiers.forEach(id => {
       allbetamtinx[id] = (allbetamtinx[id] || 0) + selectedCoin;
       pcbets[id] = (pcbets[id] || 0) + selectedCoin;
 
@@ -553,30 +503,26 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach((header) => {
         ntrack: n,
         withdrawTime: withdrawTime
       };
-      fetch("../../api/total_history.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      fetch('../../api/total_history.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       })
-        .then((response) => response.json())
-        .then((result) => console.log("Server response:", result))
-        .catch((error) => console.error("Error sending data:", error));
+      .then(response => response.json())
+      .then(result => console.log('Server response:', result))
+      .catch(error => console.error('Error sending data:', error));
     });
-
-    // Persist state after suit bet
-    saveStateToCookie();
   });
 });
 
-let allcardsbeted = false;
-
+allcardsbeted = false;
 // ----- PLACE BET ON GRID LABEL (card type) -----
-document.querySelectorAll(".grid-label").forEach((label) => {
+document.querySelectorAll(".grid-label").forEach(label => {
   label.addEventListener("click", function () {
-    console.log("countdown", countdown);
+    console.log('countdown', countdown)
     const resultDisplay = document.getElementById("result-display");
     if (countdown <= 5) {
-      resultDisplay.style.display = "block";
+      resultDisplay.style.display = 'block';
       resultDisplay.textContent = "Betting time is over.";
       return;
     }
@@ -588,19 +534,24 @@ document.querySelectorAll(".grid-label").forEach((label) => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin * 4) {
       alert("Not Enough Balance to Place Bet");
-      return;
+    return;
     }
 
-    balance -= selectedCoin * 4;
+    // if (totalBets + (selectedCoin * 4) > maxBetamount) {
+    //   alert("Max bet amount is 10000");
+    //   return;
+    // }
+
+    balance -= (selectedCoin * 4);
     updateBalanceDisplay();
 
-    if (bets[betKey] === undefined) bets[betKey] = selectedCoin * 4;
-    else bets[betKey] += selectedCoin * 4;
-    totalBets += selectedCoin * 4;
-    totalCurrBets += selectedCoin * 4;
+    if (bets[betKey] === undefined) bets[betKey] = (selectedCoin * 4);
+    else bets[betKey] += (selectedCoin * 4);
+    totalBets += (selectedCoin * 4);
+    totalCurrBets += (selectedCoin * 4);
     updateTotalBetDisplay();
 
-    const clickedIndex = gridCells.findIndex((cell) => cell === this); // Not used further
+    const clickedIndex = gridCells.findIndex(cell => cell === this); // <- Not used anymore
     const row = Math.floor(clickedIndex / GRID_COLUMNS);
     gridCells.forEach((cell, idx) => {
       if (Math.floor(idx / GRID_COLUMNS) === row) addOrMergeOverlay(cell, selectedCoin);
@@ -611,20 +562,21 @@ document.querySelectorAll(".grid-label").forEach((label) => {
 
     let identifiers = [];
     switch (lastBet.element.id) {
-      case "grid-label-3":
+      case 'grid-label-3':
         identifiers = [8, 9, 10, 11];
         break;
-      case "grid-label-2":
+      case 'grid-label-2':
         identifiers = [4, 5, 6, 7];
         break;
-      case "grid-label-1":
-        identifiers = [0, 1, 2, 3];
+      case 'grid-label-1':
+         identifiers = [0, 1, 2, 3];
         break;
       default:
-        console.warn("Unknown card label:", lastBet.element);
+        console.warn('Unknown card label:', lastBet.element);
     }
 
-    identifiers.forEach((id) => {
+    // Update allbetamtinx
+    identifiers.forEach(id => {
       allbetamtinx[id] = (allbetamtinx[id] || 0) + selectedCoin;
       pcbets[id] = (pcbets[id] || 0) + selectedCoin;
 
@@ -635,114 +587,103 @@ document.querySelectorAll(".grid-label").forEach((label) => {
         ntrack: n,
         withdrawTime: withdrawTime
       };
-      fetch("../../api/total_history.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      fetch('../../api/total_history.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       })
-        .then((response) => response.json())
-        .then((result) => console.log("Server response:", result))
-        .catch((error) => console.error("Error sending data:", error));
+      .then(response => response.json())
+      .then(result => console.log('Server response:', result))
+      .catch(error => console.error('Error sending data:', error));
     });
-
-    // Persist state after card-type bet
-    saveStateToCookie();
   });
 });
 
-// ----- PLACE ALL PC BETS -----
+
+
+
+
 document.getElementById("place-bets").addEventListener("click", function () {
-  const resultDisplay = document.getElementById("result-display");
-  if (Object.keys(pcbets).length < 1) {
-    resultDisplay.style.display = "block";
-    resultDisplay.textContent = "No Bet was Placed.";
-    setTimeout(() => {
-      resultDisplay.style.display = "none";
-    }, 2000);
-    return;
-  } else {
-    totalCurrBets = 0;
-    updateTotalBetDisplay();
+if (Object.keys(pcbets).length < 1) {
+  resultDisplay.style.display = 'block';
+  resultDisplay.textContent = "No Bet was Placed.";
+  setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
+  return;
+} else{
+   
+totalCurrBets = 0;
+updateTotalBetDisplay();
+  const formData = new FormData();
+  formData.append('withdrawTime', withdrawTime);
+  formData.append('n', n);
 
-    const formData = new FormData();
-    formData.append("withdrawTime", withdrawTime);
-    formData.append("n", n);
+  fetch('../../api/place_pc_bets.php', {
+  method: 'POST',
+  body: formData
+})
+  .then(res => res.json())
+  .then(data => {
+    console.log('API RESPONSE:', data);
 
-    fetch("../../api/place_pc_bets.php", {
-      method: "POST",
-      body: formData
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("API RESPONSE:", data);
+    if (data.status === 'success') {
+      console.log('Bet placed:', data.data.insertedId, 'totalBet:', data.data.totalBet);
 
-        if (data.status === "success") {
-          console.log(
-            "Bet placed:",
-            data.data.insertedId,
-            "totalBet:",
-            data.data.totalBet
-          );
-          const overlays = document.querySelectorAll(".bet-overlay");
-          overlays.forEach((overlay) => {
-            if (overlay.parentElement) {
-              overlay.parentElement.removeChild(overlay);
-            }
-          });
-          resultDisplay.style.display = "block";
-          resultDisplay.textContent =
-            "Bet was placed successfully with ID : " + data.data.serial;
-          setTimeout(() => {
-            resultDisplay.style.display = "none";
-          }, 2000);
-        } else {
-          console.error(
-            "Error placing bet:",
-            data.message || "(no message received)"
-          );
-        }
-      })
-      .catch((err) => console.error("Fetch error:", err));
-  }
+        const withdrawTime = new Date().toLocaleString();
 
-  n += 1;
-  console.log("pcbets", pcbets);
-  console.log("n", n);
-  console.log("withdrawTime", withdrawTime);
+            // build your cells array with HTML snippets where needed
+            const cells = [
+              'NA',                                           // Marker Card
+              'NA',                                           // Ticket ID
+              data.data.totalBet,                             // Bet Amount
+              'NA',                                           // Win Value
+              'NA',                                           // Claimed Points
+              'NA',                                           // Unclaimed Points
+              '<small class="btn-sm btn-success">Bet Placed</small>',
+              withdrawTime,                                   // Withdraw Time
+              '<button class="btn btn-sm btn-secondary" disabled>Unclaimable</button>'
+            ];
 
-  // Persist state after placing all pc bets
-  saveStateToCookie();
+            // OPTION A: build the <tr> as HTML and insert as first child
+            const rowHTML = `
+              <tr>
+                ${cells.map(cell => `<td>${cell}</td>`).join('')}
+              </tr>
+            `.trim();
+            document
+              .getElementById('historytablebody')
+              .insertAdjacentHTML('afterbegin', rowHTML);
+  const overlays = document.querySelectorAll('.bet-overlay');
 
-  pcbets = {};
-  console.log("pcbets", pcbets);
+  overlays.forEach(overlay => {
+    // Get the bet amount from the coin's inner span.
+   
+    if (overlay.parentElement) {
+      overlay.parentElement.removeChild(overlay);
+    }
+  });
+   resultDisplay.style.display = 'block';
+  resultDisplay.textContent = "Bet was placed successfully with ID : "+ data.data.serial;
+  setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
+    }
+    else {
+      // on error, your API includes `message`
+      console.error('Error placing bet:', data.message || '(no message received)');
+    }
+  })
+  .catch(err => console.error('Fetch error:', err));
+
+}
+n +=1;
+  console.log('pcbets',pcbets);
+  console.log('n',n);
+  console.log('withdrawTime',withdrawTime);
+  pcbets={};
+  console.log('pcbets',pcbets);
 });
-
-// ----- CLEAR COOKIE AFTER SOUND PLAY -----
-// Assume somewhere in your code you have this timeout that plays a sound and updates the dashboard:
-
-
-// ----- OPTIONAL: RESTORE STATE ON PAGE LOAD -----
-// If you want to restore the state when the page is reloaded, you can do:
-window.addEventListener("DOMContentLoaded", () => {
-  const stored = getCookie("gameState");
-  if (stored) {
-    const state = JSON.parse(stored);
-    lastBetHistory = state.lastBetHistory;
-    lastBet = state.lastBet;
-    allbetamtinx = state.allbetamtinx;
-    pcbets = state.pcbets;
-    n = state.n;
-    bets = state.bets;
-    totalBets = state.totalBets;
-    totalCurrBets = state.totalCurrBets;
-    withdrawTime = state.withdrawTime;
-    user_id = state.user_id;
-    selectedCoin = state.selectedCoin;
-    balance = state.balance;
-    // Then, you can re-render overlays or update UI as needed
-  }
-});
-
 
 // ----- CLEAR ALL BETS -----
 document.getElementById("clear-bets").addEventListener("click", function () {
@@ -1388,7 +1329,7 @@ if (chosenIndex === undefined) {
             updateBankValue();
           } else {
             totalUnclaim = totalUnclaim + winValue;
-            updateUnclaimPointsDisplay();
+            // updateUnclaimPointsDisplay();
           }
         }
         
@@ -1489,10 +1430,58 @@ if (chosenIndex === undefined) {
     volume: 0.9
   });
 placechipssound.play();
-// updatedashboardData();
+updatedashboardData(withdrawTime);
   }, 4000);
 
 });
+// poker-roulette.js
+let totalwindb;
+function updatedashboardData(withdrawTime) {
+  fetch('../../api/get_dashboard_data.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8'
+    },
+    body: JSON.stringify({ withdrawTime })
+  })
+    .then(async response => {
+      const text = await response.text();
+      // console.log(`↳ HTTP ${response.status} ${response.statusText}`, '– body:', text);
+      console.log(response.status)
+      console.log(response.statusText)
+      console.log(response.text)
+      console.log(response.totalClaim)
+      console.log(response.totalUnclaim)
+if (response.status == 'success') {
+
+}
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} ${response.statusText}: ${text}`);
+      }
+
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error(`Invalid JSON from server: ${e.message} (raw: ${text})`);
+      }
+    })
+    .then(data => {
+      if (data.status === 'success') {
+        console.log('Fetched data:', data);
+       
+    const winPointsDisplay = document.getElementById("claim-display");
+ winPointsDisplay.innerHTML = "Unclaimed: <span style='color: gold;font-weight:800;'>" + data.totalClaim + "</span>";
+    const totalUnclaimdisplay = document.getElementById("unclaim-display");
+ totalUnclaimdisplay.innerHTML = "Unclaimed: <span style='color: gold;font-weight:800;'>" + data.totalUnclaim + "</span>";
+      } else {
+        console.error('🚨 Server error:', data.message);
+      }
+    })
+    .catch(err => {
+      console.error('AJAX request failed:', err);
+    });
+
+}
 
 function recordGameResult(winningSpin, betTotal, winValue = 0, suiticonnum, withdrawTime) {
   const params = new URLSearchParams({ winningSpin, betTotal, winValue, suiticonnum, withdrawTime });
