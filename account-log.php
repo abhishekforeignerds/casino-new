@@ -583,7 +583,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 ?>
 
-<div class="table--responsive--md">
+<div id="" class="table--responsive--md">
     <h3>Game : Poker Roulette</h3>
     <table class="table">
         <thead>
@@ -592,8 +592,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
            
                 <th>Sell Amount</th>
                 <th>Win Value</th>
-                <!--<th>Claimed Points</th>-->
-                <!--<th>Unclaimed Points</th>-->
                 <th>Commission (%)</th>
                 <th>Commission Amt</th>
                 <th>Net Amount</th>
@@ -621,47 +619,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <!-- Footer Section Ends Here -->
 <!-- put this somewhere after you load jQuery on history‑log.php -->
-<script>
-  document.addEventListener('click', function(e) {
-    // only run when a .claim-btn is clicked
-    if (!e.target.matches('.claim-btn')) return;
-    e.preventDefault();
 
-    const btn     = e.target;
-    const userId  = btn.dataset.userId;     // grabs data-user-id
-    const claimId = btn.dataset.claimId;    // grabs data-claim-id
-
-    fetch('history-log.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        action: 'claim_points',
-        user_id: userId,
-        claim_point_data_id: claimId
-      })
-    })
-    .then(r => r.json())
-    .then(resp => {
-        location.reload();
-
-      if (resp.success) {
-        btn.textContent = 'Claimed';
-        btn.disabled    = true;
-        btn.classList.replace('btn-danger', 'btn-secondary');
-      } else {
-        alert('Error: ' + resp.message);
-      }
-    })
-    .catch(err => {
-      console.error(err);
-    location.reload();
-
-    });
-  });
-</script>
 
         <!-- jQuery library -->
-        <script src="assets/js/lib/jquery-3.6.0.min.js"></script>
+       
         <!-- bootstrap 5 js -->
         <script src="assets/js/lib/bootstrap.min.js"></script>
 

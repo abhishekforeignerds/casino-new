@@ -1459,11 +1459,7 @@ function updatedashboardData(withdrawTime) {
     .then(async response => {
       const text = await response.text();
       // console.log(`↳ HTTP ${response.status} ${response.statusText}`, '– body:', text);
-      console.log(response.status)
-      console.log(response.statusText)
-      console.log(response.text)
-      console.log(response.totalClaim)
-      console.log(response.totalUnclaim)
+ 
 if (response.status == 'success') {
 
 }
@@ -1480,7 +1476,275 @@ if (response.status == 'success') {
     .then(data => {
       if (data.status === 'success') {
         console.log('Fetched data:', data);
-       
+ const suits     = ['spades','diamond','clubs','hearts'];
+  const ranks     = ['k','q','j'];
+
+  // 2) map each suit→exact file-basename
+  const suitIcons = {
+    spades:  'spades-golden',
+    diamond: 'golden-diamond',
+    clubs:   'clubs-golden',
+    hearts:  'golden-hearts'
+  };
+
+  // 3) map each rank→exact file-basename
+  const rankIcons = {
+    k: 'goldens-k',  // your PHP used goldens-k.png for *all* Kings
+    q: 'golden-q',
+    j: 'golden-j'
+  };
+
+ 
+    const $tbody = $('#historytablebody');
+    $tbody.empty();
+let totalSellAmount = 0;
+let totalWinValue = 0;
+let totalClaimed = 0;
+let totalUnclaimed = 0;
+let totalCommission = 0;
+let totalNetAmount = 0;
+
+data.mapped.forEach(result => {
+  const balance = parseFloat(result.balance) || 0;
+  const claim_point = parseFloat(result.claim_point) || 0;
+  const unclaim_point = parseFloat(result.unclaim_point) || 0;
+
+  const commission = balance * 0.03;
+  
+  const win_value = (unclaim_point === 0 && claim_point === 0)
+    ? 0
+    : (unclaim_point ? unclaim_point : claim_point);
+
+  const netAmount = balance - commission - win_value;
+
+  totalSellAmount += balance;
+  totalWinValue += win_value;
+  totalClaimed += claim_point;
+  totalUnclaimed += unclaim_point;
+  totalCommission += commission;
+  totalNetAmount += netAmount;
+});
+
+// Example of rendering the result to HTML
+const outputHtml = `
+
+  <h3>Game : Poker Roulette</h3>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Sell Amount</th>
+        <th>Win Value</th>
+        <th>Commission (%)</th>
+        <th>Commission Amt</th>
+        <th>Net Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="table-history">
+        <td>₹${totalSellAmount.toFixed(2)}</td>
+        <td>₹${totalWinValue.toFixed(2)}</td>
+        <td>3%</td>
+        <td>₹${totalCommission.toFixed(2)}</td>
+        <td>₹${totalNetAmount.toFixed(2)}</td>
+      </tr>
+    </tbody>
+  </table>
+
+`;
+
+// Optional: append to DOM
+document.getElementById('result-container').innerHTML = outputHtml;
+const groupedData = {};
+
+data.mapped.forEach(result => {
+    const gameResult = result.game_result || {};
+    const index = gameResult.winning_number ?? gameResult.lose_number;
+
+    let output = '0';
+    if (result.created_at) {
+        const dt = new Date(result.created_at);
+        dt.setMinutes(dt.getMinutes() - 2);
+        output = dt.toISOString().replace('T', ' ').slice(0, 19);
+    }
+
+    const groupKey = `${index}|${output}`;
+
+    const claim_point = result.claim_point || 0;
+    const unclaim_point = result.unclaim_point || 0;
+    const balance = result.balance || 0;
+
+    const win_value = (unclaim_point === 0 && claim_point === 0) ? 0 : (unclaim_point || claim_point);
+
+    if (!groupedData[groupKey]) {
+        groupedData[groupKey] = {
+            index,
+            output,
+            total_balance: 0,
+            total_win_value: 0,
+            total_claim_point: 0,
+            total_unclaim_point: 0,
+            ticket_ids: []
+        };
+    }
+
+    groupedData[groupKey].total_balance += balance;
+    groupedData[groupKey].total_win_value += win_value;
+    groupedData[groupKey].total_claim_point += claim_point;
+    groupedData[groupKey].total_unclaim_point += unclaim_point;
+    groupedData[groupKey].ticket_ids.push(result.ticket_serial);
+});
+
+// Optional: format currency
+const formatCurrency = (amount) => `₹${amount.toFixed(2)}`;
+
+const tableBody = document.getElementById("card-historytablebody");
+tableBody.innerHTML = "";
+
+Object.values(groupedData).forEach(group => {
+    const row = document.createElement("tr");
+    row.classList.add("table-history");
+
+    const index = group.index;
+    const cardCell = document.createElement("td");
+    cardCell.classList.add("d-flex");
+    cardCell.setAttribute("data-label", "Card Index");
+
+    const cardImage = (rank, suit) => `
+        <img class="card" src="/assets-normal/img/${rank}.png" alt="${rank}">
+        <img class="card" src="/assets-normal/img/${suit}.png" alt="${rank}">
+    `;
+
+    const cards = [
+        ["goldens-k", "spades-golden"],
+        ["goldens-k", "golden-diamond"],
+        ["goldens-k", "clubs-golden"],
+        ["goldens-k", "golden-hearts"],
+        ["golden-q", "spades-golden"],
+        ["golden-q", "golden-diamond"],
+        ["golden-q", "clubs-golden"],
+        ["golden-q", "golden-hearts"],
+        ["golden-j", "spades-golden"],
+        ["golden-j", "golden-diamond"],
+        ["golden-j", "clubs-golden"],
+        ["golden-j", "golden-hearts"]
+    ];
+
+    if (cards[index]) {
+        cardCell.innerHTML = cardImage(...cards[index]);
+    }
+
+    const cells = [
+        formatCurrency(group.total_balance),
+        formatCurrency(group.total_win_value),
+        group.total_claim_point,
+        group.total_unclaim_point,
+        group.output
+    ];
+
+    const labels = ["Bet Amount", "Win Value", "Claimed Points", "Unclaimed Points", "Withdraw Time"];
+
+    row.appendChild(cardCell);
+    cells.forEach((val, i) => {
+        const td = document.createElement("td");
+        td.setAttribute("data-label", labels[i]);
+        td.innerHTML = val;
+        row.appendChild(td);
+    });
+
+    tableBody.appendChild(row);
+});
+
+
+    data.mapped.forEach(result => {
+      // — your existing logic for points, win/lose, withdrawTime, etc. —
+      const unclaim   = parseFloat(result.unclaim_point);
+      const claim     = parseFloat(result.claim_point);
+      const win_value = (unclaim === 0 && claim === 0)
+        ? 0
+        : (unclaim || claim);
+
+      const userwins = win_value > 0 ? 'Yes' : 'No';
+
+      let withdrawTime = '—';
+      if (result.created_at) {
+        const dt = new Date(result.created_at);
+        dt.setMinutes(dt.getMinutes() - 2);
+        const yyyy = dt.getFullYear();
+        const MM   = String(dt.getMonth()+1).padStart(2,'0');
+        const dd   = String(dt.getDate()).padStart(2,'0');
+        const hh   = String(dt.getHours()).padStart(2,'0');
+        const mm   = String(dt.getMinutes()).padStart(2,'0');
+        const ss   = String(dt.getSeconds()).padStart(2,'0');
+        withdrawTime = `${yyyy}-${MM}-${dd} ${hh}:${mm}:${ss}`;
+      }
+
+      // — figure out the 0–11 index as before —
+      let index = null;
+      if (result.game_result) {
+        index = result.game_result.winning_number == null
+          ? result.game_result.lose_number
+          : result.game_result.winning_number;
+      }
+      index = (index == null) ? 0 : index;
+
+      // 4) pick rankKey ('k'|'q'|'j') and suitKey ('spades',…)
+      const rankKey = ranks[Math.floor(index / 4)];
+      const suitKey = suits[index % 4];
+
+      // 5) look up the exact filenames
+      const rankFile = rankIcons[rankKey];
+      const suitFile = suitIcons[suitKey];
+
+      // 6) build your two‐card HTML
+      const cardsHtml = `
+        <img class="card"
+             src="/assets-normal/img/${rankFile}.png"
+             alt="${rankKey.toUpperCase()} of ${suitKey}">
+        <img class="card"
+             src="/assets-normal/img/${suitFile}.png"
+             alt="${rankKey.toUpperCase()} of ${suitKey}">
+      `;
+
+      // — your existing status badges & action button logic —
+      let statusHtml = userwins === 'Yes'
+        ? '<small class="btn-sm btn-success">Win</small> '
+        : '<small class="btn-sm btn-danger">Lose</small> ';
+      if (claim > 0) {
+        statusHtml += '<small class="btn-sm btn-danger">Claimed</small>';
+      } else {
+        statusHtml += (win_value > 0)
+          ? '<small class="btn-sm btn-success">Unclaimed</small>'
+          : '<small class="btn-sm btn-success">Unclaimable</small>';
+      }
+
+      const actionHtml = (claim <= 0 && win_value > 0)
+        ? `<button
+             class="btn btn-sm btn-danger win-value claim-btn"
+             data-user-id="${result.user_id}"
+              data-unclaim-points="${result.unclaim_point}"
+             data-claim-id="${result.id}">
+             Claim
+           </button>`
+        : `<button class="btn btn-sm btn-secondary" disabled>
+             ${win_value > 0 ? 'Claimed' : 'Unclaimable'}
+           </button>`;
+
+      // 7) assemble & append the row
+      const row = `
+        <tr class="table-history">
+          <td data-label="Card Win" class="image-tr d-flex">${cardsHtml}</td>
+          <td data-label="Ticket Serial">#${result.ticket_serial}</td>
+          <td data-label="Bet Amount">₹${parseFloat(result.balance).toFixed(2)}</td>
+          <td data-label="Win Value">₹${win_value.toFixed(2)}</td>
+          <td data-label="Claimed Points">${claim.toFixed(0)}</td>
+          <td data-label="Unclaimed Points">${unclaim.toFixed(0)}</td>
+          <td data-label="Status">${statusHtml}</td>
+          <td data-label="Withdraw Time">${withdrawTime}</td>
+          <td data-label="Action">${actionHtml}</td>
+        </tr>
+      `;
+      $tbody.append(row);
+    });
     const winPointsDisplay = document.getElementById("claim-display");
  winPointsDisplay.innerHTML = "Claimed: <span style='color: gold;font-weight:800;'>" + data.totalClaim + "</span>";
     const totalUnclaimdisplay = document.getElementById("unclaim-display");

@@ -1,4 +1,5 @@
 
+
 <div
   class="modal fade"
   id="accountModal"
@@ -448,8 +449,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $totalNetAmount = 0;
 
     foreach ($mapped as $result) {
-        $commission = $result['balance'] * 0.03;
-        $netAmount = $result['balance'] - $commission - $totalWinValue;
+  
 
         $cpd = $result['claim_point_data'] ?? [
             'id' => 0,
@@ -470,7 +470,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 ?>
 
-<div class="table--responsive--md">
+<div id="result-container" class="table--responsive--md">
     <h3>Game : Poker Roulette</h3>
     <table class="table">
         <thead>
@@ -481,7 +481,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <th>Win Value</th>
                 <!--<th>Claimed Points</th>-->
                 <!--<th>Unclaimed Points</th>-->
-                <th>Commission (%)</th>
+                <!--<th>Commission (%)</th>-->
                 <th>Commission Amt</th>
                 <th>Net Amount</th>
             </tr>
@@ -492,9 +492,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <td>₹<?= number_format($totalSellAmount, 2) ?></td>
                 <td>₹<?= number_format($totalWinValue, 2) ?></td>
              
-                <td>3%</td>
-                <td>₹<?= number_format($totalCommission, 2) ?></td>
-                <td>₹<?= number_format($totalNetAmount, 2) ?></td>
+                <!--<td>3%</td>-->
+               <td>₹<?= number_format($totalSellAmount * 0.03, 2); ?></td>
+<td>₹<?= number_format(
+    $totalSellAmount            // total sell
+  - $totalWinValue             // minus total wins
+  - ($totalSellAmount * 0.03), // minus 3% fee
+  2
+); ?></td>
             </tr>
         </tbody>
     </table>
@@ -508,44 +513,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <!-- Footer Section Ends Here -->
 <!-- put this somewhere after you load jQuery on history‑log.php -->
-<script>
-  document.addEventListener('click', function(e) {
-    // only run when a .claim-btn is clicked
-    if (!e.target.matches('.claim-btn')) return;
-    e.preventDefault();
 
-    const btn     = e.target;
-    const userId  = btn.dataset.userId;     // grabs data-user-id
-    const claimId = btn.dataset.claimId;    // grabs data-claim-id
-
-    fetch('history-log.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        action: 'claim_points',
-        user_id: userId,
-        claim_point_data_id: claimId
-      })
-    })
-    .then(r => r.json())
-    .then(resp => {
-        location.reload();
-
-      if (resp.success) {
-        btn.textContent = 'Claimed';
-        btn.disabled    = true;
-        btn.classList.replace('btn-danger', 'btn-secondary');
-      } else {
-        alert('Error: ' + resp.message);
-      }
-    })
-    .catch(err => {
-      console.error(err);
-    location.reload();
-
-    });
-  });
-</script>
 <div class="modal-footer">
         <button
           type="button"

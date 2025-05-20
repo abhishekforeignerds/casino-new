@@ -536,7 +536,7 @@
         <!-- Footer Section Ends Here -->
 
         <!-- jQuery library -->
-        <script src="assets/js/lib/jquery-3.6.0.min.js"></script>
+       
         <!-- bootstrap 5 js -->
         <script src="assets/js/lib/bootstrap.min.js"></script>
 

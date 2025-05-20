@@ -2,9 +2,9 @@
 <!-- Full-screen, Scrollable Modal -->
 <div
   class="modal fade"
-  id="historyModal"
+  id="cardHistory"
   tabindex="-1"
-  aria-labelledby="historyModalLabel"
+  aria-labelledby="cardHistoryLabel"
   aria-hidden="true"
 >
   <div class="modal-dialog modal-fullscreen modal-dialog-scrollable" style="background: #350b2d;">
@@ -12,7 +12,7 @@
     background: #350b2d;
 ">
       <div class="modal-header">
-        <h5 class="modal-title" id="historyModalLabel">History Log</h5>
+        <h5 class="modal-title" id="cardHistoryLabel">History Log</h5>
                 <button
           type="button"
           class="btn btn-secondary"
@@ -414,231 +414,129 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+<?php
+$groupedData = [];
+
+foreach ($mapped as $result) {
+    // Get index from winning or losing number
+    $gameResult = $result['game_result'];
+    $index = $gameResult['winning_number'] ?? $gameResult['lose_number'];
+
+    // Calculate output time
+    $created = $result['created_at'] ?? null;
+    if ($created) {
+        $dt = new DateTime($created);
+        $dt->modify('-2 minutes');
+        $output = $dt->format('Y-m-d H:i:s');
+    } else {
+        $output = '0';
+    }
+
+    // Build group key using both index and output time
+    $groupKey = $index . '|' . $output;
+
+    // Values to sum
+    $claim_point = $result['claim_point'] ?? 0;
+    $unclaim_point = $result['unclaim_point'] ?? 0;
+    $balance = $result['balance'] ?? 0;
+
+    // Calculate win_value
+    $win_value = ($unclaim_point == 0 && $claim_point == 0) ? 0 : ($unclaim_point ?: $claim_point);
+
+    // Initialize if not exists
+    if (!isset($groupedData[$groupKey])) {
+        $groupedData[$groupKey] = [
+            'index' => $index,
+            'output' => $output,
+            'total_balance' => 0,
+            'total_win_value' => 0,
+            'total_claim_point' => 0,
+            'total_unclaim_point' => 0,
+            'ticket_ids' => [],
+        ];
+    }
+
+    // Aggregate sums
+    $groupedData[$groupKey]['total_balance'] += $balance;
+    $groupedData[$groupKey]['total_win_value'] += $win_value;
+    $groupedData[$groupKey]['total_claim_point'] += $claim_point;
+    $groupedData[$groupKey]['total_unclaim_point'] += $unclaim_point;
+    $groupedData[$groupKey]['ticket_ids'][] = $result['ticket_serial'];
+}
+?>
+
 
 <div class="dashboard-section padding-top padding-bottom">
             <div class="container">
                 <div class="row">
-                    <!-- <div class="col-lg-3">
-                        <div class="dashboard-sidebar">
-                            <div class="close-dashboard d-lg-none">
-                                <i class="las la-times"></i>
-                            </div>
-                            <div class="dashboard-user">
-                                <div class="user-thumb">
-                                    <img src="assets/images/top/item1.png"
-                                        alt="dashboard">
-                                </div>
-                                <div class="user-content">
-                                    <span>Welcome</span>
-                                    <h5 class="name">Munna Ahmed</h5>
-                                    <h5 class="name">Your Balance <span style="color:#ffc124"><?php echo htmlspecialchars($points ?? 0); ?></span></h5>
-                                    <h5 class="name">Claimed Points <span style="color:#ffc124"><?php echo htmlspecialchars($totalClaim ?? 0); ?></span></h5>
-                                    <h5 class="name">Unclaimed Points <span style="color:#ffc124"><?php echo htmlspecialchars($totalUnclaim ?? 0); ?></span></h5>
-                                    <ul class="user-option">
-                                        <li>
-                                            <a href="#0">
-                                                <i class="las la-bell"></i>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#0">
-                                                <i class="las la-pen"></i>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#0">
-                                                <i class="las la-envelope"></i>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <ul class="user-dashboard-tab">
-                                <li>
-                                    <a href="dashboard.php"
-                                        class="active">Dashboard</a>
-                                </li>
-                                <li>
-                                    <a href="deposit-log.php">Deposit
-                                        History</a>
-                                </li>
-                                <li>
-                                    <a href="withdraw-log.php">Withdraw
-                                        History</a>
-                                </li>
-                                <li>
-                                    <a href="transection.php">Game
-                                        History</a>
-                                </li>
-                                <li>
-                                    <a href="profile.php">Account Settings</a>
-                                </li>
-                                <li>
-                                    <a href="change-pass.php">Security
-                                        Settings</a>
-                                </li>
-                                <li>
-                                    <a href="#0">Sign Out</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div> -->
                     
-                    <div class="table--responsive--md">
+                    
+                    <div id="div-card-historytable" class="table--responsive--md">
 
-                        <table class="table" id="historytable">
-                            <thead>
-                                <tr>
-                                    <th>Marker Card</th>
-                                    <th>Ticket ID</th>
-                                    <th>Bet Amount</th>
-                                    <th>Win Value</th>
-                                    <th>Claimed Points</th>
-                                    <th>Unclaimed Points</th>
-                                    <th>Status</th>
-                                      <th>Withdraw Time</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody  id="historytablebody">
-                                <?php foreach ($bethistory  as $result): ?>
-                                 <tr class="table-history">
-                                    <td data-label="Bet Amount">NA</td>
-                                    <td data-label="Bet Amount">#<?= ($result['ticket_serial']) ?></td>
-                                    <td data-label="Bet Amount">₹<?= number_format($result['bet_amount'], 2) ?></td>
-                                    <td data-label="Win Value">NA</td>
-                                    <td data-label="Claimed Points">NA</td>
-                                    <td data-label="Unclaimed Points">NA</td>
-                                    <td data-label="Unclaimed Points">  <small class="btn-sm btn-success">Bet Placed</small></td>
-                                    <td data-label="Unclaimed Points"><?= ($result['withdraw_time']) ?? ''  ?></td>
-                                      <td data-label="Unclaimed Points">  <small class="btn btn-success disabled">Unclaimable</small></td>
-                                     <tr>
-                                                          <?php endforeach; ?>
-                            <?php foreach ($mapped as $result): 
-                                $cpd = $result['claim_point_data'] ?? [
-                                    'id'=>0, 'claim_point'=>0, 'unclaim_point'=>0
-                                ];
-                                // card to show
-                               $win_value = ($result['unclaim_point'] == 0 && $result['claim_point'] == 0)
-    ? 0
-    : ($result['unclaim_point'] ? $result['unclaim_point'] : $result['claim_point']);
+                        <table class="table" id="card-historytable">
+    <thead>
+        <tr>
+            <th>Marker Card</th>
 
-                                // status text
-                                $userwins = $win_value > 0 ? 'Yes' : 'No';
-                                
-                            ?>
-                                <tr class="table-history">
-                                  
-                                    <td class="image-tr d-flex" data-label="Card Win"><?php
-                                    if ($result['game_result']['winning_number'] == NULL) {
-                                       $index = $result['game_result']['lose_number'];
-                                    } else {
-                                         $index = $result['game_result']['winning_number'];
-                                    }
-                                    ?>
-
-                                   <?php if ($index == 0): ?>
+            <th>Bet Amount</th>
+            <th>Win Value</th>
+            <th>Claimed Points</th>
+            <th>Unclaimed Points</th>
+            <th>Withdraw Time</th>
+        </tr>
+    </thead>
+    <tbody id="card-historytablebody">
+        <?php foreach ($groupedData as $group): ?>
+            <tr class="table-history">
+                <td data-label="Card Index" class="d-flex">
+                    <?php if ($group['index'] == 0): ?>
                                         <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades">
                                         <img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades">
-                                    <?php elseif ($index == 1): ?>
+                                    <?php elseif ($group['index'] == 1): ?>
                                         <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Diamonds">
                                         <img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Diamonds">
-                                    <?php elseif ($index == 2): ?>
+                                    <?php elseif ($group['index'] == 2): ?>
                                         <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Clubs">
                                         <img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Clubs">
-                                    <?php elseif ($index == 3): ?>
+                                    <?php elseif ($group['index'] == 3): ?>
                                         <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Hearts">
                                         <img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Hearts">
-                                    <?php elseif ($index == 4): ?>
+                                    <?php elseif ($group['index'] == 4): ?>
                                         <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Spades">
                                         <img class="card" src="/assets-normal/img/spades-golden.png" alt="Queen of Spades">
-                                    <?php elseif ($index == 5): ?>
+                                    <?php elseif ($group['index'] == 5): ?>
                                         <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Diamonds">
                                         <img class="card" src="/assets-normal/img/golden-diamond.png" alt="Queen of Diamonds">
-                                    <?php elseif ($index == 6): ?>
+                                    <?php elseif ($group['index'] == 6): ?>
                                         <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Clubs">
                                         <img class="card" src="/assets-normal/img/clubs-golden.png" alt="Queen of Clubs">
-                                    <?php elseif ($index == 7): ?>
+                                    <?php elseif ($group['index'] == 7): ?>
                                         <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Hearts">
                                         <img class="card" src="/assets-normal/img/golden-hearts.png" alt="Queen of Hearts">
-                                    <?php elseif ($index == 8): ?>
+                                    <?php elseif ($group['index'] == 8): ?>
                                         <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Spades">
                                         <img class="card" src="/assets-normal/img/spades-golden.png" alt="Jack of Spades">
-                                    <?php elseif ($index == 9): ?>
+                                    <?php elseif ($group['index'] == 9): ?>
                                         <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Diamonds">
                                         <img class="card" src="/assets-normal/img/golden-diamond.png" alt="Jack of Diamonds">
-                                    <?php elseif ($index == 10): ?>
+                                    <?php elseif ($group['index'] == 10): ?>
                                         <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Clubs">
                                         <img class="card" src="/assets-normal/img/clubs-golden.png" alt="Jack of Clubs">
-                                    <?php elseif ($index == 11): ?>
+                                    <?php elseif ($group['index'] == 11): ?>
                                         <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Hearts">
                                         <img class="card" src="/assets-normal/img/golden-hearts.png" alt="Jack of Hearts">
                                     <?php endif; ?>
-
-
-
-                                   
-                                    </td>
-                                    <td data-label="Ticket Serial">#<?= ($result['ticket_serial']) ?></td>
-                                    <td data-label="Bet Amount">₹<?= number_format($result['balance'], 2) ?></td>
-                                    <td data-label="Win Value">₹<?= number_format($win_value, 2) ?? 0 ?></td>
-                                    <td data-label="Claimed Points"><?= number_format($result['claim_point'], 0) ?? 0  ?></td>
-                                    <td data-label="Unclaimed Points"><?= number_format($result['unclaim_point'], 0) ?? 0  ?></td>
-                                    <td data-label="Status">
-                                        <?php if ($userwins === 'Yes'): ?>
-                                            <small class="btn-sm btn-success">Win</small>
-                                        <?php else: ?>
-                                            <small class="btn-sm btn-danger">Lose</small>
-                                        <?php endif; ?>
-
-                                        <?php if ($result['claim_point'] > 0): ?>
-                                            <small class="btn-sm btn-danger">Claimed</small>
-                                        <?php else: ?>
-                                            <small class="btn-sm btn-success"><?php if($win_value <= 0): ?>
-                                                    Unclaimable
-                                                     <?php else: ?>
-
-Unclaimed
-                                                          <?php endif; ?></small>
-                                        <?php endif; ?>
-                                    </td>
-                                     <?php
-$created = $result['created_at'] ?? null;
-if ($created) {
-    $dt = new DateTime($created);
-    $dt->modify('-2 minutes');
-    $output = $dt->format('Y-m-d H:i:s');
-} else {
-    $output = 0;
-}
-?>
-<td data-label="Withdraw Time"><?= $output ?></td>
-
-                                    <td data-label="Action">
-                                        <?php if ($result['claim_point'] <= 0 && $win_value > 0): ?>
-                                       <button 
-  type="button"                 
-  class="btn btn-sm btn-danger win-value claim-btn" 
-  data-user-id="<?= $result['user_id'] ?>" 
-  data-unclaim-points="<?= $result['unclaim_point'] ?>" 
-  data-claim-id="<?= $result['id'] ?>">
-  Claim
-</button>
-                                        <?php else: ?>
-                                            <button class="btn btn-sm btn-secondary" disabled>
-                                                 <?php if($win_value <= 0): ?>
-                                                    Unclaimable
-                                                     <?php else: ?>
-
-Claimed
-                                                          <?php endif; ?>
-                                            </button>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                </td>
+                
+                <td data-label="Bet Amount">₹<?= number_format($group['total_balance'], 2) ?></td>
+                <td data-label="Win Value">₹<?= number_format($group['total_win_value'], 2) ?></td>
+                <td data-label="Claimed Points"><?= number_format($group['total_claim_point'], 0) ?></td>
+                <td data-label="Unclaimed Points"><?= number_format($group['total_unclaim_point'], 0) ?></td>
+                <td data-label="Withdraw Time"><?= htmlspecialchars($group['output']) ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
                 
 
 
