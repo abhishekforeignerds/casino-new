@@ -1302,36 +1302,48 @@ if (chosenIndex === undefined) {
   console.log('chosenIndexlast', chosenIndex);
 }
 
-    function evaluateBet(allbetamtinx, chosenIndex) {
-      // see if chosenIndex is a key in allbetamtinx
-      if (allbetamtinx.hasOwnProperty(chosenIndex)) {
-        const amount = allbetamtinx[chosenIndex];      // get the amount for that index
-        const userWon = true;
-        const winamt = amount * 10;          // apply your multiplier
-        return { userWon, winamt };
-      }
-      // if it wasn’t found
-      return { userWon: false, winamt: 0 };
-    }
+   function evaluateBet(allbetamtinx, chosenIndex) {
+  console.log('incoming bets:', allbetamtinx);
+  console.log('chosenIndex:', chosenIndex);
+
+  // check if chosenIndex is a key in allbetamtinx
+  if (allbetamtinx.hasOwnProperty(chosenIndex)) {
+    const rawAmt = allbetamtinx[chosenIndex];
+    const amount = parseFloat(rawAmt);
+    console.log(`found amount for index ${chosenIndex}:`, rawAmt, '→ parsed:', amount);
+
+    const userWon = true;
+    const winamt = amount * 10;
+    console.log('userWon:', userWon, 'winamt:', winamt);
+
+    return { userWon, winamt };
+  }
+
+  console.log(`no bet found at index ${chosenIndex}`);
+  return { userWon: false, winamt: 0 };
+}
+
     const result = evaluateBet(allbetamtinx, chosenIndex);
 
-    console.log('chosenIndex', chosenIndex);
-  
-        if (winamtValue > 0 && result.userWon) {
-          console.log('true')
-            winValue = result.winamt;
-            userWon = true;
-          if (auto_claim) {
+console.log('chosenIndex-just-before', chosenIndex);
 
-            totalClaim = totalClaim + winValue;
-            updatewinPointsDisplay();
-            balance = balance + winValue;
-            updateBankValue();
-          } else {
-            totalUnclaim = totalUnclaim + winValue;
-            // updateUnclaimPointsDisplay();
-          }
-        }
+if (result.winamt > 0 && result.userWon) {
+  console.log('true yes userwon');
+  winValue = result.winamt;
+  userWon = true;
+
+  if (auto_claim) {
+    totalClaim = totalClaim + winValue;
+    // updatewinPointsDisplay();
+    balance = balance + winValue;
+    updateBankValue();
+  } else {
+    totalUnclaim = totalUnclaim + winValue;
+    // updateUnclaimPointsDisplay();
+  }
+} else {
+  console.log('usernotwon');
+}
         
       
 
@@ -1470,7 +1482,7 @@ if (response.status == 'success') {
         console.log('Fetched data:', data);
        
     const winPointsDisplay = document.getElementById("claim-display");
- winPointsDisplay.innerHTML = "Unclaimed: <span style='color: gold;font-weight:800;'>" + data.totalClaim + "</span>";
+ winPointsDisplay.innerHTML = "Claimed: <span style='color: gold;font-weight:800;'>" + data.totalClaim + "</span>";
     const totalUnclaimdisplay = document.getElementById("unclaim-display");
  totalUnclaimdisplay.innerHTML = "Unclaimed: <span style='color: gold;font-weight:800;'>" + data.totalUnclaim + "</span>";
       } else {

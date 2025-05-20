@@ -436,69 +436,67 @@ date_default_timezone_set('Asia/Kolkata');
 
 // assume $conn is your mysqli connection and $user_id is defined…
 
+// compute server‐side dates
+$today = date('Y-m-d');               // e.g. "2025-05-19"
+$now   = date('Y-m-d H:i:s');         // e.g. "2025-05-19 14:23:45"
+
 // 1) Fetch all of today’s claim_point_data for this user
 $stmt2 = $conn->prepare("
     SELECT *
       FROM claim_point_data
-     WHERE user_id      = ?
-       AND DATE(created_at) = CURDATE()
-     ORDER
-        BY created_at DESC, id DESC
+     WHERE user_id       = ?
+       AND DATE(created_at) = ?
+     ORDER BY created_at DESC, id DESC
 ");
-$stmt2->bind_param("i", $user_id);
+$stmt2->bind_param("is", $user_id, $today);
 $stmt2->execute();
-$res2 = $stmt2->get_result();
-$claim_list = $res2->fetch_all(MYSQLI_ASSOC);
+$claim_list = $stmt2->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// 2) Fetch today’s game_results that actually have a win_value > 0
+// 2) Fetch today’s game_results that actually have a win_value > 0
 $stmt1 = $conn->prepare("
     SELECT *
       FROM game_results
-     WHERE user_id      = ?
-       AND DATE(created_at) = CURDATE()
-       AND win_value   > 0
+     WHERE user_id          = ?
+       AND DATE(created_at) = ?
+       AND win_value        > 0
      ORDER BY created_at DESC, id DESC
 ");
-$stmt1->bind_param("i", $user_id);
+$stmt1->bind_param("is", $user_id, $today);
 $stmt1->execute();
-$res1 = $stmt1->get_result();
-$game_results = $res1->fetch_all(MYSQLI_ASSOC);
+$game_results = $stmt1->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // 3) Build a lookup from created_at → game_result row
 $grByTimestamp = [];
 foreach ($game_results as $gr) {
-    // If there are multiple wins at the exact same timestamp,
-    // you could push them into an array. Here we assume one‐to‐one.
     $grByTimestamp[$gr['created_at']] = $gr;
 }
+
+// 4) Fetch today’s total_bet_history with ticket_serial > 0 and withdraw_time > now
 $stmt3 = $conn->prepare("
     SELECT *
       FROM total_bet_history
-     WHERE user_id = ?
-       AND DATE(created_at) = CURDATE()
-       AND ticket_serial > 0
-       AND withdraw_time  > NOW()
+     WHERE user_id         = ?
+       AND DATE(created_at) = ?
+       AND ticket_serial   >  0
+       AND withdraw_time   >= ?
      ORDER BY id DESC
 ");
-$stmt3->bind_param("i", $user_id);
+$stmt3->bind_param("iss", $user_id, $today, $now);
 $stmt3->execute();
+$bethistory = $stmt3->get_result()->fetch_all(MYSQLI_ASSOC);
 
-$res3 = $stmt3->get_result(); // Corrected from $stmt2 to $stmt3
-$bethistory = $res3->fetch_all(MYSQLI_ASSOC); 
-// 4) Now merge, but matching by created_at instead of array index
+// 5) Merge claim_list with game_results by exact timestamp
 $mapped = [];
 foreach ($claim_list as $idx => $cpd) {
     $ts = $cpd['created_at'];
 
     if (isset($grByTimestamp[$ts])) {
-        // We found a winning game_result at exactly the same timestamp
         $matchedGR = $grByTimestamp[$ts];
     } else {
-        // No winning row for this timestamp → use a default “no‐win” template
         $matchedGR = [
-            'id'         => 0,
-            'user_id'    => $cpd['user_id'],
-            'game_id'    => null,
+            'id'             => 0,
+            'user_id'        => $cpd['user_id'],
+            'game_id'        => null,
             'winning_number' => null,
             'lose_number'    => null,
             'suiticonnum'    => null,
@@ -506,27 +504,21 @@ foreach ($claim_list as $idx => $cpd) {
             'win_value'      => 0,
             'created_at'     => null,
             'updated_at'     => null,
-            // …and any other fields you expect from game_results
         ];
     }
 
-    // Decide which “index” you want to display: if winning_number is null, use lose_number; else use winning_number
-    if (empty($matchedGR['winning_number'])) {
-        $index = $matchedGR['lose_number'];
-    } else {
-        $index = $matchedGR['winning_number'];
-    }
+    // determine display_index
+    $index = empty($matchedGR['winning_number'])
+           ? $matchedGR['lose_number']
+           : $matchedGR['winning_number'];
 
-    // Inject the game_result into the claim_row
-    $cpd['game_result'] = $matchedGR;
-    // Optionally store the computed “index” for your view:
+    $cpd['game_result']   = $matchedGR;
     $cpd['display_index'] = $index;
-
-    // Optionally assign a 1‐based serial number for UI
-    $cpd['serial'] = $idx + 1;
+    $cpd['serial']        = $idx + 1;
 
     $mapped[] = $cpd;
 }
+
 // echo '<pre>';
 //                                 print_r($mapped[0]);die;
 // echo '<pre>';
@@ -1467,7 +1459,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <th>Win Value</th>
                 <!--<th>Claimed Points</th>-->
                 <!--<th>Unclaimed Points</th>-->
-                <th>Commission (%)</th>
+                <!--<th>Commission (%)</th>-->
                 <th>Commission Amt</th>
                 <th>Net Amount</th>
             </tr>
@@ -1478,7 +1470,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <td>₹<?= number_format($totalSellAmount, 2) ?></td>
                 <td>₹<?= number_format($totalWinValue, 2) ?></td>
              
-                <td>3%</td>
+                <!--<td>3%</td>-->
                <td>₹<?= number_format($totalSellAmount * 0.03, 2); ?></td>
 <td>₹<?= number_format(
     $totalSellAmount            // total sell

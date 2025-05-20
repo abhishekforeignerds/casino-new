@@ -106,12 +106,23 @@ $stmt->close();
         $serial_number  = $betTotal['ticket_serial'];
 
         if ($auto_claim) {
-            if($betTotal['card_type'] == $winning_number) {
-                 $claimpoint    = $win_value;
-                $unclaimpoint  = 0;
-            } else {
-                    $claimpoint    = 0;
-                $unclaimpoint  = 0;
+            $json = $betTotal['card_bet_amounts']; 
+            $cardBets = json_decode($json, true);
+
+            $claimpoint   = 0;
+            $unclaimpoint = 0;
+
+            // Loop through each card:index => bet_amount
+            foreach ($cardBets as $cardIndex => $betAmount) {
+                // cardIndex is a string, so cast or compare loosely
+                if ((int)$cardIndex === (int)$winning_number) {
+                    // when it matches, compute unclaimed points
+                    $claimpoint = floatval($betAmount) * 10;
+                    break;  // no need to check further once matched
+                } else {
+                                $claimpoint    = 0;
+                            $unclaimpoint  = 0;
+                        }
             }
            
             $auto_claim    = 1;

@@ -1034,6 +1034,7 @@ div#suitIcon4  .bet-overlay {
 }
 text {
     fill: white;
+    font-size: 2.5rem;
 }
 .play-circle {
     width: 50%;
@@ -1425,8 +1426,8 @@ div#overlay-items p {
 
 div#auto-spin-countdown {
  position: absolute;
-    bottom: 17%;
-    right: 34%;
+ bottom: 13%;
+ right: 36%;
 }
 @keyframes blinkcard {
   0%, 10%, 20%, 30%, 40%, 50% { background: red; }
@@ -1554,10 +1555,7 @@ div#suitIcon4  .bet-overlay {
     top: 15%;
     max-width: 800px;
 }
-#image-roulette #marker2 {
-
-    top: 38%;
-}
+#image-roulette #marker2 {top: 36%;}
 #image-roulette .grid-label .play-circle {
     width: 58%;
     height: 60%;
@@ -1602,3 +1600,16 @@ height: 122%;
 }
 }
 
+.coin.selected {
+  animation: rotateCoin 5s linear infinite;
+  transform: scale(1.2); /* makes the circle bigger */
+}
+
+@keyframes rotateCoin {
+  from {
+    transform: rotate(0deg) scale(1.2);
+  }
+  to {
+    transform: rotate(360deg) scale(1.2);
+  }
+}

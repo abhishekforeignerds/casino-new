@@ -145,6 +145,7 @@ $sql = "
   SELECT
     user_id,
     card_type,
+    card_bet_amounts,
     SUM(bet_amount) AS total_bet_amount,
     DATE_FORMAT(withdraw_time, '%H:%i:%s') AS withdraw_time
   FROM total_bet_history
@@ -166,13 +167,20 @@ while ($row = mysqli_fetch_assoc($result)) {
 }
 // Build unique card types with aggregated amounts
 $uniqueCardTypes = [];
+
 foreach ($rows as $row) {
-    $ct     = (int)$row['card_type'];
-    $amount = (float)$row['total_bet_amount'];
-    if (!isset($uniqueCardTypes[$ct])) {
-        $uniqueCardTypes[$ct] = 0.0;
+    $bets = json_decode($row['card_bet_amounts'], true);
+    if (!is_array($bets)) {
+        continue;
     }
-    $uniqueCardTypes[$ct] += $amount;
+    foreach ($bets as $type => $amt) {
+        $ct     = (int) $type;
+        $amount = (float) $amt;
+        if (!isset($uniqueCardTypes[$ct])) {
+            $uniqueCardTypes[$ct] = 0.0;
+        }
+        $uniqueCardTypes[$ct] += $amount;
+    }
 }
 
 $allIndexes      = range(0, 11);
