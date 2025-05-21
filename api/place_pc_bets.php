@@ -8,7 +8,7 @@ ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 header('Content-Type: application/json');
-
+date_default_timezone_set('Asia/Kolkata');
 // 0a) Convert PHP errors/warnings to exceptions
 set_error_handler(function($severity, $message, $file, $line) {
     throw new ErrorException($message, 0, $severity, $file, $line);
@@ -58,6 +58,7 @@ try {
         SELECT SUM(bet_amount) AS total_bet
           FROM total_bet_history
          WHERE withdraw_time = ?
+         AND card_bet_amounts IS NULL
            AND ntrack = ?
     ";
     $stmt = $conn->prepare($sqlSum);
@@ -83,6 +84,7 @@ try {
         FROM total_bet_history
        WHERE withdraw_time = ?
          AND ntrack = ?
+         AND card_bet_amounts IS NULL
        ORDER BY RAND()
        LIMIT 1
     ";

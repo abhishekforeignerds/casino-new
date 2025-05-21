@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 
 // Turn mysqli exceptions into catchable exceptions
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-
+date_default_timezone_set('Asia/Kolkata');
 header('Content-Type: application/json; charset=utf-8');
 session_start();
 require_once __DIR__ . '/../db.php';

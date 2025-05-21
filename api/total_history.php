@@ -1,7 +1,7 @@
 <?php
 // 1) Force JSON responses only
 header('Content-Type: application/json; charset=utf-8');
-
+date_default_timezone_set('Asia/Kolkata');
 // 2) Disable PHP’s HTML error output
 ini_set('display_errors', '0');
 ini_set('display_startup_errors', '0');

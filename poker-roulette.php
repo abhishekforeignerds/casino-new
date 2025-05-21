@@ -10,6 +10,8 @@ include 'db.php'; // Database connection
 
 
 $user_id = $_SESSION['user_id'];
+$palyerusename = $_SESSION['username'];
+
 $game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 1; // Adjust as needed
 $stmt = $conn->prepare("SELECT 
 SUM(claim_point) AS total_claim, 
@@ -342,8 +344,9 @@ include 'modals/cardhistorymodal.php';
 
 
           
-                <div id="time-info-container" >
+                <div id="time-info-container d-flex flex-column align-items-center justify-content-center" >
                 <div id="current-time" style="font-size: 18px;"></div>
+                <div id="palyername" style="font-size: 18px;">  <?php echo htmlspecialchars($palyerusename); ?></div>
           </div>
     </div>
 

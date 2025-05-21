@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 include '../db.php';
-
+date_default_timezone_set('Asia/Kolkata');
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['status'=> 'error', 'message'=>'Not logged in']);
     exit;

@@ -2,7 +2,7 @@
 include '../db.php'; // Setup DB connection
 
 $game_id = isset($_POST['game_id']) ? intval($_POST['game_id']) : 1;
-
+date_default_timezone_set('Asia/Kolkata');
 // Validate required POST values
 if (!isset($_POST['src']) || !isset($_POST['suiticon']) || !isset($_POST['wintimes'])) {
     echo json_encode(["success" => false, "message" => "Incomplete card data."]);

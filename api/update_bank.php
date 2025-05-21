@@ -5,7 +5,7 @@ if (!isset($_SESSION['user_id'])) {
     echo json_encode(["success" => false, "message" => "User not logged in."]);
     exit;
 }
-
+date_default_timezone_set('Asia/Kolkata');
 $user_id = $_SESSION['user_id'];
 
 // Check if a bank value was posted

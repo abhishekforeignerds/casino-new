@@ -1,6 +1,7 @@
 <?php
 session_start();
-include '../db.php'; // Ensure this file sets up your database connection (e.g., $conn)
+include '../db.php'; 
+date_default_timezone_set('Asia/Kolkata');// Ensure this file sets up your database connection (e.g., $conn)
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(["success" => false, "message" => "User not logged in."]);
     exit;

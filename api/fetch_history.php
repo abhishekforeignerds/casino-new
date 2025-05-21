@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     echo json_encode(["success" => false, "message" => "User not logged in."]);
     exit;
 }
-
+date_default_timezone_set('Asia/Kolkata');
 $user_id = $_SESSION['user_id'];
 $game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 1; // Adjust as needed
 
