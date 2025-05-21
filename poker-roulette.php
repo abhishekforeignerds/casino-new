@@ -38,7 +38,7 @@ $stmt->execute();
 $stmt->bind_result($winningPoints);
 $stmt->fetch();
 $stmt->close();
-$stmt = $conn->prepare("SELECT SUM(bet_amount) AS total_bet FROM total_bet_history WHERE user_id = ? AND DATE(created_at) = CURDATE()");
+$stmt = $conn->prepare("SELECT SUM(bet_amount) AS total_bet FROM total_bet_history WHERE user_id = ? AND DATE(created_at) = CURDATE() AND card_bet_amounts IS NOT NULL");
 $stmt->bind_param("i", $user_id);
 
 $stmt->execute();
@@ -126,7 +126,7 @@ $totalClaim = $totalClaim ?? 0;
 $totalUnclaim = $totalUnclaim ?? 0;
 
     // today’s bets
-    $stmt = $conn->prepare("SELECT SUM(bet_amount) AS total_bet FROM total_bet_history WHERE user_id = ? AND DATE(created_at) = CURDATE()");
+    $stmt = $conn->prepare("SELECT SUM(bet_amount) AS total_bet FROM total_bet_history WHERE user_id = ? AND DATE(created_at) = CURDATE() AND card_bet_amounts IS NOT NULL");
     $stmt->bind_param("i", $user_id);
     $stmt->execute(); $stmt->bind_result($bettingPoints); $stmt->fetch(); $stmt->close();
 
@@ -906,7 +906,7 @@ $('#auto-claim-toggle').on('change', function(){
   let isMuted = localStorage.getItem("isMuted") === "true";
 
   const toggleSound = new Howl({
-    src: ['/assets-normal/img/betting-Over.mp3'],
+    src: ['/assets-normal/img/ON-OFF.mp3'],
     volume: 1.0
   });
 

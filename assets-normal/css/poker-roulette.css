@@ -191,7 +191,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
   transform: translateX(-50%);
   width: 30px;
   height: 30px;
-  /* clip into a downwardÃ¢â‚¬Âpointing triangle */
+  /* clip into a downwardÃƒÂ¢Ã¢â€šÂ¬Ã‚Âpointing triangle */
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   /* two halves, each with its own gradient for light & shadow */
   background:
@@ -219,11 +219,11 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
   transform: translateX(-50%);
   width: 30px;
   height: 30px;
-  /* clip a perfect equilateralÃ¢â‚¬Âish triangle */
+  /* clip a perfect equilateralÃƒÂ¢Ã¢â€šÂ¬Ã‚Âish triangle */
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
   /* two layered backgrounds: 
-     - the lower layer is the Ã¢â‚¬Å“backÃ¢â‚¬Â face (darker) 
-     - the upper layer is the Ã¢â‚¬Å“frontÃ¢â‚¬Â face (lighter), clipped to half the triangle */
+     - the lower layer is the ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œbackÃƒÂ¢Ã¢â€šÂ¬Ã‚Â face (darker) 
+     - the upper layer is the ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œfrontÃƒÂ¢Ã¢â€šÂ¬Ã‚Â face (lighter), clipped to half the triangle */
   background:
     /* front face */
     linear-gradient(
@@ -451,7 +451,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
 }
 
 #wheel-container {
-  /* scale the wheel to 80% of its parentÃ¢â‚¬â„¢s width (you can tweak this) */
+  /* scale the wheel to 80% of its parentÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢s width (you can tweak this) */
   width: 80%;
   max-width: 400px;      /* optional cap */
   
@@ -537,6 +537,7 @@ z-index: 0; /* Ensure overlay appears above the header background but below any 
             justify-items: center;
             margin: auto;
             padding: 6px 6px;
+            width: 100%;
             border: 4px solid #ff9c19;
             height: 100%;
         }
@@ -733,7 +734,7 @@ opacity: 0.8;
 
   /* The wheel itself (if you need it centered within a larger container) */
 #wheel {
-  /* inset wheel to 85% so thereÃ¢â‚¬â„¢s a 7.5% pad on each side */
+  /* inset wheel to 85% so thereÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢s a 7.5% pad on each side */
   width: 85%;
   height: 85%;
   position: absolute;
@@ -1420,7 +1421,7 @@ div#overlay-items p {
     }
 }
 #image-roulette .winner {
-  /* 5s for a full redÃ¢â€ â€™greenÃ¢â€ â€™red cycle, then repeat */
+  /* 5s for a full redÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢greenÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢red cycle, then repeat */
   animation: blink 1s infinite;
 }
 

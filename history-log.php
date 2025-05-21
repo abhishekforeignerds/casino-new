@@ -30,10 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'claim_points'
     }
     $stmt->close();
 
-    if ($unclaimed <= 0) {
-        echo json_encode(['success' => false, 'message' => 'No points left to claim']);
-        exit;
-    }
+
 
     // 2) update claim_point_data: add to claimed_point, zero out unclaimed_point
     $new_claimed = $already_claimed + $unclaimed;

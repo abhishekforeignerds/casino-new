@@ -197,9 +197,67 @@ function updateTimeDisplay() {
   );
 }
 if (countdown === 5) {
-  document.getElementById("place-bets").click();
+  const overlays = document.querySelectorAll('.bet-overlay');
+
+  overlays.forEach(overlay => {
+    // Get the bet amount from the coin's inner span (optional - not used here).
+    
+    if (overlay.parentElement) {
+      overlay.parentElement.removeChild(overlay);
+    }
+  });
+
+  resultDisplay.style.display = 'block';
+  resultDisplay.textContent = "Bet was Cancelled.";
+
+  setTimeout(() => {
+    resultDisplay.style.display = 'none';
+  }, 2000);
+
   document.getElementById("place-bets").disabled = true;
+
+ const formData = new FormData();
+formData.append('withdrawTime', withdrawTime);
+formData.append('n', n);
+
+fetch('../../api/remove_pc_bets.php', {
+  method: 'POST',
+  body: formData
+})
+.then(res => res.json())
+.then(data => {
+  console.log('API RESPONSE:', data);
+
+  if (data.status === 'success') {
+    const nullBetSum = parseFloat(data.data.nullBetSum) || 0;
+
+    // Update "Today's Bet"
+    const totalBetDisplay = document.querySelector('#totalbet-display span');
+    if (totalBetDisplay) {
+      const currentBetValue = parseFloat(totalBetDisplay.textContent.replace(/[^\d.]/g, '')) || 0;
+      const newBetValue = currentBetValue - nullBetSum;
+      totalBetDisplay.textContent = newBetValue.toFixed(2);
+    }
+  const currenttotal = document.querySelector('#currentbet-display span');
+  currenttotal.textContent = 0;
+    // Update "Balance"
+    const balanceDisplay = document.querySelector('#balance-display span');
+    if (balanceDisplay) {
+      const currentBalance = parseFloat(balanceDisplay.textContent.replace(/[^\d.]/g, '')) || 0;
+      const newBalance = currentBalance + nullBetSum;
+      balanceDisplay.textContent = newBalance.toFixed(2);
+    }
+  } else {
+    console.error('Server error:', data.message);
+  }
+})
+.catch(error => {
+  console.error('Error during fetch:', error);
+});
+
+
 }
+
 
   // if (countdown === 5) {
   //   updateBankValue();
@@ -649,22 +707,21 @@ updateTotalBetDisplay();
             document
               .getElementById('historytablebody')
               .insertAdjacentHTML('afterbegin', rowHTML);
-  const overlays = document.querySelectorAll('.bet-overlay');
+        const overlays = document.querySelectorAll('.bet-overlay');
 
-  overlays.forEach(overlay => {
-    // Get the bet amount from the coin's inner span.
-   
-    if (overlay.parentElement) {
-      overlay.parentElement.removeChild(overlay);
-    }
-  });
-   resultDisplay.style.display = 'block';
-  resultDisplay.textContent = "Bet was placed successfully with ID : "+ data.data.serial;
-  setTimeout(() => {
-  resultDisplay.style.display = 'none';
-}, 2000);
-    }
-    else {
+        overlays.forEach(overlay => {
+          // Get the bet amount from the coin's inner span.
+        
+          if (overlay.parentElement) {
+            overlay.parentElement.removeChild(overlay);
+          }
+        });
+        resultDisplay.style.display = 'block';
+        resultDisplay.textContent = "Bet was placed successfully with ID : "+ data.data.serial;
+        setTimeout(() => {
+        resultDisplay.style.display = 'none';
+      }, 2000);
+  } else {
       // on error, your API includes `message`
       console.error('Error placing bet:', data.message || '(no message received)');
     }
@@ -1357,14 +1414,14 @@ if (result.winamt > 0 && result.userWon) {
       winValue = 0;
     }
 
-    updateBalanceDisplay();
+    // updateBalanceDisplay();
     // updatewinPointsDisplay();
     resultDisplay.style.display = 'block';
 
     // base message
     let msg;
     if (userWon) {
-      balanceDisplay.innerHTML = "Balance: <span style='color: gold;font-weight:800;'>" + (balance) + "</span>";
+      // balanceDisplay.innerHTML = "Balance: <span style='color: gold;font-weight:800;'>" + (balance) + "</span>";
       msg = `Total Win ${winValue}!`;
     } else if (lastBet && Object.keys(lastBet).length > 0) {
       msg = `Lose.`;

@@ -33,25 +33,34 @@ try {
 
     // 2) Grab & validate inputs
     $withdrawTimeRaw = $_POST['withdrawTime'] ?? null;
-    $ntrack          = array_key_exists('n', $_POST) ? intval($_POST['n']) : null;
+$ntrack          = array_key_exists('n', $_POST) ? intval($_POST['n']) : null;
 
-    if (!$withdrawTimeRaw) {
-        http_response_code(422);
-        throw new Exception('withdrawTime is required.', 422);
-    }
-    if ($ntrack === null) {
-        http_response_code(422);
-        throw new Exception('ntrack (n) is required.', 422);
-    }
+if (!$withdrawTimeRaw) {
+    http_response_code(422);
+    throw new Exception('withdrawTime is required.', 422);
+}
+if ($ntrack === null) {
+    http_response_code(422);
+    throw new Exception('ntrack (n) is required.', 422);
+}
 
-    // 3) Normalize withdrawTime (expects "H:i:s" or similar)
-    $currentDate = date('Y-m-d');
-    $ts = strtotime("$currentDate $withdrawTimeRaw");
-    if ($ts === false) {
-        http_response_code(422);
-        throw new Exception('withdrawTime format is invalid.', 422);
-    }
-    $withdrawTime = date('Y-m-d H:i:s', $ts);
+// 3) Normalize withdrawTime (expects "H:i:s" or similar)
+$currentDate = date('Y-m-d');
+$ts = strtotime("$currentDate $withdrawTimeRaw");
+if ($ts === false) {
+    http_response_code(422);
+    throw new Exception('withdrawTime format is invalid.', 422);
+}
+
+// 4) If minutes are odd, subtract one minute to make them even
+$minute = intval(date('i', $ts));       // extract minutes (00–59) as integer
+if ($minute % 2 === 1) {
+    $ts -= 60; // subtract 60 seconds
+}
+
+// 5) Rebuild the normalized datetime string
+$withdrawTime = date('Y-m-d H:i:s', $ts);
+
 
     // 4) Sum existing bets
     $sqlSum = "
@@ -118,10 +127,12 @@ if (!$stmt) {
 $stmt->bind_param('si', $withdrawTime, $ntrack);
 $stmt->execute();
 $stmt->bind_result($cardType, $betAmount);
-
 $cardBets = [];
 while ($stmt->fetch()) {
-    $cardBets[$cardType] = $betAmount;
+    if (!isset($cardBets[$cardType])) {
+        $cardBets[$cardType] = 0;
+    }
+    $cardBets[$cardType] += $betAmount;
 }
 
 $stmt->close();
@@ -135,16 +146,14 @@ $cardBetJson = json_encode($cardBets);
     // 5) Delete old detail rows
     $sqlDel = "
         DELETE FROM total_bet_history
-         WHERE withdraw_time = ?
-           AND ntrack = ?
-            AND card_bet_amounts IS NULL
+         WHERE card_bet_amounts IS NULL
     ";
     $del = $conn->prepare($sqlDel);
     if (! $del) {
         http_response_code(500);
         throw new Exception('DELETE prepare failed: ' . $conn->error, 500);
     }
-    $del->bind_param('si', $withdrawTime, $ntrack);
+
     $del->execute();
     $deletedRows = $del->affected_rows;
     $del->close();

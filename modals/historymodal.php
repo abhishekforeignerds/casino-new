@@ -46,10 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'claim_points'
     }
     $stmt->close();
 
-    if ($unclaimed <= 0) {
-        echo json_encode(['success' => false, 'message' => 'No points left to claim']);
-        exit;
-    }
+
 
     // 2) update claim_point_data: add to claimed_point, zero out unclaimed_point
     $new_claimed = $already_claimed + $unclaimed;
@@ -207,6 +204,7 @@ $stmt3 = $conn->prepare("
        AND DATE(created_at) = ?
        AND ticket_serial   >  0
        AND withdraw_time   >= ?
+       AND card_bet_amounts IS NOT NULL
      ORDER BY id DESC
 ");
 $stmt3->bind_param("iss", $user_id, $today, $now);
@@ -259,7 +257,7 @@ foreach ($claim_list as $idx => $cpd) {
 
 
 
-    $stmt = $conn->prepare("SELECT SUM(bet_amount) AS total_bet FROM total_bet_history WHERE user_id = ? AND DATE(created_at) = CURDATE()");
+    $stmt = $conn->prepare("SELECT SUM(bet_amount) AS total_bet FROM total_bet_history WHERE user_id = ? AND DATE(created_at) = CURDATE() AND card_bet_amounts IS NOT NULL");
 $stmt->bind_param("i", $user_id);
 
 $stmt->execute();
@@ -280,7 +278,7 @@ while ($row = $result->fetch_assoc()) {
 
 $stmt->close();
 
-$stmt = $conn->prepare("SELECT * FROM total_bet_history WHERE user_id = ? AND game_id = 1");
+$stmt = $conn->prepare("SELECT * FROM total_bet_history WHERE user_id = ? AND game_id = 1 AND card_bet_amounts IS NOT NULL");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -662,10 +660,7 @@ Claimed
     // Get current unclaimed points from the row before claim
     let unclaimedPoints = parseInt($row.find('td[data-label="Unclaimed Points"]').text().replace(/,/g, '')) || 0;
 
-    if (unclaimedPoints <= 0) {
-        alert('No points left to claim');
-        return;
-    }
+  
 
     $.ajax({
         url: '../history-log.php',
@@ -699,11 +694,11 @@ Claimed
         actionCell.html('<button class="btn btn-sm btn-secondary" disabled>Unclaimable</button>');
               
             } else {
-                alert(response.message || 'Failed to claim points');
+                // alert(response.message || 'Failed to claim points');
             }
         },
         error: function() {
-            alert('Error processing request');
+            // alert('Error processing request');
         }
     });
 });
