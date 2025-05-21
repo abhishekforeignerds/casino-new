@@ -98,12 +98,14 @@ try {
     }
     $pick->close();
 
-    $sql = "
-    SELECT card_type, bet_amount
-      FROM total_bet_history
-     WHERE withdraw_time = ?
-       AND ntrack = ?
+$sql = "
+SELECT card_type, bet_amount
+  FROM total_bet_history
+ WHERE withdraw_time = ?
+   AND ntrack = ?
+   AND card_bet_amounts IS NULL
 ";
+
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -133,6 +135,7 @@ $cardBetJson = json_encode($cardBets);
         DELETE FROM total_bet_history
          WHERE withdraw_time = ?
            AND ntrack = ?
+            AND card_bet_amounts IS NULL
     ";
     $del = $conn->prepare($sqlDel);
     if (! $del) {
@@ -255,6 +258,36 @@ $cardBetJson = json_encode($cardBets);
         throw new Exception('INSERT history execute failed: ' . $ins->error, 500);
     }
 
+// Step 1: Get current points
+$sqlGetPoints = "SELECT points FROM user WHERE id = ?";
+$stmt = $conn->prepare($sqlGetPoints);
+if (! $stmt) {
+    http_response_code(500);
+    throw new Exception('SELECT points prepare failed: ' . $conn->error, 500);
+}
+$stmt->bind_param('i', $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+if ($result->num_rows === 0) {
+    throw new Exception('User not found.', 404);
+}
+$row = $result->fetch_assoc();
+$currentPoints = $row['points'];
+
+// Step 2: Subtract totalBet
+$newPoints = $currentPoints - $totalBet;
+
+// Step 3: Update points
+$sqlUpdatePoints = "UPDATE user SET points = ? WHERE id = ?";
+$updateStmt = $conn->prepare($sqlUpdatePoints);
+if (! $updateStmt) {
+    http_response_code(500);
+    throw new Exception('UPDATE points prepare failed: ' . $conn->error, 500);
+}
+$updateStmt->bind_param('di', $newPoints, $user_id);
+if (! $updateStmt->execute()) {
+    throw new Exception('UPDATE points execute failed: ' . $updateStmt->error, 500);
+}
 
     // 11) Success response
     http_response_code(201);

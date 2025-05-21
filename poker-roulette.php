@@ -317,9 +317,7 @@ include 'modals/cardhistorymodal.php';
                 <?php // echo htmlspecialchars($bettingPoints ?? 0); ?>
             </span>
         </div> -->
-         <div class="bordersboxes d-flex flex-column" id="mute-sound" style="cursor:pointer;">
-  <i class="fas fa-volume-up"></i> <span>Mute</span>
-</div>
+    
         <div class="bordersboxes cmn--btn active btn--md d-none d-sm-block">
         <label>
             <input
@@ -330,7 +328,9 @@ include 'modals/cardhistorymodal.php';
     </div>
 
     
-                          
+                   <div class="bordersboxes d-flex flex-column" id="mute-sound" style="cursor:pointer;">
+  <i class="fas fa-volume-up"></i> <span>Mute</span>
+</div>            
                         
         <div class="bordersboxes d-flex flex-column" id="claim-display"> Claimed <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($totalClaim ?? 0); ?> </span> </div>
         <div class="bordersboxes d-flex flex-column" id="unclaim-display"> Unclaimed: <span style='color: gold;font-weight:800;'> <?php echo htmlspecialchars($totalUnclaim ?? 0); ?> </span> </div>

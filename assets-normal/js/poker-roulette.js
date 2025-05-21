@@ -80,7 +80,7 @@ function getinsertedbetHistory(withdrawTime) {
   })
   .done(function(response) {
     if (response.status === 'success') {
-      console.log('Fetched rows:', response.data);
+      console.log('Fetched rows real:', response);
       console.log('Choosen Index:', response.data.choosenindex);
       userwins = response.data.userwins;
       chosenIndex = response.data.choosenindex;
@@ -112,7 +112,7 @@ function fetchBetHistory(withdrawTime) {
   })
   .done(function(response) {
     if (response.status === 'success') {
-      console.log('Fetched rows:', response.data);
+      console.log('Fetched rows:', response);
 
       // TODO: render response.data into your UI
     } else {
@@ -201,9 +201,9 @@ if (countdown === 5) {
   document.getElementById("place-bets").disabled = true;
 }
 
-  if (countdown === 5) {
-    updateBankValue();
-  }
+  // if (countdown === 5) {
+  //   updateBankValue();
+  // }
   if (countdown === 4) {
      
     fetchBetHistory(withdrawTime);
@@ -368,13 +368,14 @@ const GRID_COLUMNS = 5;
 // ----- PLACE BET ON GRID CARD (with merging logic) -----
 // ----- PLACE BET ON GRID CARD -----
 // Global tracker for all bets by index
-let allbetamtinx = {}; // Global map to track index-wise bets
+// Global map to track index-wise bets
 let pcbets = {}; // Global map to track index-wise bets
 let n=0;
-
+let allbetamtinx = JSON.parse(localStorage.getItem('allbetamtinx')) || {};
+console.log(allbetamtinx, allbetamtinx);
 document.querySelectorAll(".grid-card").forEach(card => {
   card.addEventListener("click", function () {
-    console.log('countdown', countdown)
+    console.log('countdown', countdown);
     const resultDisplay = document.getElementById("result-display");
     if (countdown <= 5) {
       resultDisplay.style.display = 'block';
@@ -386,13 +387,8 @@ document.querySelectorAll(".grid-card").forEach(card => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin) {
       alert("Not Enough Balance to Place Bet");
-    return;
+      return;
     }
-
-    // if (totalBets + selectedCoin > maxBetamount) {
-    //   alert("Max bet amount is 10000");
-    //   return;
-    // }
 
     balance -= selectedCoin;
     updateBalanceDisplay();
@@ -408,8 +404,10 @@ document.querySelectorAll(".grid-card").forEach(card => {
     lastBet = { identifier: index, amount: selectedCoin, element: this, overlayHTML: this.querySelector(".bet-overlay").outerHTML };
     lastBetHistory = { ...lastBet };
 
-    // Update allbetamtinx
+    // Update allbetamtinx and localStorage
     allbetamtinx[index] = (allbetamtinx[index] || 0) + selectedCoin;
+    localStorage.setItem('allbetamtinx', JSON.stringify(allbetamtinx));
+
     pcbets[index] = (pcbets[index] || 0) + selectedCoin;
 
     const data = {
@@ -433,7 +431,7 @@ document.querySelectorAll(".grid-card").forEach(card => {
 // ----- PLACE BET ON GRID HEADER (suit) -----
 document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
   header.addEventListener("click", function () {
-    console.log('countdown', countdown)
+    console.log('countdown', countdown);
     const resultDisplay = document.getElementById("result-display");
     if (countdown <= 5) {
       resultDisplay.style.display = 'block';
@@ -444,15 +442,10 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     const suit = this.textContent.trim();
     const betKey = "suit-" + suit;
     if (selectedCoin === null) return;
-    if (balance < selectedCoin * 3){
+    if (balance < selectedCoin * 3) {
       alert("Not Enough Balance to Place Bet");
-    return;
+      return;
     }
-
-    // if (totalBets + (selectedCoin * 3) > maxBetamount) {
-    //   alert("Max bet amount is 10000");
-    //   return;
-    // }
 
     balance -= (selectedCoin * 3);
     updateBalanceDisplay();
@@ -464,7 +457,7 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     updateTotalBetDisplay();
     updateTotalBetDisplay();
 
-    const clickedIndex = gridCells.findIndex(cell => cell === this); // <- Not used anymore
+    const clickedIndex = gridCells.findIndex(cell => cell === this); // not used now
     const col = clickedIndex % GRID_COLUMNS;
     gridCells.forEach((cell, idx) => {
       if (idx % GRID_COLUMNS === col) addOrMergeOverlay(cell, selectedCoin);
@@ -491,9 +484,11 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
         console.warn('Unknown suit icon:', lastBet.element);
     }
 
-    // Update allbetamtinx
+    // Update allbetamtinx and localStorage for each identifier
     identifiers.forEach(id => {
       allbetamtinx[id] = (allbetamtinx[id] || 0) + selectedCoin;
+      localStorage.setItem('allbetamtinx', JSON.stringify(allbetamtinx));
+
       pcbets[id] = (pcbets[id] || 0) + selectedCoin;
 
       const data = {
@@ -516,10 +511,11 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
 });
 
 allcardsbeted = false;
+
 // ----- PLACE BET ON GRID LABEL (card type) -----
 document.querySelectorAll(".grid-label").forEach(label => {
   label.addEventListener("click", function () {
-    console.log('countdown', countdown)
+    console.log('countdown', countdown);
     const resultDisplay = document.getElementById("result-display");
     if (countdown <= 5) {
       resultDisplay.style.display = 'block';
@@ -534,13 +530,8 @@ document.querySelectorAll(".grid-label").forEach(label => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin * 4) {
       alert("Not Enough Balance to Place Bet");
-    return;
+      return;
     }
-
-    // if (totalBets + (selectedCoin * 4) > maxBetamount) {
-    //   alert("Max bet amount is 10000");
-    //   return;
-    // }
 
     balance -= (selectedCoin * 4);
     updateBalanceDisplay();
@@ -551,7 +542,7 @@ document.querySelectorAll(".grid-label").forEach(label => {
     totalCurrBets += (selectedCoin * 4);
     updateTotalBetDisplay();
 
-    const clickedIndex = gridCells.findIndex(cell => cell === this); // <- Not used anymore
+    const clickedIndex = gridCells.findIndex(cell => cell === this); // not used now
     const row = Math.floor(clickedIndex / GRID_COLUMNS);
     gridCells.forEach((cell, idx) => {
       if (Math.floor(idx / GRID_COLUMNS) === row) addOrMergeOverlay(cell, selectedCoin);
@@ -569,15 +560,17 @@ document.querySelectorAll(".grid-label").forEach(label => {
         identifiers = [4, 5, 6, 7];
         break;
       case 'grid-label-1':
-         identifiers = [0, 1, 2, 3];
+        identifiers = [0, 1, 2, 3];
         break;
       default:
         console.warn('Unknown card label:', lastBet.element);
     }
 
-    // Update allbetamtinx
+    // Update allbetamtinx and localStorage for each identifier
     identifiers.forEach(id => {
       allbetamtinx[id] = (allbetamtinx[id] || 0) + selectedCoin;
+      localStorage.setItem('allbetamtinx', JSON.stringify(allbetamtinx));
+
       pcbets[id] = (pcbets[id] || 0) + selectedCoin;
 
       const data = {
@@ -598,6 +591,8 @@ document.querySelectorAll(".grid-label").forEach(label => {
     });
   });
 });
+
+// Clear cache on spin button click and reset allbetamtinx
 
 
 
@@ -1415,7 +1410,7 @@ if (result.winamt > 0 && result.userWon) {
     // Record the game result via AJAX.
     recordGameResult(
       winningIndex,
-      Object.values(bets).reduce((sum, amt) => sum + amt, 0),
+     Object.values(allbetamtinx).reduce((sum, amt) => sum + amt, 0),
       winValue,
       suiticonnum,
       withdrawTime,
@@ -1443,6 +1438,7 @@ if (result.winamt > 0 && result.userWon) {
   });
 placechipssound.play();
 updatedashboardData(withdrawTime);
+
   }, 4000);
 
 });
@@ -1511,9 +1507,9 @@ data.mapped.forEach(result => {
 
   const commission = balance * 0.03;
   
-  const win_value = (unclaim_point === 0 && claim_point === 0)
+  const win_value = (claim_point === 0)
     ? 0
-    : (unclaim_point ? unclaim_point : claim_point);
+    : claim_point;
 
   const netAmount = balance - commission - win_value;
 
@@ -1534,7 +1530,6 @@ const outputHtml = `
       <tr>
         <th>Sell Amount</th>
         <th>Win Value</th>
-        <th>Commission (%)</th>
         <th>Commission Amt</th>
         <th>Net Amount</th>
       </tr>
@@ -1543,7 +1538,6 @@ const outputHtml = `
       <tr class="table-history">
         <td>₹${totalSellAmount.toFixed(2)}</td>
         <td>₹${totalWinValue.toFixed(2)}</td>
-        <td>3%</td>
         <td>₹${totalCommission.toFixed(2)}</td>
         <td>₹${totalNetAmount.toFixed(2)}</td>
       </tr>
@@ -1786,6 +1780,8 @@ function recordGameResult(winningSpin, betTotal, winValue = 0, suiticonnum, with
     .then(data => {
       if (data.success) {
         console.log('✅ Game result stored:', data.message);
+         allbetamtinx = {};
+    localStorage.removeItem('allbetamtinx');
       } else {
         console.error('🚨 Server error storing game result:', data.message);
       }

@@ -457,9 +457,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'unclaim_point' => 0
         ];
 
-        $win_value = ($result['unclaim_point'] == 0 && $result['claim_point'] == 0)
+        $win_value = ($result['claim_point'] == 0)
             ? 0
-            : ($result['unclaim_point'] ? $result['unclaim_point'] : $result['claim_point']);
+            : $result['claim_point'];
 
         $totalSellAmount += $result['balance'];
         $totalWinValue    += $win_value;

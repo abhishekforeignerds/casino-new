@@ -117,8 +117,7 @@ $winsRow = mysqli_fetch_assoc($winsResult);
 // Total win is the sum of both claim_point and unclaim_point
 $totalWinToday = (float) $winsRow['total_claim'] + (float) $winsRow['total_unclaim'];
 
-
-if ($totalSaleToday > 0) {
+if ($totalSaleToday > 0 && $totalWinToday) {
     $currentwinningPercentage = ($totalWinToday / $totalSaleToday) * 100;
 } else {
     $currentwinningPercentage = 0;
@@ -149,14 +148,14 @@ $sql = "
     SUM(bet_amount) AS total_bet_amount,
     DATE_FORMAT(withdraw_time, '%H:%i:%s') AS withdraw_time
   FROM total_bet_history
-  WHERE withdraw_time = ?
+  WHERE user_id = ? AND withdraw_time = ?
   GROUP BY user_id, card_type, withdraw_time
   ORDER BY user_id, card_type
 ";
 $stmt = mysqli_prepare($conn, $sql)
     or throw new Exception('Prepare failed: ' . mysqli_error($conn));
+mysqli_stmt_bind_param($stmt, 'is', $user_id, $fullTimestamp);
 
-mysqli_stmt_bind_param($stmt, 's', $fullTimestamp);
 mysqli_stmt_execute($stmt)
     or throw new Exception('Execute failed: ' . mysqli_stmt_error($stmt));
 
@@ -165,6 +164,8 @@ $rows   = [];
 while ($row = mysqli_fetch_assoc($result)) {
     $rows[] = $row;  // now an associative array
 }
+
+
 // Build unique card types with aggregated amounts
 $uniqueCardTypes = [];
 
@@ -188,7 +189,7 @@ $excluded        = array_keys($uniqueCardTypes);
 $availableIndexes = array_diff($allIndexes, $excluded);
 
 $choosenindex = null;
-$userwins     = null;
+$userwins     = 'yes';
 $allPresent   = false;
 $allSame      = false;
 $minvalue;
@@ -291,7 +292,6 @@ if (empty($uniqueCardTypes)) {
         }
     }
 }
-
 
 // Finally, compute the “allSametxt” and “minvalue” only if we have data:
 if (!empty($uniqueCardTypes)) {

@@ -13,13 +13,7 @@
 ">
       <div class="modal-header">
         <h5 class="modal-title" id="cardHistoryLabel">History Log</h5>
-                <button
-          type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-        >
-          Close
-        </button>
+              
       </div>
       <div class="modal-body">
       <?php
