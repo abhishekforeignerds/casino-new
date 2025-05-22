@@ -46,6 +46,7 @@ $sql = "
         COALESCE(SUM(unclaim_point), 0) AS total_unclaim
     FROM claim_point_data
     WHERE user_id = $user_id
+    AND DATE(created_at) = CURDATE()
 ";
 $result = mysqli_query($conn, $sql);
 if (! $result) {

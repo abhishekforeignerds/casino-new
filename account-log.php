@@ -138,213 +138,83 @@ $threshold = 0;
 //     $gr['serial']           = $idx + 1;  // serial starts at 1
 //     $mapped[]               = $gr;
 // }
-
-// 1) Fetch ALL claim_point_data rows first
 date_default_timezone_set('Asia/Kolkata');
 
-// assume $userId is already set (e.g. from session)
-$stmt2 = $conn->prepare("
-    SELECT *
-      FROM claim_point_data
-     WHERE user_id      = ?
-       AND DATE(created_at) = CURDATE()
-     ORDER
-        BY id DESC
-");
-$stmt2->bind_param("i", $user_id);
-$stmt2->execute();
-$res2 = $stmt2->get_result();
-$claim_list = $res2->fetch_all(MYSQLI_ASSOC);
+// 1) Get & validate date inputs (default: last 7 days)
+$from_date = $_GET['from_date'] ?? date('Y-m-d', strtotime('0 days'));
+$to_date   = $_GET['to_date']   ?? date('Y-m-d');
+if (!DateTime::createFromFormat('Y-m-d', $from_date) ||
+    !DateTime::createFromFormat('Y-m-d', $to_date)) {
+    if (!empty($_GET['ajax'])) {
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Invalid date format']);
+        exit();
+    }
+    die("Invalid date format.");
+}
 
-// 2) Fetch ALL game_results rows for a specific user where win_value > 0
-$stmt1 = $conn->prepare("SELECT * FROM game_results WHERE user_id = ? AND DATE(created_at) = CURDATE() AND win_value > 0 ORDER BY id DESC");
-$stmt1->bind_param("i", $user_id);
-$stmt1->execute();
-$res1 = $stmt1->get_result();
-$game_results = $res1->fetch_all(MYSQLI_ASSOC);
+// 2) Fetch aggregated data per existing day
+$sql = "
+    SELECT 
+      DATE(created_at) AS log_date,
+      SUM(balance)     AS total_sell_amount,
+      SUM(claim_point) AS win_value
+    FROM claim_point_data
+    WHERE user_id = ?
+      AND DATE(created_at) BETWEEN ? AND ?
+    GROUP BY DATE(created_at)
+    ORDER BY DATE(created_at) ASC
+";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("iss", $user_id, $from_date, $to_date);
+$stmt->execute();
+$res = $stmt->get_result();
 
+$daily_map = [];
+while ($row = $res->fetch_assoc()) {
+    $daily_map[$row['log_date']] = [
+      'sell'  => (float)$row['total_sell_amount'],
+      'win'   => (float)$row['win_value'],
+    ];
+}
+$stmt->close();
 
-// 3) Merge by index, starting from each claim
-$mapped = [];
-foreach ($claim_list as $idx => $cpd) {
-    // grab the “same-index” game-result, or fall back to a blank template
-    $gr = $game_results[$idx] ?? [
-        'id'         => 0,
-        'user_id'    => $cpd['user_id'],
-        'win_value'  => 0,
-        'created_at' => null,
-        'updated_at' => null,
-        // …add any other game_results fields here
+// 3) Build full date range
+$start    = new DateTime($from_date);
+$end      = new DateTime($to_date);
+$end->modify('+1 day');
+$period   = new DatePeriod($start, new DateInterval('P1D'), $end);
+
+// Prepare rows and totals
+$rows = [];
+$totals = ['sell' => 0, 'win' => 0, 'comm' => 0, 'net' => 0];
+
+foreach ($period as $dt) {
+    $d    = $dt->format('Y-m-d');
+    $sell = $daily_map[$d]['sell'] ?? 0;
+    $win  = $daily_map[$d]['win']  ?? 0;
+    $comm = $sell * 0.03;
+    $net  = $sell - $win - $comm;
+
+    $rows[] = [
+        'date' => $d,
+        'sell' => $sell,
+        'win'  => $win,
+        'comm' => $comm,
+        'net'  => $net
     ];
 
-    // inject the game result into the claim
-    $cpd['game_result'] = $gr;
-
-    // optionally give each record a 1‑based serial
-    $cpd['serial'] = $idx + 1;
-
-    $mapped[] = $cpd;
+    $totals['sell'] += $sell;
+    $totals['win']  += $win;
+    $totals['comm'] += $comm;
+    $totals['net']  += $net;
 }
 
-// echo '<pre>';
-// print_r($mapped);die;
-// $rows now holds each game_results row,
-// with claim_point_data_* null for non‑winners
-
-// $rows now contains one entry per game_results row.
-// If win_value ≤ 0, all the cpd.* fields will be NULL.
-
-
-
-// 1) Fetch ALL claim_point_data rows for a specific user
-$stmt2 = $conn->prepare("SELECT * FROM claim_point_data WHERE user_id = ? ORDER BY id DESC");
-$stmt2->bind_param("i", $user_id);
-$stmt2->execute();
-$res2 = $stmt2->get_result();
-$claim_list = $res2->fetch_all(MYSQLI_ASSOC);
-
-// 2) Fetch ALL game_results rows for a specific user where win_value > 0
-$stmt1 = $conn->prepare("SELECT * FROM game_results WHERE user_id = ? AND win_value > 0 ORDER BY id DESC");
-$stmt1->bind_param("i", $user_id);
-$stmt1->execute();
-$res1 = $stmt1->get_result();
-$game_results = $res1->fetch_all(MYSQLI_ASSOC);
-
-
-$gameResults = []; // Initialize empty array
-
-while ($row = $result->fetch_assoc()) {
-    $gameResults[] = $row; // Append each row to the array
-}
-
-
-
-$stmt = $conn->prepare("SELECT * FROM total_bet_history WHERE user_id = ? AND game_id = 1");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$total_bet_historys = [];
-while ($row = $result->fetch_assoc()) {
-    $total_bet_historys[] = $row;
-}
-$stmt->close();
-
-// 2) Index mapped claim data by winning_number
-$claimDataByNumber = [];
-foreach ($mapped as $gameResult) {
-
-    if($gameResult) {
-
-        $num = $gameResult['winning_number'];
-    } else {
-         $num = 0;
-    }
-    $claimDataByNumber[$num] = $gameResult['claim_point_data'];
-}
-
-// 3) Merge all bets, defaulting unmatched entries to zero
-$filteredBets = [];
-
-foreach ($total_bet_historys as $bet) {
-    // Determine lookup key (card_type matches winning_number)
-    $key = $bet['card_type'];
-
-    if (isset($claimDataByNumber[$key])) {
-        $claim = $claimDataByNumber[$key];
-
-        // populate from claim data
-        $bet['claim_point']   = $claim['claim_point'];
-        $bet['unclaim_point'] = $claim['unclaim_point'];
-        $bet['id']            = $claim['id'];
-        $bet['user_id']       = $claim['user_id'];
-    } else {
-        // default to zeros when no match
-        $bet['claim_point']   = 0;
-        $bet['unclaim_point'] = 0;
-        $bet['id']            = 0;
-        $bet['user_id']       = 0;
-    }
-
-    $filteredBets[] = $bet;
-}
-
-
-// now $filteredBets has only matching bets, each with claim_point & unclaim_point
-
-
-// echo '<pre>';
-// print_r($filteredBets);die;
-
-    $stmt = $conn->prepare("SELECT 
-    SUM(claim_point) AS total_claim, 
-    SUM(unclaim_point) AS total_unclaim 
-FROM claim_point_data 
-WHERE user_id = ? AND DATE(created_at) = CURDATE()");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$stmt->bind_result($totalClaim, $totalUnclaim);
-$stmt->fetch();
-$stmt->close();
-
-$totalClaim = $totalClaim ?? 0;
-$totalUnclaim = $totalUnclaim ?? 0;
-
-$error = '';
-$success = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $amount = $totalUnclaim;
-    $confirm = $totalUnclaim;
-    if ($amount !== $confirm) {
-        $error = 'Amounts do not match.';
-    } elseif ($amount > $totalUnclaim) {
-        $error = 'You do not have enough points to claim.';
-    }
-    else {
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM user_points_claims WHERE user_id = ? AND DATE(created_at) = CURDATE()");
-        $stmt->bind_param("i", $retailer_id);
-        $stmt->execute();
-        $stmt->bind_result($todayCount);
-        $stmt->fetch();
-        $stmt->close();
-        
-            do {
-                $ref = '';
-                $chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                for ($i = 0; $i < 10; $i++) {
-                    $ref .= $chars[random_int(0, strlen($chars) - 1)];
-                }
-                $stmt = $conn->prepare("SELECT COUNT(*) FROM user_points_claims WHERE reference_number = ?");
-                $stmt->bind_param("s", $ref);
-                $stmt->execute();
-                $stmt->bind_result($refExists);
-                $stmt->fetch();
-                $stmt->close();
-            } while ($refExists > 0);
-
-            $now = date('Y-m-d H:i:s');
-            $status = 'claimed';
-            $stmt = $conn->prepare("INSERT INTO user_points_claims (from_id, user_id, amount, reference_number, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("iisssss", $user_id, $retailer_id, $amount, $ref, $status, $now, $now);
-            if ($stmt->execute()) {
-                  $updatePointsQuery = "UPDATE user SET points = points + ? WHERE id = ?";
-                    $updateStmt = $conn->prepare($updatePointsQuery);
-                    $updateStmt->bind_param("ii", $amount, $user_id);
-                    $updateStmt->execute();
-
-                    $deleteQuery = "DELETE FROM claim_point_data WHERE user_id = ? AND unclaim_point > 0";
-    $deleteStmt = $conn->prepare($deleteQuery);
-    $deleteStmt->bind_param("i", $user_id);
-    $deleteStmt->execute();
-                $success = 'Points claim requested successfully. Reference: ' . $ref;
-
-            } else {
-                $error = 'Database error. Please try again.';
-            }
-            $stmt->close();
-        
-    }
+// If AJAX request, return JSON
+if (!empty($_GET['ajax'])) {
+    header('Content-Type: application/json');
+    echo json_encode(['rows' => $rows, 'totals' => $totals]);
+    exit();
 }
 ?>
 <!DOCTYPE html>
@@ -484,134 +354,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- Dashboard Section Starts Here -->
         <div class="dashboard-section padding-top padding-bottom">
             <div class="container">
-                <h2 class="text-center mb-3">Account Section</h4>
-                <div class="row">
-                    <!-- <div class="col-lg-3">
-                        <div class="dashboard-sidebar">
-                            <div class="close-dashboard d-lg-none">
-                                <i class="las la-times"></i>
-                            </div>
-                            <div class="dashboard-user">
-                                <div class="user-thumb">
-                                    <img src="assets/images/top/item1.png"
-                                        alt="dashboard">
-                                </div>
-                                <div class="user-content">
-                                    <span>Welcome</span>
-                                    <h5 class="name">Munna Ahmed</h5>
-                                    <h5 class="name">Your Balance <span style="color:#ffc124"><?php echo htmlspecialchars($points ?? 0); ?></span></h5>
-                                    <h5 class="name">Claimed Points <span style="color:#ffc124"><?php echo htmlspecialchars($totalClaim ?? 0); ?></span></h5>
-                                    <h5 class="name">Unclaimed Points <span style="color:#ffc124"><?php echo htmlspecialchars($totalUnclaim ?? 0); ?></span></h5>
-                                    <ul class="user-option">
-                                        <li>
-                                            <a href="#0">
-                                                <i class="las la-bell"></i>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#0">
-                                                <i class="las la-pen"></i>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#0">
-                                                <i class="las la-envelope"></i>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <ul class="user-dashboard-tab">
-                                <li>
-                                    <a href="dashboard.php"
-                                        class="active">Dashboard</a>
-                                </li>
-                                <li>
-                                    <a href="deposit-log.php">Deposit
-                                        History</a>
-                                </li>
-                                <li>
-                                    <a href="withdraw-log.php">Withdraw
-                                        History</a>
-                                </li>
-                                <li>
-                                    <a href="transection.php">Game
-                                        History</a>
-                                </li>
-                                <li>
-                                    <a href="profile.php">Account Settings</a>
-                                </li>
-                                <li>
-                                    <a href="change-pass.php">Security
-                                        Settings</a>
-                                </li>
-                                <li>
-                                    <a href="#0">Sign Out</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div> -->
-                    
-                    <?php
-    $totalSellAmount = 0;
-    $totalWinValue = 0;
-    $totalClaimed = 0;
-    $totalUnclaimed = 0;
-    $totalCommission = 0;
-    $totalNetAmount = 0;
+                
+        <!-- DAILY SUMMARY TABLE -->
+        <div class="dashboard-section padding-top padding-bottom">
+          <div class="container">
+            <h2 class="text-center mb-3 text-white">Account Section</h2>
+            <div class="row">
+                
+ <form id="filterForm" class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label for="from_date" class="form-label text-white">From Date</label>
+            <input type="date" id="from_date" name="from_date"
+                   class="form-control" required
+                   value="<?= htmlspecialchars($from_date) ?>">
+          </div>
+          <div class="col-md-4">
+            <label for="to_date" class="form-label text-white">To Date</label>
+            <input type="date" id="to_date" name="to_date"
+                   class="form-control" required
+                   value="<?= htmlspecialchars($to_date) ?>">
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+          </div>
+        </form>
 
-    foreach ($mapped as $result) {
-        $commission = $result['balance'] * 0.03;
-        $netAmount = $result['balance'] - $commission - $totalWinValue;
+              <div id="result-container" class="table--responsive--md">
+                <h3 class="text-white">Game: Poker Roulette</h3>
 
-        $cpd = $result['claim_point_data'] ?? [
-            'id' => 0,
-            'claim_point' => 0,
-            'unclaim_point' => 0
-        ];
+                <table class="table table-bordered table-striped text-white">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Sell Amount (₹)</th>
+                      <th>Win Value (₹)</th>
+                      <th>Commission (3%) (₹)</th>
+                      <th>Net Amount (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dailyTableBody">
+                    <?php foreach ($rows as $r): ?>
+                      <tr>
+                        <td><?= htmlspecialchars($r['date']) ?></td>
+                        <td>₹<?= number_format($r['sell'], 2) ?></td>
+                        <td>₹<?= number_format($r['win'], 2) ?></td>
+                        <td>₹<?= number_format($r['comm'], 2) ?></td>
+                        <td>₹<?= number_format($r['net'], 2) ?></td>
+                      </tr>
+                    <?php endforeach; ?>
+                  </tbody>
+                  <tfoot id="dailyTableFooter">
+                    <tr class="table-history">
+                      <th>Total</th>
+                      <th>₹<?= number_format($totals['sell'], 2) ?></th>
+                      <th>₹<?= number_format($totals['win'], 2) ?></th>
+                      <th>₹<?= number_format($totals['comm'], 2) ?></th>
+                      <th>₹<?= number_format($totals['net'], 2) ?></th>
+                    </tr>
+                  </tfoot>
+                </table>
 
-        $win_value = ($result['unclaim_point'] == 0 && $result['claim_point'] == 0)
-            ? 0
-            : ($result['unclaim_point'] ? $result['unclaim_point'] : $result['claim_point']);
-
-        $totalSellAmount += $result['balance'];
-        $totalWinValue    += $win_value;
-        $totalClaimed     += $result['claim_point'];
-        $totalUnclaimed   += $result['unclaim_point'];
-        $totalCommission  += $commission;
-        $totalNetAmount   += $netAmount;
-    }
-?>
-
-<div id="" class="table--responsive--md">
-    <h3>Game : Poker Roulette</h3>
-    <table class="table">
-        <thead>
-            
-            <tr>
-           
-                <th>Sell Amount</th>
-                <th>Win Value</th>
-                <th>Commission (%)</th>
-                <th>Commission Amt</th>
-                <th>Net Amount</th>
-            </tr>
-        </thead>
-        <tbody>
-           <tr class="table-history">
-              
-                <td>₹<?= number_format($totalSellAmount, 2) ?></td>
-                <td>₹<?= number_format($totalWinValue, 2) ?></td>
-             
-                <td>3%</td>
-                <td>₹<?= number_format($totalCommission, 2) ?></td>
-                <td>₹<?= number_format($totalNetAmount, 2) ?></td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-                </div>
+              </div>
             </div>
+          </div>
         </div>
         <!-- Dashboard Section Ends Here -->
 
@@ -621,8 +426,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!-- put this somewhere after you load jQuery on history‑log.php -->
 
 
-        <!-- jQuery library -->
+          <!-- jQuery library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
        
+<script defer>
+document.getElementById('filterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const from = document.getElementById('from_date').value;
+    const to   = document.getElementById('to_date').value;
+    fetch(`?from_date=${from}&to_date=${to}&ajax=1`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+        const tbody = document.getElementById('dailyTableBody');
+        const tfoot = document.getElementById('dailyTableFooter');
+        tbody.innerHTML = '';
+        data.rows.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${r.date}</td>
+            <td>₹${r.sell.toFixed(2)}</td>
+            <td>₹${r.win.toFixed(2)}</td>
+            <td>₹${r.comm.toFixed(2)}</td>
+            <td>₹${r.net.toFixed(2)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+        tfoot.innerHTML = `
+          <tr class="table-history">
+            <th>Total</th>
+            <th>₹${data.totals.sell.toFixed(2)}</th>
+            <th>₹${data.totals.win.toFixed(2)}</th>
+            <th>₹${data.totals.comm.toFixed(2)}</th>
+            <th>₹${data.totals.net.toFixed(2)}</th>
+          </tr>
+        `;
+      });
+});
+</script>
         <!-- bootstrap 5 js -->
         <script src="assets/js/lib/bootstrap.min.js"></script>
 

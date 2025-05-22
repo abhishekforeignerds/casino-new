@@ -175,7 +175,84 @@ $totalUnclaim = $totalUnclaim ?? 0;
 
 
 // Now $points contains the user's current points
+date_default_timezone_set('Asia/Kolkata');
 
+// 1) Get & validate date inputs (default: last 7 days)
+$from_date = $_GET['from_date'] ?? date('Y-m-d', strtotime('0 days'));
+$to_date   = $_GET['to_date']   ?? date('Y-m-d');
+if (!DateTime::createFromFormat('Y-m-d', $from_date) ||
+    !DateTime::createFromFormat('Y-m-d', $to_date)) {
+    if (!empty($_GET['ajax'])) {
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Invalid date format']);
+        exit();
+    }
+    die("Invalid date format.");
+}
+
+// 2) Fetch aggregated data per existing day
+$sql = "
+    SELECT 
+      DATE(created_at) AS log_date,
+      SUM(balance)     AS total_sell_amount,
+      SUM(claim_point) AS win_value
+    FROM claim_point_data
+    WHERE user_id = ?
+      AND DATE(created_at) BETWEEN ? AND ?
+    GROUP BY DATE(created_at)
+    ORDER BY DATE(created_at) ASC
+";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("iss", $user_id, $from_date, $to_date);
+$stmt->execute();
+$res = $stmt->get_result();
+
+$daily_map = [];
+while ($row = $res->fetch_assoc()) {
+    $daily_map[$row['log_date']] = [
+      'sell'  => (float)$row['total_sell_amount'],
+      'win'   => (float)$row['win_value'],
+    ];
+}
+$stmt->close();
+
+// 3) Build full date range
+$start    = new DateTime($from_date);
+$end      = new DateTime($to_date);
+$end->modify('+1 day');
+$period   = new DatePeriod($start, new DateInterval('P1D'), $end);
+
+// Prepare rows and totals
+$rows = [];
+$totals = ['sell' => 0, 'win' => 0, 'comm' => 0, 'net' => 0];
+
+foreach ($period as $dt) {
+    $d    = $dt->format('Y-m-d');
+    $sell = $daily_map[$d]['sell'] ?? 0;
+    $win  = $daily_map[$d]['win']  ?? 0;
+    $comm = $sell * 0.03;
+    $net  = $sell - $win - $comm;
+
+    $rows[] = [
+        'date' => $d,
+        'sell' => $sell,
+        'win'  => $win,
+        'comm' => $comm,
+        'net'  => $net
+    ];
+
+    $totals['sell'] += $sell;
+    $totals['win']  += $win;
+    $totals['comm'] += $comm;
+    $totals['net']  += $net;
+}
+
+// If AJAX request, return JSON
+if (!empty($_GET['ajax'])) {
+    header('Content-Type: application/json');
+    echo json_encode(['rows' => $rows, 'totals' => $totals]);
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -878,30 +955,28 @@ $('#auto-claim-toggle').on('change', function(){
     });
 
 </script>
-
-   <script>
+<script>
   document.addEventListener("DOMContentLoaded", function () {
     const container = document.getElementById("totalbet-display");
     const span = container.querySelector("span");
 
     let originalText = span.textContent;
-    let isMuted = false;
+    let isTransparent = false;
 
     container.addEventListener("click", function () {
-      if (!isMuted) {
-        span.textContent = "Muted";
-        span.style.color = "gray";
+      if (!isTransparent) {
+        span.style.color = "transparent";
         span.style.fontWeight = "normal";
-        isMuted = true;
+        isTransparent = true;
       } else {
-        span.textContent = originalText;
         span.style.color = "gold";
         span.style.fontWeight = "800";
-        isMuted = false;
+        isTransparent = false;
       }
     });
   });
 </script>
+
 <script>
   let isMuted = localStorage.getItem("isMuted") === "true";
 

@@ -678,7 +678,7 @@ updateTotalBetDisplay();
 })
   .then(res => res.json())
   .then(data => {
-    console.log('API RESPONSE:', data);
+    console.log('API RESPONSE PLACEPC BETS:', data);
 
     if (data.status === 'success') {
       console.log('Bet placed:', data.data.insertedId, 'totalBet:', data.data.totalBet);
@@ -688,7 +688,7 @@ updateTotalBetDisplay();
             // build your cells array with HTML snippets where needed
             const cells = [
               'NA',                                           // Marker Card
-              'NA',                                           // Ticket ID
+               data.data.serial,                                           // Ticket ID
               data.data.totalBet,                             // Bet Amount
               'NA',                                           // Win Value
               'NA',                                           // Claimed Points
