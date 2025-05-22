@@ -1550,7 +1550,7 @@ if (response.status == 'success') {
  
     const $tbody = $('#historytablebody');
     $tbody.empty();
-const $tbodynew = $('#dailyTableBody');
+const $tbodynew = $('#accountdailyTableBody');
 $tbodynew.empty();
 const now = new Date();
 const today = [
@@ -1615,8 +1615,8 @@ const footHtml = `
   </tr>`;
 
 // Inject into DOM
-document.getElementById('dailyTableBody').innerHTML = bodyHtml;
-document.getElementById('dailyTableFooter').innerHTML = footHtml;
+document.getElementById('accountdailyTableBody').innerHTML = bodyHtml;
+document.getElementById('accountdailyTableFooter').innerHTML = footHtml;
 
 const groupedData = {};
 
@@ -1985,3 +1985,10 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+
+  $(document).ready(function() {
+  setInterval(function() {
+    console.log('called updatedashboardData')
+    updatedashboardData(withdrawTime);
+  }, 2000);
+});
