@@ -222,8 +222,8 @@ document.getElementById('filterForm').addEventListener('submit', function(e) {
           alert(data.error);
           return;
         }
-        const tbody = document.getElementById('dailyTableBody');
-        const tfoot = document.getElementById('dailyTableFooter');
+        const tbody = document.getElementById('accountdailyTableBody');
+        const tfoot = document.getElementById('accountdailyTableFooter');
         tbody.innerHTML = '';
         data.rows.forEach(r => {
           const tr = document.createElement('tr');
