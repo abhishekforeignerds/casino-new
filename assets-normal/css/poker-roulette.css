@@ -1546,6 +1546,20 @@ div#suitIcon4  .bet-overlay {
     width: 44%;
     height: 76%;
 }
+img.king-card.card {
+    width: 95% !important;
+    height: 100px !important;
+}
+
+img.queen-card.card {
+    width: 95% !important;
+    height: 100px !important;
+}
+
+img.jack-card.card {
+    width: 95% !important;
+    height: 90px !important;
+}
   }
 
 
@@ -1600,7 +1614,13 @@ div#suitIcon4  .bet-overlay {
 height: 122%;
 }
 }
+@media screen and (min-width: 2560px) and (max-width: 2880px) {
+#wheel-container {
+  width: 75vh;
 
+  max-width: 1000px;
+}
+}
 .coin.selected {
   animation: rotateCoin 5s linear infinite;
   transform: scale(1.2); /* makes the circle bigger */

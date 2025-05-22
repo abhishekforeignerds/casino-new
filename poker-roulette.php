@@ -452,175 +452,107 @@ include 'modals/cardhistorymodal.php';
                 <!-- Card wrappers -->
                 <!-- Kings Row -->
                 <div class="card-wrapper" style="left: 46%;top: 7%;" data-initial-rotation="171">
-                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Spades" style="transform: rotate(171deg);">
+                    <img class="king-card card" src="/assets-normal/img/goldens-k.png" alt="King of Spades" style="transform: rotate(171deg);">
                 </div>
                 <div class="card-wrapper" style="left: 63%;top: 11%;" data-initial-rotation="205">
-                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Diamonds" style="transform: rotate(205deg);">
+                    <img class="king-card card" src="/assets-normal/img/goldens-k.png" alt="King of Diamonds" style="transform: rotate(205deg);">
                 </div>
                 <div class="card-wrapper" style="left: 75%;top: 25%;" data-initial-rotation="245">
-                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Clubs" style="transform: rotate(245deg);">
+                    <img class="king-card card" src="/assets-normal/img/goldens-k.png" alt="King of Clubs" style="transform: rotate(245deg);">
                 </div>
                 <div class="card-wrapper" style="left: 79%;top: 44%;" data-initial-rotation="272">
-                    <img class="card" src="/assets-normal/img/goldens-k.png" alt="King of Hearts" style="transform: rotate(272deg);">
+                    <img class="king-card card" src="/assets-normal/img/goldens-k.png" alt="King of Hearts" style="transform: rotate(272deg);">
                 </div>
                 <!-- Queens Row -->
                 <div class="card-wrapper" style="left: 76%;top: 61%;" data-initial-rotation="298">
-                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Spades" style="transform: rotate(298deg);">
+                       <img class="queen-card card" src="/assets-normal/img/golden-q.png" alt="Queen of Spades" style="transform: rotate(298deg);">
                 </div>
                 <div class="card-wrapper" style="left: 64%;top: 76%;" data-initial-rotation="327">
-                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Diamonds" style="transform: rotate(327deg);">
+                       <img class="queen-card card" src="/assets-normal/img/golden-q.png" alt="Queen of Diamonds" style="transform: rotate(327deg);">
                 </div>
                 <div class="card-wrapper" style="left: 46%;to;top: 80%;" data-initial-rotation="3">
-                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Clubs" style="transform: rotate(3deg);">
+                       <img class="queen-card card" src="/assets-normal/img/golden-q.png" alt="Queen of Clubs" style="transform: rotate(3deg);">
                 </div>
                 <div class="card-wrapper" style="left: 28%;top: 74%;" data-initial-rotation="30">
-                       <img class="card" src="/assets-normal/img/golden-q.png" alt="Queen of Hearts" style="transform: rotate(30deg);">
+                       <img class="queen-card card" src="/assets-normal/img/golden-q.png" alt="Queen of Hearts" style="transform: rotate(30deg);">
                 </div>
                 <!-- Jacks Row -->
                 <div class="card-wrapper" style="left: 15%;top: 62%;" data-initial-rotation="61">
-                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Spades" style="transform: rotate(61deg);">
+                     <img class="jack-card card" src="/assets-normal/img/golden-j.png" alt="Jack of Spades" style="transform: rotate(61deg);">
                 </div>
                 <div class="card-wrapper" style="left: 12%;top: 43%;" data-initial-rotation="98">
-                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Diamonds" style="transform: rotate(98deg);">
+                     <img class="jack-card card" src="/assets-normal/img/golden-j.png" alt="Jack of Diamonds" style="transform: rotate(98deg);">
                 </div>
                 <div class="card-wrapper" style="left: 17%;top: 26%;" data-initial-rotation="116">
-                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Clubs" style="transform: rotate(116deg);">
+                     <img class="jack-card card" src="/assets-normal/img/golden-j.png" alt="Jack of Clubs" style="transform: rotate(116deg);">
                 </div>
                 <div class="card-wrapper" style="left: 29%;to;top: 13%;" data-initial-rotation="153">
-                     <img class="card" src="/assets-normal/img/golden-j.png" alt="Jack of Hearts" style="transform: rotate(153deg);">
+                     <img class="jack-card card" src="/assets-normal/img/golden-j.png" alt="Jack of Hearts" style="transform: rotate(153deg);">
                 </div>
             </div>
 
             <!-- Center Circle -->
             <div id="center-circle"><img src="/assets-normal/img/golden-q.png" style="width: 60px; height: auto;"><span style="font-size: 40px; display: block; text-align: center; color: black;">♣</span></div>
 
-            <!-- Suit Ring -->
-            <!--<div id="suit-ring" style="position: absolute; width: 100px; height: 100px; top: 50%; left: 50%; transform-origin: 50% 50%; margin-left: -50px; margin-top: -50px; transform: rotate(-30deg); transition: none;" bis_skin_checked="1">-->
-            <!--    <span class="suit-segment" style="-->
-            <!--    position: absolute;-->
-            <!--    left: 107.572px;-->
-            <!--    top: 99.7818px;-->
-            <!--    transform: rotate(293deg);-->
-            <!--    "><img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades"></span>-->
-            <!--            <span class="suit-segment" style="-->
-            <!--    position: absolute;-->
-            <!--    left: 69.8509px;-->
-            <!--    top: 116.944px;-->
-            <!--    transform: rotate(332deg);-->
-            <!--    "><img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades"></span>-->
-            <!--    <span class="suit-segment" style="-->
-            <!--    position: absolute;-->
-            <!--    left: 55.6283px;-->
-            <!--    top: 128.633px;-->
-            <!--    transform: rotate(80deg);-->
-            <!--    "><img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades"></span><span class="suit-segment" style="-->
-            <!--    position: absolute;-->
-            <!--    left: -17.78181px;-->
-            <!--    top: 102.572px;-->
-            <!--    transform: rotate(22deg);-->
-            <!--    "><img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades"></span><span class="suit-segment" style="-->
-            <!--    position: absolute;-->
-            <!--    left: -39.944px;-->
-            <!--    top: 69.8509px;-->
-            <!--    transform: rotate(54deg);-->
-            <!--    "><img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades"></span><span class="suit-segment" style="-->
-            <!--    position: absolute;-->
-            <!--    left: -43.6327px;-->
-            <!--    top: 19.6283px;-->
-            <!--    transform: rotate(77deg);-->
-            <!--    "><img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades"></span><span class="suit-segment" style="-->
-            <!--    position: absolute;-->
-            <!--    left: -44.5723px;-->
-            <!--    top: 9.21819px;-->
-            <!--    transform: rotate(200deg);-->
-            <!--    "><img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades"></span><span class="suit-segment" style="-->
-            <!--    position: absolute;-->
-            <!--    left: 8.1491px;-->
-            <!--    top: -41.944px;-->
-            <!--    transform: rotate(146deg);-->
-            <!--    "><img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades"></span><span class="suit-segment" style="-->
-            <!--    position: absolute;-->
-            <!--    left: 55.3717px;-->
-            <!--    top: -44.6327px;-->
-            <!--    transform: rotate(175deg);-->
-            <!--    "><img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades"></span><span class="suit-segment" style="-->
-            <!--    position: absolute;-->
-            <!--    left: 93.7818px;-->
-            <!--    top: -25.5723px;-->
-            <!--    transform: rotate(213deg);-->
-            <!--    "><img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades"></span><span class="suit-segment" style="-->
-            <!--    position: absolute;-->
-            <!--    left: 108.944px;-->
-            <!--    top: -17.8509px;-->
-            <!--    transform: rotate(320deg);-->
-            <!--    "><img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades"></span><span class="suit-segment" style="-->
-            <!--    position: absolute;-->
-            <!--    left: 121.633px;-->
-            <!--    top: 55.3717px;-->
-            <!--    transform: rotate(267deg);-->
-            <!--    "><img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades"></span>-->
-                
-                
-            <!--</div>-->
 <div id="suit-ring" style="position: absolute; width: 100px; height: 100px; top: 50%; left: 50%; transform-origin: 50% 50%; margin-left: -50px; margin-top: -50px; transform: rotate(-150deg); transition: none;" bis_skin_checked="1">
-                <span class="suit-segment" style="
+                <span id="suit-segment-1" class="suit-segment" style="
                 position: absolute;
                 left: 147%;
                 top: 116%;
                 transform: rotate(293deg);
                 "><img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades"></span>
-                        <span class="suit-segment" style="
+                        <span id="suit-segment-2" class="suit-segment" style="
                 position: absolute;
                 left: 84%;
                 top: 146%;
                 transform: rotate(332deg);
                 "><img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades"></span>
-                <span class="suit-segment" style="
+                <span id="suit-segment-3" class="suit-segment" style="
                 position: absolute;
                 left: 60%;
                 top: 160%;
                 transform: rotate(80deg);
-                "><img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades"></span><span class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades"></span><span id="suit-segment-4" class="suit-segment" style="
                 position: absolute;
                 left: -32%;
                 top: 133%;
                 transform: rotate(22deg);
-                "><img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades"></span><span class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades"></span><span id="suit-segment-5" class="suit-segment" style="
                 position: absolute;
                 left: -65%;
                 top: 87%;
                 transform: rotate(54deg);
-                "><img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades"></span><span class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades"></span><span id="suit-segment-6" class="suit-segment" style="
                 position: absolute;
                 left: -80%;
                 top: 21%;
                 transform: rotate(77deg);
-                "><img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades"></span><span class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades"></span><span id="suit-segment-7" class="suit-segment" style="
                 position: absolute;
                 left: -69%;
                 top: -2%;
                 transform: rotate(200deg);
-                "><img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades"></span><span class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades"></span><span id="suit-segment-8" class="suit-segment" style="
                 position: absolute;
                 left: -3%;
                 top: -66%;
                 transform: rotate(146deg);
-                "><img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades"></span><span class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/spades-golden.png" alt="King of Spades"></span><span id="suit-segment-9" class="suit-segment" style="
                 position: absolute;
                 left: 56%;
                 top: -78%;
                 transform: rotate(175deg);
-                "><img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades"></span><span class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/golden-hearts.png" alt="King of Spades"></span><span id="suit-segment-10" class="suit-segment" style="
                 position: absolute;
                 left: 109%;
                 top: -50%;
                 transform: rotate(213deg);
-                "><img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades"></span><span class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/clubs-golden.png" alt="King of Spades"></span><span id="suit-segment-11" class="suit-segment" style="
                 position: absolute;
                 left: 134%;
                 top: -37%;
                 transform: rotate(320deg);
-                "><img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades"></span><span class="suit-segment" style="
+                "><img class="card" src="/assets-normal/img/golden-diamond.png" alt="King of Spades"></span><span id="suit-segment-12" class="suit-segment" style="
                 position: absolute;
                 left: 168%;
                 top: 55.3717px;
