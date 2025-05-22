@@ -158,11 +158,26 @@ foreach ($claim_list as $idx => $cpd) {
 
     $mapped[] = $cpd;
 }
-
+$today = date('Y-m-d');  
+$now   = date('Y-m-d H:i:s');  
+$stmt3 = $conn->prepare("
+    SELECT *
+      FROM total_bet_history
+     WHERE user_id         = ?
+       AND DATE(created_at) = ?
+       AND ticket_serial   >  0
+       AND withdraw_time   >= ?
+       AND card_bet_amounts IS NOT NULL
+     ORDER BY id DESC
+");
+$stmt3->bind_param("iss", $user_id, $today, $now);
+$stmt3->execute();
+$bethistory = $stmt3->get_result()->fetch_all(MYSQLI_ASSOC);
 
 echo json_encode([
     'status'       => 'success',
     'totalClaim'   => $totalClaim,
     'totalUnclaim' => $totalUnclaim,
     'mapped' => $mapped,
+    'bethistory' => $bethistory,
 ]);

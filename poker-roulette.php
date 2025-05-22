@@ -451,42 +451,42 @@ include 'modals/cardhistorymodal.php';
                 <svg id="lines-svg" width="100%" height="100%" viewBox="0 0 400 400"><line x1="227.0459231360939" y1="207.24693326287058" x2="393.18516525781365" y2="251.76380902050414" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="219.79898987322332" y1="219.79898987322332" x2="341.4213562373095" y2="341.4213562373095" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="207.24693326287058" y1="227.0459231360939" x2="251.76380902050414" y2="393.18516525781365" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="192.75306673712942" y1="227.0459231360939" x2="148.23619097949583" y2="393.18516525781365" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="180.20101012677668" y1="219.79898987322332" x2="58.57864376269052" y2="341.4213562373095" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="172.9540768639061" y1="207.24693326287058" x2="6.814834742186349" y2="251.7638090205042" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="172.9540768639061" y1="192.75306673712942" x2="6.814834742186321" y2="148.23619097949592" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="180.20101012677665" y1="180.20101012677668" x2="58.57864376269046" y2="58.57864376269052" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="192.75306673712942" y1="172.9540768639061" x2="148.23619097949586" y2="6.814834742186349" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="207.24693326287058" y1="172.9540768639061" x2="251.76380902050423" y2="6.814834742186349" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="219.79898987322332" y1="180.20101012677665" x2="341.4213562373095" y2="58.57864376269046" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line><line x1="227.0459231360939" y1="192.75306673712942" x2="393.18516525781365" y2="148.23619097949586" stroke="rgba(0,0,0,0.5)" stroke-width="2"></line></svg>
                 <!-- Card wrappers -->
                 <!-- Kings Row -->
-                <div class="card-wrapper" style="left: 46%;top: 7%;" data-initial-rotation="171">
+                <div class="card-wrapper" id="wheel-card-img-1" data-initial-rotation="171">
                     <img class="king-card card" src="/assets-normal/img/goldens-k.png" alt="King of Spades" style="transform: rotate(171deg);">
                 </div>
-                <div class="card-wrapper" style="left: 63%;top: 11%;" data-initial-rotation="205">
+                <div class="card-wrapper" id="wheel-card-img-2" data-initial-rotation="205">
                     <img class="king-card card" src="/assets-normal/img/goldens-k.png" alt="King of Diamonds" style="transform: rotate(205deg);">
                 </div>
-                <div class="card-wrapper" style="left: 75%;top: 25%;" data-initial-rotation="245">
+                <div class="card-wrapper" id="wheel-card-img-3" data-initial-rotation="245">
                     <img class="king-card card" src="/assets-normal/img/goldens-k.png" alt="King of Clubs" style="transform: rotate(245deg);">
                 </div>
-                <div class="card-wrapper" style="left: 79%;top: 44%;" data-initial-rotation="272">
+                <div class="card-wrapper" id="wheel-card-img-4" data-initial-rotation="272">
                     <img class="king-card card" src="/assets-normal/img/goldens-k.png" alt="King of Hearts" style="transform: rotate(272deg);">
                 </div>
                 <!-- Queens Row -->
-                <div class="card-wrapper" style="left: 76%;top: 61%;" data-initial-rotation="298">
+                <div class="card-wrapper" id="wheel-card-img-5" data-initial-rotation="298">
                        <img class="queen-card card" src="/assets-normal/img/golden-q.png" alt="Queen of Spades" style="transform: rotate(298deg);">
                 </div>
-                <div class="card-wrapper" style="left: 64%;top: 76%;" data-initial-rotation="327">
+                <div class="card-wrapper" id="wheel-card-img-6" data-initial-rotation="327">
                        <img class="queen-card card" src="/assets-normal/img/golden-q.png" alt="Queen of Diamonds" style="transform: rotate(327deg);">
                 </div>
-                <div class="card-wrapper" style="left: 46%;to;top: 80%;" data-initial-rotation="3">
+                <div class="card-wrapper" id="wheel-card-img-7" data-initial-rotation="3">
                        <img class="queen-card card" src="/assets-normal/img/golden-q.png" alt="Queen of Clubs" style="transform: rotate(3deg);">
                 </div>
-                <div class="card-wrapper" style="left: 28%;top: 74%;" data-initial-rotation="30">
+                <div class="card-wrapper" id="wheel-card-img-8" data-initial-rotation="30">
                        <img class="queen-card card" src="/assets-normal/img/golden-q.png" alt="Queen of Hearts" style="transform: rotate(30deg);">
                 </div>
                 <!-- Jacks Row -->
-                <div class="card-wrapper" style="left: 15%;top: 62%;" data-initial-rotation="61">
+                <div class="card-wrapper" id="wheel-card-img-9" data-initial-rotation="61">
                      <img class="jack-card card" src="/assets-normal/img/golden-j.png" alt="Jack of Spades" style="transform: rotate(61deg);">
                 </div>
-                <div class="card-wrapper" style="left: 12%;top: 43%;" data-initial-rotation="98">
+                <div class="card-wrapper" id="wheel-card-img-10" data-initial-rotation="98">
                      <img class="jack-card card" src="/assets-normal/img/golden-j.png" alt="Jack of Diamonds" style="transform: rotate(98deg);">
                 </div>
-                <div class="card-wrapper" style="left: 17%;top: 26%;" data-initial-rotation="116">
+                <div class="card-wrapper" id="wheel-card-img-11" data-initial-rotation="116">
                      <img class="jack-card card" src="/assets-normal/img/golden-j.png" alt="Jack of Clubs" style="transform: rotate(116deg);">
                 </div>
-                <div class="card-wrapper" style="left: 29%;to;top: 13%;" data-initial-rotation="153">
+                <div class="card-wrapper" id="wheel-card-img-12"  data-initial-rotation="153">
                      <img class="jack-card card" src="/assets-normal/img/golden-j.png" alt="Jack of Hearts" style="transform: rotate(153deg);">
                 </div>
             </div>

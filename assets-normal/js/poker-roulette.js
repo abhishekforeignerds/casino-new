@@ -1529,27 +1529,7 @@ if (response.status == 'success') {
     .then(data => {
       if (data.status === 'success') {
         console.log('Fetched data:', data);
- const suits     = ['spades','diamond','clubs','hearts'];
-  const ranks     = ['k','q','j'];
-
-  // 2) map each suit→exact file-basename
-  const suitIcons = {
-    spades:  'spades-golden',
-    diamond: 'golden-diamond',
-    clubs:   'clubs-golden',
-    hearts:  'golden-hearts'
-  };
-
-  // 3) map each rank→exact file-basename
-  const rankIcons = {
-    k: 'goldens-k',  // your PHP used goldens-k.png for *all* Kings
-    q: 'golden-q',
-    j: 'golden-j'
-  };
-
  
-    const $tbody = $('#historytablebody');
-    $tbody.empty();
 
 const now = new Date();
 const today = [
@@ -1628,7 +1608,27 @@ if ((from === today && to === today) || (countdown == 115)) {
   // at least one date isn’t today → skip updating
   console.warn('Table update skipped: date range is not today.');
 }
+const suits     = ['spades','diamond','clubs','hearts'];
+  const ranks     = ['k','q','j'];
 
+  // 2) map each suit→exact file-basename
+  const suitIcons = {
+    spades:  'spades-golden',
+    diamond: 'golden-diamond',
+    clubs:   'clubs-golden',
+    hearts:  'golden-hearts'
+  };
+
+  // 3) map each rank→exact file-basename
+  const rankIcons = {
+    k: 'goldens-k',  // your PHP used goldens-k.png for *all* Kings
+    q: 'golden-q',
+    j: 'golden-j'
+  };
+
+ 
+    const $tbody = $('#historytablebody');
+    $tbody.empty();
 const groupedData = {};
 
 data.mapped.forEach(result => {
@@ -1820,6 +1820,81 @@ Object.values(groupedData).forEach(group => {
       `;
       $tbody.append(row);
     });
+
+   data.bethistory.forEach(result => {
+  // 2) Determine index from result.card_type; show NA if missing/invalid
+  let index = null;
+  if (result.card_type !== undefined && result.card_type !== null) {
+    const parsed = parseInt(result.card_type, 10);
+    if (!isNaN(parsed) && parsed >= 0 && parsed <= 11) {
+      index = parsed;
+    }
+  }
+
+  // 3) Build the Card‐Win cell (two cards or “NA”)
+  let cardsHtml;
+  if (index === null) {
+    cardsHtml = 'NA';
+  } else {
+    const rankKey  = ranks[Math.floor(index / 4)];
+    const suitKey  = suits[index % 4];
+    const rankFile = rankIcons[rankKey];
+    const suitFile = suitIcons[suitKey];
+
+    cardsHtml = `NA`;
+  }
+
+  // 4) For every other column, default to “NA” if undefined/null
+  const ticketSerial = result.ticket_serial != null
+    ? `#${result.ticket_serial}`
+    : 'NA';
+
+  const betAmount = (result.bet_amount !== undefined && result.bet_amount !== null)
+    ? `₹${parseFloat(result.bet_amount).toFixed(2)}`
+    : 'NA';
+
+  const winValue = (result.win_value !== undefined && result.win_value !== null)
+    ? `₹${parseFloat(result.win_value).toFixed(2)}`
+    : 'NA';
+
+  const claimedPoints = (result.claim_point !== undefined && result.claim_point !== null)
+    ? parseFloat(result.claim_point).toFixed(0)
+    : 'NA';
+
+  const unclaimedPoints = (result.unclaim_point !== undefined && result.unclaim_point !== null)
+    ? parseFloat(result.unclaim_point).toFixed(0)
+    : 'NA';
+
+  const statusHtml = result.status_html != null
+    ? result.status_html
+    : 'NA';
+
+  const actionHtml = result.action_html != null
+    ? result.action_html
+    : 'NA';
+
+  const withdrawTime = result.withdraw_time != null
+    ? result.withdraw_time
+    : 'NA';
+
+  // 5) Build the row string exactly as before
+  const row = `
+    <tr class="table-history">
+      <td data-label="Card Win" class="image-tr d-flex">${cardsHtml}</td>
+      <td data-label="Ticket Serial">${ticketSerial}</td>
+      <td data-label="Bet Amount">${betAmount}</td>
+      <td data-label="Win Value">${winValue}</td>
+      <td data-label="Claimed Points">${claimedPoints}</td>
+      <td data-label="Unclaimed Points">${unclaimedPoints}</td>
+      <td data-label="Status">${statusHtml}</td>
+      <td data-label="Withdraw Time">${withdrawTime}</td>
+      <td data-label="Action">${actionHtml}</td>
+    </tr>
+  `;
+
+  // 6) Prepend this row instead of append
+  $tbody.prepend(row);
+});
     const winPointsDisplay = document.getElementById("claim-display");
  winPointsDisplay.innerHTML = "Claimed: <span style='color: gold;font-weight:800;'>" + data.totalClaim + "</span>";
     const totalUnclaimdisplay = document.getElementById("unclaim-display");
@@ -2001,5 +2076,5 @@ document.addEventListener("DOMContentLoaded", function () {
   setInterval(function() {
     console.log('called updatedashboardData')
     updatedashboardData(withdrawTime);
-  }, 2000);
+  }, 4000);
 });
