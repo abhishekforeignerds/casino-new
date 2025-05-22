@@ -689,7 +689,7 @@ updateTotalBetDisplay();
             const cells = [
               'NA',                                           // Marker Card
                data.data.serial,                                           // Ticket ID
-              data.data.totalBet,                             // Bet Amount
+              '#'+data.data.totalBet,                             // Bet Amount
               'NA',                                           // Win Value
               'NA',                                           // Claimed Points
               'NA',                                           // Unclaimed Points

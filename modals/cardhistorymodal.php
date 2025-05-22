@@ -576,19 +576,100 @@ foreach ($mapped as $result) {
                 
                 // Get current claimed points before update
                 let claimedPointsCell = $row.find('td[data-label="Claimed Points"]');
-                  let statusCell = $row.find('td[data-label="Status"]');
-        let actionCell = $row.find('td[data-label="Action"]');
+                let statusCell = $row.find('td[data-label="Status"]');
+                let actionCell = $row.find('td[data-label="Action"]');
                 let claimedPoints = parseInt(claimedPointsCell.text().replace(/,/g, '')) || 0;
-
-         
 
                 claimedPointsCell.text(response.unclaim_points.toLocaleString());
                 $row.find('td[data-label="Unclaimed Points"]').text('0');
- statusCell.html(' <small class="btn-sm btn-success">Win</small><small class="btn-sm btn-danger">Claimed</small>');
+                statusCell.html(' <small class="btn-sm btn-success">Win</small><small class="btn-sm btn-danger">Claimed</small>');
 
-        // Update Action: disabled button with text 'Unclaimable'
-        actionCell.html('<button class="btn btn-sm btn-secondary" disabled>Unclaimable</button>');
-              
+                // Update Action: disabled button with text 'Unclaimable'
+                actionCell.html('<button class="btn btn-sm btn-secondary" disabled>Unclaimable</button>');
+
+                
+                const balanceDisplay = document.querySelector('#balance-display span');
+                if (balanceDisplay) {
+                    const currentBalance = parseFloat(balanceDisplay.textContent.replace(/[^\d.]/g, '')) || 0;
+                    const newBalance = currentBalance + claimedPoints;
+                    balanceDisplay.textContent = newBalance.toFixed(2);
+                }
+                const claimDisplay = document.querySelector('#claim-display span');
+                if (claimDisplay) {
+                    const currentBalance = parseFloat(claimDisplay.textContent.replace(/[^\d.]/g, '')) || 0;
+                    const newBalance = currentBalance + claimedPoints;
+                    claimDisplay.textContent = newBalance.toFixed(2);
+                }
+                const unclaimDisplay = document.querySelector('#unclaim-display span');
+                if (unclaimDisplay) {
+                    const currentBalance = parseFloat(unclaimDisplay.textContent.replace(/[^\d.]/g, '')) || 0;
+                    const newBalance = currentBalance - claimedPoints;
+                    unclaimDisplay.textContent = newBalance.toFixed(2);
+                }
+
+       let now   = new Date();
+  let dd    = String(now.getDate()).padStart(2,'0');
+  let mm    = String(now.getMonth()+1).padStart(2,'0');
+  let yyyy  = now.getFullYear();
+  let dateStr = `${yyyy}-${mm}-${dd}`;  // adjust format if your PHP uses dd/mm/yyyy
+
+  // find the matching row in the account table
+  let $acctRow = $('#accountdailyTableBody tr').filter(function(){
+    return $(this).find('td[data-label="Date"]').text().trim() === dateStr;
+  });
+  if (!$acctRow.length) return; // no row today? bail
+
+  // helper to parse a "₹1,234.56" string → Number
+  function parseAmt(txt){
+    return parseFloat(txt.replace(/[₹,]/g,'')) || 0;
+  }
+  // helper to format a number → "1,234.56"
+  function fmt(num){
+    return num.toLocaleString(undefined,{
+      minimumFractionDigits:2,
+      maximumFractionDigits:2
+    });
+  }
+
+  // 1) get existing values
+  let $winCell  = $acctRow.find('td[data-label="Win Value (₹)"]');
+  let $commCell = $acctRow.find('td[data-label="Commission (3%) (₹)"]');
+  let $netCell  = $acctRow.find('td[data-label="Net Amount (₹)"]');
+
+  let existingWin  = parseAmt($winCell.text());
+  let existingComm = parseAmt($commCell.text());
+  let existingNet  = parseAmt($netCell.text());
+
+  // 2) compute the new increments
+  let addWin       = response.unclaim_points;
+  let addComm      = addWin * 0.03;
+  let addNet       = addWin - addComm;
+
+  // 3) sum them up
+  let updatedWin  = existingWin  + addWin;
+  let updatedComm = existingComm + addComm;
+  let updatedNet  = existingNet  + addNet;
+
+  // 4) write back the totals
+  $winCell .text(fmt(updatedWin));
+  $commCell.text(fmt(updatedComm));
+  $netCell .text(fmt(updatedNet));
+
+  // 5) now rebuild your footer totals exactly as before
+  let totals = { sell:0, win:0, comm:0, net:0 };
+  $('#accountdailyTableBody tr').each(function(){
+    let $tds = $(this).find('td');
+    totals.sell += parseAmt($tds.eq(1).text());
+    totals.win  += parseAmt($tds.eq(2).text());
+    totals.comm += parseAmt($tds.eq(3).text());
+    totals.net  += parseAmt($tds.eq(4).text());
+  });
+
+  let $footerTh = $('#accountdailyTableFooter tr.account-table-history').find('th');
+  $footerTh.eq(1).text(fmt(totals.sell));
+  $footerTh.eq(2).text(fmt(totals.win ));
+  $footerTh.eq(3).text(fmt(totals.comm));
+  $footerTh.eq(4).text(fmt(totals.net ));
             } else {
                 alert(response.message || 'Failed to claim points');
             }

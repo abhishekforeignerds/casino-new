@@ -680,18 +680,38 @@ Claimed
                 
                 // Get current claimed points before update
                 let claimedPointsCell = $row.find('td[data-label="Claimed Points"]');
-                  let statusCell = $row.find('td[data-label="Status"]');
-        let actionCell = $row.find('td[data-label="Action"]');
+                let statusCell = $row.find('td[data-label="Status"]');
+                let actionCell = $row.find('td[data-label="Action"]');
                 let claimedPoints = parseInt(claimedPointsCell.text().replace(/,/g, '')) || 0;
-
-         
 
                 claimedPointsCell.text(response.unclaim_points.toLocaleString());
                 $row.find('td[data-label="Unclaimed Points"]').text('0');
- statusCell.html(' <small class="btn-sm btn-success">Win</small><small class="btn-sm btn-danger">Claimed</small>');
+                statusCell.html(' <small class="btn-sm btn-success">Win</small><small class="btn-sm btn-danger">Claimed</small>');
 
-        // Update Action: disabled button with text 'Unclaimable'
-        actionCell.html('<button class="btn btn-sm btn-secondary" disabled>Unclaimable</button>');
+                // Update Action: disabled button with text 'Unclaimable'
+                actionCell.html('<button class="btn btn-sm btn-secondary" disabled>Unclaimable</button>');
+
+                
+                const balanceDisplay = document.querySelector('#balance-display span');
+                if (balanceDisplay) {
+                    const currentBalance = parseFloat(balanceDisplay.textContent.replace(/[^\d.]/g, '')) || 0;
+                    const newBalance = currentBalance + claimedPoints;
+                    balanceDisplay.textContent = newBalance.toFixed(2);
+                }
+                const claimDisplay = document.querySelector('#claim-display span');
+                if (claimDisplay) {
+                    const currentBalance = parseFloat(claimDisplay.textContent.replace(/[^\d.]/g, '')) || 0;
+                    const newBalance = currentBalance - claimedPoints;
+                    claimDisplay.textContent = newBalance.toFixed(2);
+                }
+                const unclaimDisplay = document.querySelector('#unclaim-display span');
+                if (unclaimDisplay) {
+                    const currentBalance = parseFloat(unclaimDisplay.textContent.replace(/[^\d.]/g, '')) || 0;
+                    const newBalance = currentBalance + claimedPoints;
+                    unclaimDisplay.textContent = newBalance.toFixed(2);
+                }
+
+                
               
             } else {
                 // alert(response.message || 'Failed to claim points');

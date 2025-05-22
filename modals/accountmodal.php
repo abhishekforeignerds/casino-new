@@ -152,7 +152,7 @@ $threshold = 0;
               <div id="result-container" class="table--responsive--md">
                 <h3 class="text-white">Game: Poker Roulette</h3>
 
-                <table class="table table-bordered table-striped text-white">
+               <table class="table table-bordered table-striped text-white">
                   <thead>
                     <tr>
                       <th>Date</th>
@@ -162,27 +162,28 @@ $threshold = 0;
                       <th>Net Amount (₹)</th>
                     </tr>
                   </thead>
-                  <tbody id="dailyTableBody">
+                  <tbody id="accountdailyTableBody">
                     <?php foreach ($rows as $r): ?>
                       <tr>
-                        <td><?= htmlspecialchars($r['date']) ?></td>
-                        <td>₹<?= number_format($r['sell'], 2) ?></td>
-                        <td>₹<?= number_format($r['win'], 2) ?></td>
-                        <td>₹<?= number_format($r['comm'], 2) ?></td>
-                        <td>₹<?= number_format($r['net'], 2) ?></td>
+                        <td data-label="Date"><?= htmlspecialchars($r['date']) ?></td>
+                        <td data-label="Sell Amount (₹)">₹<?= number_format($r['sell'], 2) ?></td>
+                        <td data-label="Win Value (₹)">₹<?= number_format($r['win'], 2) ?></td>
+                        <td data-label="Commission (3%) (₹)">₹<?= number_format($r['comm'], 2) ?></td>
+                        <td data-label="Net Amount (₹)">₹<?= number_format($r['net'], 2) ?></td>
                       </tr>
                     <?php endforeach; ?>
                   </tbody>
-                  <tfoot id="dailyTableFooter">
-                    <tr class="table-history">
-                      <th>Total</th>
-                      <th>₹<?= number_format($totals['sell'], 2) ?></th>
-                      <th>₹<?= number_format($totals['win'], 2) ?></th>
-                      <th>₹<?= number_format($totals['comm'], 2) ?></th>
-                      <th>₹<?= number_format($totals['net'], 2) ?></th>
+                  <tfoot id="accountdailyTableFooter">
+                    <tr class="account-table-history">
+                      <th data-label="Total">Total</th>
+                      <th data-label="Sell Amount (₹)">₹<?= number_format($totals['sell'], 2) ?></th>
+                      <th data-label="Win Value (₹)">₹<?= number_format($totals['win'], 2) ?></th>
+                      <th data-label="Commission (3%) (₹)">₹<?= number_format($totals['comm'], 2) ?></th>
+                      <th data-label="Net Amount (₹)">₹<?= number_format($totals['net'], 2) ?></th>
                     </tr>
                   </tfoot>
                 </table>
+
 
               </div>
             </div>
