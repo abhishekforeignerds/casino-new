@@ -607,23 +607,20 @@ foreach ($mapped as $result) {
                     unclaimDisplay.textContent = newBalance.toFixed(2);
                 }
 
-       let now   = new Date();
+     let now   = new Date();
   let dd    = String(now.getDate()).padStart(2,'0');
   let mm    = String(now.getMonth()+1).padStart(2,'0');
   let yyyy  = now.getFullYear();
-  let dateStr = `${yyyy}-${mm}-${dd}`;  // adjust format if your PHP uses dd/mm/yyyy
+  let dateStr = `${yyyy}-${mm}-${dd}`;  // adjust if you use dd/mm/yyyy
 
-  // find the matching row in the account table
+  // 2) find the matching row
   let $acctRow = $('#accountdailyTableBody tr').filter(function(){
     return $(this).find('td[data-label="Date"]').text().trim() === dateStr;
   });
-  if (!$acctRow.length) return; // no row today? bail
+  if (!$acctRow.length) return; // no match? bail out
 
-  // helper to parse a "₹1,234.56" string → Number
-  function parseAmt(txt){
-    return parseFloat(txt.replace(/[₹,]/g,'')) || 0;
-  }
-  // helper to format a number → "1,234.56"
+  // parsers & formatters
+  function parseAmt(txt){ return parseFloat(txt.replace(/[₹,]/g,'')) || 0; }
   function fmt(num){
     return num.toLocaleString(undefined,{
       minimumFractionDigits:2,
@@ -631,34 +628,26 @@ foreach ($mapped as $result) {
     });
   }
 
-  // 1) get existing values
-  let $sellCell  = $acctRow.find('td[data-label="Sell Amount (₹)"]');
-  let $winCell  = $acctRow.find('td[data-label="Win Value (₹)"]');
-  let $commCell = $acctRow.find('td[data-label="Commission (3%) (₹)"]');
-  let $netCell  = $acctRow.find('td[data-label="Net Amount (₹)"]');
+  // 3) read existing Sell / Win / Comm
+  let existingSell  = parseAmt($acctRow.find('td[data-label="Sell Amount (₹)"]').text());
+  let existingWin   = parseAmt($acctRow.find('td[data-label="Win Value (₹)"]').text());
+  let existingComm  = parseAmt($acctRow.find('td[data-label="Commission (3%) (₹)"]').text());
 
-  let existingSell  = parseAmt($sellCell.text());
-  let existingWin  = parseAmt($winCell.text());
-  let existingComm = parseAmt($commCell.text());
-  let existingNet  = parseAmt($netCell.text());
+  // 4) compute increments
+  let addWin        = response.unclaim_points;       // ₹ you’re crediting to “Win”
+  let addComm       = addWin * 0.03;                 // 3% of the new win
+  let updatedWin    = existingWin + addWin;
+  let updatedComm   = existingComm + addComm;
 
-  // 2) compute the new increments
-  let addWin       = response.unclaim_points;
-  let addComm      = addWin * 0.03;
-  let addNet       = addNet - addWin;
-  let addNet       = addNet - addComm;
+  // 5) recompute net as Sell - Win - Comm
+  let updatedNet    = existingSell - updatedWin - updatedComm;
 
-  // 3) sum them up
-  let updatedWin  = existingWin  + addWin;
-  let updatedComm = existingComm + addComm;
-  let updatedNet  = existingNet  + addNet;
+  // 6) write back Win / Comm / Net
+  $acctRow.find('td[data-label="Win Value (₹)"]').text(fmt(updatedWin));
+  $acctRow.find('td[data-label="Commission (3%) (₹)"]').text(fmt(updatedComm));
+  $acctRow.find('td[data-label="Net Amount (₹)"]').text(fmt(updatedNet));
 
-  // 4) write back the totals
-  $winCell .text(fmt(updatedWin));
-  $commCell.text(fmt(updatedComm));
-  $netCell .text(fmt(updatedNet));
-
-  // 5) now rebuild your footer totals exactly as before
+  // 7) rebuild footer totals
   let totals = { sell:0, win:0, comm:0, net:0 };
   $('#accountdailyTableBody tr').each(function(){
     let $tds = $(this).find('td');
