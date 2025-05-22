@@ -631,7 +631,7 @@ foreach ($mapped as $result) {
   // 3) read existing Sell / Win / Comm
   let existingSell  = parseAmt($acctRow.find('td[data-label="Sell Amount (₹)"]').text());
   let existingWin   = parseAmt($acctRow.find('td[data-label="Win Value (₹)"]').text());
-  let existingComm  = parseAmt($acctRow.find('td[data-label="Commission (3%) (₹)"]').text());
+  let existingComm  = parseAmt($acctRow.find('td[data-label="Commission (₹)"]').text());
 
   // 4) compute increments
   let addWin        = response.unclaim_points;       // ₹ you’re crediting to “Win”
@@ -644,7 +644,7 @@ foreach ($mapped as $result) {
 
   // 6) write back Win / Comm / Net
   $acctRow.find('td[data-label="Win Value (₹)"]').text(fmt(updatedWin));
-  $acctRow.find('td[data-label="Commission (3%) (₹)"]').text(fmt(updatedComm));
+  $acctRow.find('td[data-label="Commission (₹)"]').text(fmt(updatedComm));
   $acctRow.find('td[data-label="Net Amount (₹)"]').text(fmt(updatedNet));
 
   // 7) rebuild footer totals

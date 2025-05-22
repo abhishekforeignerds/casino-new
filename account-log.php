@@ -388,7 +388,7 @@ if (!empty($_GET['ajax'])) {
                       <th>Date</th>
                       <th>Sell Amount (₹)</th>
                       <th>Win Value (₹)</th>
-                      <th>Commission (3%) (₹)</th>
+                      <th>Commission (₹)</th>
                       <th>Net Amount (₹)</th>
                     </tr>
                   </thead>

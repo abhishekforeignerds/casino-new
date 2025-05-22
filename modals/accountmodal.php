@@ -158,7 +158,7 @@ $threshold = 0;
                       <th>Date</th>
                       <th>Sell Amount (₹)</th>
                       <th>Win Value (₹)</th>
-                      <th>Commission (3%) (₹)</th>
+                      <th>Commission (₹)</th>
                       <th>Net Amount (₹)</th>
                     </tr>
                   </thead>
@@ -168,7 +168,7 @@ $threshold = 0;
                         <td data-label="Date"><?= htmlspecialchars($r['date']) ?></td>
                         <td data-label="Sell Amount (₹)">₹<?= number_format($r['sell'], 2) ?></td>
                         <td data-label="Win Value (₹)">₹<?= number_format($r['win'], 2) ?></td>
-                        <td data-label="Commission (3%) (₹)">₹<?= number_format($r['comm'], 2) ?></td>
+                        <td data-label="Commission (₹)">₹<?= number_format($r['comm'], 2) ?></td>
                         <td data-label="Net Amount (₹)">₹<?= number_format($r['net'], 2) ?></td>
                       </tr>
                     <?php endforeach; ?>
@@ -178,7 +178,7 @@ $threshold = 0;
                       <th data-label="Total">Total</th>
                       <th data-label="Sell Amount (₹)">₹<?= number_format($totals['sell'], 2) ?></th>
                       <th data-label="Win Value (₹)">₹<?= number_format($totals['win'], 2) ?></th>
-                      <th data-label="Commission (3%) (₹)">₹<?= number_format($totals['comm'], 2) ?></th>
+                      <th data-label="Commission (₹)">₹<?= number_format($totals['comm'], 2) ?></th>
                       <th data-label="Net Amount (₹)">₹<?= number_format($totals['net'], 2) ?></th>
                     </tr>
                   </tfoot>
