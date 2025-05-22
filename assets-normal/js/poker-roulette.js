@@ -207,12 +207,12 @@ if (countdown === 5) {
     }
   });
 
-  resultDisplay.style.display = 'block';
-  resultDisplay.textContent = "Bet was Cancelled.";
+  // resultDisplay.style.display = 'block';
+  // resultDisplay.textContent = "Bet was Cancelled.";
 
-  setTimeout(() => {
-    resultDisplay.style.display = 'none';
-  }, 2000);
+  // setTimeout(() => {
+  //   resultDisplay.style.display = 'none';
+  // }, 2000);
 
   document.getElementById("place-bets").disabled = true;
 
@@ -1550,6 +1550,17 @@ if (response.status == 'success') {
  
     const $tbody = $('#historytablebody');
     $tbody.empty();
+const $tbodynew = $('#dailyTableBody');
+$tbodynew.empty();
+const now = new Date();
+const today = [
+  now.getFullYear(),
+  String(now.getMonth() + 1).padStart(2, '0'),
+  String(now.getDate()).padStart(2, '0')
+].join('-');
+document.getElementById('from_date').value = today;
+document.getElementById('to_date').value = today;
+// Initialize totals
 let totalSellAmount = 0;
 let totalWinValue = 0;
 let totalClaimed = 0;
@@ -1557,54 +1568,56 @@ let totalUnclaimed = 0;
 let totalCommission = 0;
 let totalNetAmount = 0;
 
+// Loop and aggregate today's data
 data.mapped.forEach(result => {
-  const balance = parseFloat(result.balance) || 0;
-  const claim_point = parseFloat(result.claim_point) || 0;
-  const unclaim_point = parseFloat(result.unclaim_point) || 0;
+  const createdDate = result.created_at?.slice(0, 10);
 
-  const commission = balance * 0.03;
-  
-  const win_value = (claim_point === 0)
-    ? 0
-    : claim_point;
+  if (createdDate === today) {
+    const balance = parseFloat(result.balance) || 0;
+    const claim_point = parseFloat(result.claim_point) || 0;
+    const unclaim_point = parseFloat(result.unclaim_point) || 0;
+    const commission = balance * 0.03;
+    const win_value = claim_point === 0 ? 0 : claim_point;
+    const netAmount = balance - commission - win_value;
 
-  const netAmount = balance - commission - win_value;
-
-  totalSellAmount += balance;
-  totalWinValue += win_value;
-  totalClaimed += claim_point;
-  totalUnclaimed += unclaim_point;
-  totalCommission += commission;
-  totalNetAmount += netAmount;
+    totalSellAmount += balance;
+    totalWinValue += win_value;
+    totalClaimed += claim_point;
+    totalUnclaimed += unclaim_point;
+    totalCommission += commission;
+    totalNetAmount += netAmount;
+  }
 });
 
-// Example of rendering the result to HTML
-const outputHtml = `
+// Build body row (only one row for today)
+let bodyHtml = '';
+if (totalSellAmount > 0 || totalWinValue > 0 || totalCommission > 0 || totalNetAmount > 0) {
+  bodyHtml = `
+    <tr>
+      <td>${today}</td>
+      <td>₹${totalSellAmount.toFixed(2)}</td>
+      <td>₹${totalWinValue.toFixed(2)}</td>
+      <td>₹${totalCommission.toFixed(2)}</td>
+      <td>₹${totalNetAmount.toFixed(2)}</td>
+    </tr>`;
+} else {
+  bodyHtml = `<tr><td colspan="5">No entries for today</td></tr>`;
+}
 
-  <h3>Game : Poker Roulette</h3>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Sell Amount</th>
-        <th>Win Value</th>
-        <th>Commission Amt</th>
-        <th>Net Amount</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr class="table-history">
-        <td>₹${totalSellAmount.toFixed(2)}</td>
-        <td>₹${totalWinValue.toFixed(2)}</td>
-        <td>₹${totalCommission.toFixed(2)}</td>
-        <td>₹${totalNetAmount.toFixed(2)}</td>
-      </tr>
-    </tbody>
-  </table>
+// Build footer row
+const footHtml = `
+  <tr class="table-history">
+    <th>Total</th>
+    <th>₹${totalSellAmount.toFixed(2)}</th>
+    <th>₹${totalWinValue.toFixed(2)}</th>
+    <th>₹${totalCommission.toFixed(2)}</th>
+    <th>₹${totalNetAmount.toFixed(2)}</th>
+  </tr>`;
 
-`;
+// Inject into DOM
+document.getElementById('dailyTableBody').innerHTML = bodyHtml;
+document.getElementById('dailyTableFooter').innerHTML = footHtml;
 
-// Optional: append to DOM
-document.getElementById('result-container').innerHTML = outputHtml;
 const groupedData = {};
 
 data.mapped.forEach(result => {
