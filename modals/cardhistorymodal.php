@@ -632,10 +632,12 @@ foreach ($mapped as $result) {
   }
 
   // 1) get existing values
+  let $sellCell  = $acctRow.find('td[data-label="Sell Amount (₹)"]');
   let $winCell  = $acctRow.find('td[data-label="Win Value (₹)"]');
   let $commCell = $acctRow.find('td[data-label="Commission (3%) (₹)"]');
   let $netCell  = $acctRow.find('td[data-label="Net Amount (₹)"]');
 
+  let existingSell  = parseAmt($sellCell.text());
   let existingWin  = parseAmt($winCell.text());
   let existingComm = parseAmt($commCell.text());
   let existingNet  = parseAmt($netCell.text());
@@ -643,7 +645,8 @@ foreach ($mapped as $result) {
   // 2) compute the new increments
   let addWin       = response.unclaim_points;
   let addComm      = addWin * 0.03;
-  let addNet       = addWin - addComm;
+  let addNet       = addNet - addWin;
+  let addNet       = addNet - addComm;
 
   // 3) sum them up
   let updatedWin  = existingWin  + addWin;
