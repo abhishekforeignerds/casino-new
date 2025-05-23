@@ -227,10 +227,10 @@ fetch('../../api/remove_pc_bets.php', {
 .then(res => res.json())
 .then(data => {
   console.log('API RESPONSE:', data);
-
+pcbets = {};
   if (data.status === 'success') {
     const nullBetSum = parseFloat(data.data.nullBetSum) || 0;
-
+console.log('nullBetSum test', nullBetSum)
     // Update "Today's Bet"
     const totalBetDisplay = document.querySelector('#totalbet-display span');
     if (totalBetDisplay) {
@@ -444,12 +444,20 @@ document.querySelectorAll(".grid-card").forEach(card => {
     const index = parseInt(this.getAttribute("data-index"));
     if (selectedCoin === null) return;
     if (balance < selectedCoin) {
-      alert("Not Enough Balance to Place Bet");
+      resultDisplay.style.display = 'block';
+      resultDisplay.textContent = "Betting time is over.";
       return;
+    
     }
+const currentAmount = pcbets[index] || 0;
 
+if (currentAmount + selectedCoin > 10000) {
+    resultDisplay.style.display = 'block';
+    resultDisplay.textContent = "Maximum bet done.";
+    return;
+}
     balance -= selectedCoin;
-    updateBalanceDisplay();
+    // updateBalanceDisplay();
 
     if (bets[index] === undefined) bets[index] = selectedCoin;
     else bets[index] += selectedCoin;
@@ -504,9 +512,14 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
       alert("Not Enough Balance to Place Bet");
       return;
     }
-
+    const currentAmount = pcbets[index] || 0;
+if (currentAmount + selectedCoin > 10000) {
+    resultDisplay.style.display = 'block';
+    resultDisplay.textContent = "Maximum bet done.";
+    return;
+}
     balance -= (selectedCoin * 3);
-    updateBalanceDisplay();
+    // updateBalanceDisplay();
 
     if (bets[betKey] === undefined) bets[betKey] = (selectedCoin * 3);
     else bets[betKey] += (selectedCoin * 3);
@@ -590,9 +603,14 @@ document.querySelectorAll(".grid-label").forEach(label => {
       alert("Not Enough Balance to Place Bet");
       return;
     }
-
+    const currentAmount = pcbets[index] || 0;
+if (currentAmount + selectedCoin > 10000) {
+    resultDisplay.style.display = 'block';
+    resultDisplay.textContent = "Maximum bet done.";
+    return;
+}
     balance -= (selectedCoin * 4);
-    updateBalanceDisplay();
+    // updateBalanceDisplay();
 
     if (bets[betKey] === undefined) bets[betKey] = (selectedCoin * 4);
     else bets[betKey] += (selectedCoin * 4);
@@ -668,6 +686,7 @@ if (Object.keys(pcbets).length < 1) {
    
 totalCurrBets = 0;
 updateTotalBetDisplay();
+updateBalanceDisplay();
   const formData = new FormData();
   formData.append('withdrawTime', withdrawTime);
   formData.append('n', n);
@@ -708,31 +727,49 @@ updateTotalBetDisplay();
               .getElementById('historytablebody')
               .insertAdjacentHTML('afterbegin', rowHTML);
 
-  let today = new Date().toISOString().split('T')[0];
-console.log('Step 0 - Today\'s date:', today);
+      let today = new Date().toISOString().split('T')[0];
 
-// Step 1: Initialize sum
-let totalSellAmountToday = 0;
+// Parse totalBet once
+let totalBet = parseFloat(data.data.totalBet) || 0;
 
-// Step 2: Loop through tbody rows and sum only today's sell amounts
-$('#accountdailyTableBody tr').each(function () {
-  let dateText = $(this).find('td:first').text().trim();
+// Initialize running totals
+let totalSell = 0;
+let totalCommission = 0;
+let totalNet = 0;
+
+$('#accountdailyTableBody tr').each(function() {
+  let $tr = $(this);
+  let dateText = $tr.find('td').eq(0).text().trim();
+
   if (dateText === today) {
-    let sellText = $(this).find('td:nth-child(2)').text().replace(/[₹,]/g, '');
+    // Update Sell Amount
+    let sellText = $tr.find('td').eq(1).text().replace(/[₹,]/g, '');
     let sellAmount = parseFloat(sellText) || 0;
-    totalSellAmountToday += sellAmount;
-    console.log('Matched row - Sell Amount:', sellAmount);
+    let newSell = sellAmount + totalBet;
+    $tr.find('td').eq(1).text('₹' + newSell.toFixed(2));
+
+    // Calculate & Update Commission (3% of newSell)
+    let newCommission = newSell * 0.03;
+    $tr.find('td').eq(3).text('₹' + newCommission.toFixed(2));
+
+    // Calculate & Update Net Amount (newSell – newCommission)
+    let newNet = newSell - newCommission;
+    $tr.find('td').eq(4).text('₹' + newNet.toFixed(2));
+
+    // Accumulate for footer
+    totalSell += newSell;
+    totalCommission += newCommission;
+    totalNet += newNet;
   }
 });
 
-// Step 3: Add totalBet only once
-let totalBet = parseFloat(data.data.totalBet) || 0;
-totalSellAmountToday += totalBet;
-console.log('Step 3 - Total Sell Amount for today after adding totalBet once:', totalSellAmountToday);
+// Update footer row: Sell, Commission, Net
+let $footerTh = $('#accountdailyTableFooter tr').find('th');
+$footerTh.eq(1).text('₹' + totalSell.toFixed(2));       // Sell total
+$footerTh.eq(3).text('₹' + totalCommission.toFixed(2)); // Commission total
+$footerTh.eq(4).text('₹' + totalNet.toFixed(2));        // Net total
 
-// Step 4: Update Total row's 2nd column
-$('#accountdailyTableFooter tr th:nth-child(2)').text('₹' + totalSellAmountToday.toFixed(2));
-console.log('Step 4 - Footer updated to:', $('#accountdailyTableFooter tr th:nth-child(2)').text());
+
 
         const overlays = document.querySelectorAll('.bet-overlay');
 
@@ -806,7 +843,7 @@ document.getElementById("clear-bets").addEventListener("click", function () {
   if (totalbet) {
     const totalbetvalue = parseFloat(totalbet.textContent.trim()) || 0;
 
-    totalbet.textContent = totalbetvalue - parseFloat(totalBets);
+    // totalbet.textContent = totalbetvalue - parseFloat(totalBets);
   }
   totalBets = 0;
   totalCurrBets = 0;
@@ -1635,6 +1672,8 @@ if ((from === today && to === today) || (countdown == 115)) {
   // at least one date isn’t today → skip updating
   console.warn('Table update skipped: date range is not today.');
 }
+
+
 const suits     = ['spades','diamond','clubs','hearts'];
   const ranks     = ['k','q','j'];
 
@@ -1847,8 +1886,8 @@ Object.values(groupedData).forEach(group => {
       `;
       $tbody.append(row);
     });
-
-   data.bethistory.forEach(result => {
+let totalamntunresulted = 0; 
+data.bethistory.forEach(result => {
   // 2) Determine index from result.card_type; show NA if missing/invalid
   let index = null;
   if (result.card_type !== undefined && result.card_type !== null) {
@@ -1879,6 +1918,11 @@ Object.values(groupedData).forEach(group => {
   const betAmount = (result.bet_amount !== undefined && result.bet_amount !== null)
     ? `₹${parseFloat(result.bet_amount).toFixed(2)}`
     : 'NA';
+     const numericAmount = parseFloat(result.bet_amount);
+  if (!isNaN(numericAmount)) {
+    totalamntunresulted += Math.floor(numericAmount); // Only include integer part
+  }
+
 
   const winValue = (result.win_value !== undefined && result.win_value !== null)
     ? `₹${parseFloat(result.win_value).toFixed(2)}`
@@ -1922,6 +1966,47 @@ Object.values(groupedData).forEach(group => {
   // 6) Prepend this row instead of append
   $tbody.prepend(row);
 });
+let todaysnew = new Date().toISOString().split('T')[0];
+
+// Parse totalBet once
+let totalBet = parseFloat(totalamntunresulted ) || 0;
+
+// Initialize running totals
+let totalSell = 0;
+let totalCommission = 0;
+let totalNet = 0;
+
+$('#accountdailyTableBody tr').each(function() {
+  let $tr = $(this);
+  let dateText = $tr.find('td').eq(0).text().trim();
+
+  if (dateText === todaysnew) {
+    // Update Sell Amount
+    let sellText = $tr.find('td').eq(1).text().replace(/[₹,]/g, '');
+    let sellAmount = parseFloat(sellText) || 0;
+    let newSell = sellAmount + totalBet;
+    $tr.find('td').eq(1).text('₹' + newSell.toFixed(2));
+
+    // Calculate & Update Commission (3% of newSell)
+    let newCommission = newSell * 0.03;
+    $tr.find('td').eq(3).text('₹' + newCommission.toFixed(2));
+
+    // Calculate & Update Net Amount (newSell – newCommission)
+    let newNet = newSell - newCommission;
+    $tr.find('td').eq(4).text('₹' + newNet.toFixed(2));
+
+    // Accumulate for footer
+    totalSell += newSell;
+    totalCommission += newCommission;
+    totalNet += newNet;
+  }
+});
+
+// Update footer row: Sell, Commission, Net
+let $footerTh = $('#accountdailyTableFooter tr').find('th');
+$footerTh.eq(1).text('₹' + totalSell.toFixed(2));       // Sell total
+$footerTh.eq(3).text('₹' + totalCommission.toFixed(2)); // Commission total
+$footerTh.eq(4).text('₹' + totalNet.toFixed(2));  
     const winPointsDisplay = document.getElementById("claim-display");
  winPointsDisplay.innerHTML = "Claimed: <span style='color: gold;font-weight:800;'>" + data.totalClaim + "</span>";
     const totalUnclaimdisplay = document.getElementById("unclaim-display");

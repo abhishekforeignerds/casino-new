@@ -561,10 +561,7 @@ include 'modals/cardhistorymodal.php';
                     <div class="play-circle">Play</div>
                 </div>
 
-                <!-- <div class="grid-header" id="suitIcon1" style="color:black" data-index="13">♠</div>
-                <div class="grid-header" id="suitIcon2" style="color:red" data-index="14">♦</div>
-                <div class="grid-header" id="suitIcon3" style="color:black" data-index="15">♣</div>
-                <div class="grid-header" id="suitIcon4" style="color:red" data-index="16">♥</div> -->
+               
 
                 <!-- King Row -->
                 <div class="grid-label d-flex align-items-center justify-content-around" id="grid-label-1" data-index="17">
@@ -656,7 +653,7 @@ include 'modals/cardhistorymodal.php';
         </div>
     </div>
     <div id="main-container">
-        <!-- Wheel Container -->
+     
 
         <button id="spinBtn" hidden>Spin</button>
 
@@ -693,8 +690,6 @@ include 'modals/cardhistorymodal.php';
         </div>
     </div>
   
-
-    <!-- <img class="" src="/assets-normal/img/newsc.png" alt="King of Spades"> -->
     <script>
   // existing declarations
   let user_id           = <?php echo (int) $user_id; ?>;
@@ -737,13 +732,7 @@ include 'modals/cardhistorymodal.php';
     // first, refresh all the server‐side values:
     updateGameVariables().then(() => {
   setTimeout(() => {
-    // console.log('winningPoints:', winningPoints);
-    // console.log('bettingPoints:', bettingPoints);
-    // console.log('winningPercentage:', winningPercentage);
-    // console.log('overrideChance:', overrideChance);
-    // console.log('spinTimerDuration:', spinTimerDuration);
-    // console.log('maxBetamount:', maxBetamount);
-    // console.log('gameResults:', gameResults);
+
   }, 5000); // 5000 ms = 5 seconds
 });
 
