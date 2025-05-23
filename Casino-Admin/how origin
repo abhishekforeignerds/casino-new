@@ -1,0 +1,93 @@
+* [33m8bf6214[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdevelopment[m[33m, [m[1;31morigin/development[m[33m)[m Client module
+* [33m3ca4fd7[m bug fixes
+*   [33mc538867[m bug fixes
+[32m|[m[33m\[m  
+[32m|[m * [33m03a64b1[m checkbox
+[32m|[m *   [33md125443[m merging frontend
+[32m|[m [34m|[m[35m\[m  
+[32m|[m * [35m|[m [33ma165d36[m view frontend
+* [35m|[m [35m|[m [33mfebab00[m bug fixes
+[35m|[m [35m|[m[35m/[m  
+[35m|[m[35m/[m[35m|[m   
+* [35m|[m [33m9f5b5b8[m bug fixes
+* [35m|[m [33m605bdbe[m Plant managemnent more column + plant assign
+* [35m|[m [33m02f029a[m Plant managemnent more column + plant assign
+[35m|[m[35m/[m  
+*   [33m49d35a6[m new ui fixes
+[36m|[m[1;31m\[m  
+[36m|[m * [33m313c0c1[m Plant managemnent more column + plant assign
+* [1;31m|[m [33m6e429e9[m UI update
+[1;31m|[m[1;31m/[m  
+* [33ma8e98f7[m Client management
+* [33ma2cb62c[m Client management
+* [33mec36e1b[m Assign Plant frontend
+* [33m4decba9[m Plant managemnent more column + plant assign
+*   [33mac0d8d8[m Merge branch 'development' of https://github.com/ForeignerdsDev/ERP-One87.com into development
+[1;32m|[m[1;33m\[m  
+[1;32m|[m *   [33mf132eb4[m view changes
+[1;32m|[m [1;34m|[m[1;35m\[m  
+[1;32m|[m * [1;35m|[m [33m78f0cc7[m view fixes
+* [1;35m|[m [1;35m|[m [33m57a6d8d[m Plant managemnent more column + plant assign
+[1;35m|[m [1;35m|[m[1;35m/[m  
+[1;35m|[m[1;35m/[m[1;35m|[m   
+* [1;35m|[m [33m7e69a6d[m Plant managemnet backend started
+[1;35m|[m[1;35m/[m  
+* [33m082eb08[m Plant managemnet backend started
+* [33m34a7edd[m Plant managemnet backend started
+*   [33m6dc37b3[m Merge branch 'development' of https://github.com/ForeignerdsDev/ERP-One87.com into development
+[1;36m|[m[31m\[m  
+[1;36m|[m * [33m224d1bc[m iconDropdown
+* [31m|[m [33m3329484[m some changes
+[31m|[m[31m/[m  
+* [33m67cff93[m view layout USER/Raw/Goods
+* [33m027ed07[m view fix
+* [33me8db324[m view fix
+* [33m20515c7[m raw materials
+* [33m1687d6a[m back , SuspendDelete & headings
+*   [33mb20c1e8[m Merge branch 'development' of https://github.com/ForeignerdsDev/ERP-One87.com into development
+[32m|[m[33m\[m  
+[32m|[m * [33m2eb31eb[m User List Search & Filter
+* [33m|[m [33maec0fb4[m user frontend
+[33m|[m[33m/[m  
+*   [33m1667cbc[m FN changes
+[34m|[m[35m\[m  
+[34m|[m * [33mf2ee355[m FinishedGoods View Edit Delete improvements
+[34m|[m * [33m9129d67[m Raw material View Edit Delete improvements
+* [35m|[m [33mc3d3b8d[m layout design
+[35m|[m[35m/[m  
+* [33mc926894[m starting pages frontend
+*   [33m4a6e02f[m Merge branch 'development' of https://github.com/ForeignerdsDev/ERP-One87.com into development
+[36m|[m[1;31m\[m  
+[36m|[m * [33ma8a4f1b[m Raw materials additional field
+[36m|[m * [33m5ef7177[m sidebar active fix
+[36m|[m * [33m53ffac7[m User + Raw material View & Dynamic Second Sidebar
+[36m|[m *   [33ma83d0d7[m Merge branch 'development' of https://github.com/ForeignerdsDev/ERP-One87.com into development
+[36m|[m [1;32m|[m[1;33m\[m  
+[36m|[m * [1;33m|[m [33me489896[m User management changes
+* [1;33m|[m [1;33m|[m [33ma5a314d[m welcome page update
+[1;33m|[m [1;33m|[m[1;33m/[m  
+[1;33m|[m[1;33m/[m[1;33m|[m   
+* [1;33m|[m [33m0cbf448[m table custom desgin
+[1;33m|[m[1;33m/[m  
+* [33mcd66515[m view update
+* [33m8c08047[m styling
+*   [33m10d48f4[m updated styling
+[1;34m|[m[1;35m\[m  
+[1;34m|[m * [33m8a59963[m General changes and RM dropdown field
+* [1;35m|[m [33m3424012[m small changes
+[1;35m|[m[1;35m/[m  
+* [33m9f14393[m Added Users mobile, status and cards on Users View
+* [33me3b13c0[m CSS
+* [33me60824a[m update maincontainer
+* [33m2b5edc9[m Super admin dashboard frontend update
+*   [33mb033555[m merge dev files
+[1;36m|[m[31m\[m  
+[1;36m|[m * [33m0243ac4[m RM + FG routes, controller & Views - Backend
+* [31m|[m [33mf23a331[m fornted-dashboard improve
+[31m|[m[31m/[m  
+* [33mdc1a281[m dashboard changes
+* [33m05fa2b5[m Users Routes & RM Routes added + Users Add/Edit/View Backend
+* [33m2a73e9b[m dashboard frontend
+* [33mfe0310d[m Laravel 11 + React 18 Setup Complete
+* [33ma0b47e2[m Laravel 11 setup
+* [33m4ebf94d[m[33m ([m[1;31morigin/Development[m[33m)[m Initial commit

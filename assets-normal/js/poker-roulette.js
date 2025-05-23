@@ -688,8 +688,8 @@ updateTotalBetDisplay();
             // build your cells array with HTML snippets where needed
             const cells = [
               'NA',                                           // Marker Card
-               data.data.serial,                                           // Ticket ID
-              '#'+data.data.totalBet,                             // Bet Amount
+               '#'+data.data.serial,                                           // Ticket ID
+              data.data.totalBet,                             // Bet Amount
               'NA',                                           // Win Value
               'NA',                                           // Claimed Points
               'NA',                                           // Unclaimed Points
@@ -707,6 +707,33 @@ updateTotalBetDisplay();
             document
               .getElementById('historytablebody')
               .insertAdjacentHTML('afterbegin', rowHTML);
+
+  let today = new Date().toISOString().split('T')[0];
+console.log('Step 0 - Today\'s date:', today);
+
+// Step 1: Initialize sum
+let totalSellAmountToday = 0;
+
+// Step 2: Loop through tbody rows and sum only today's sell amounts
+$('#accountdailyTableBody tr').each(function () {
+  let dateText = $(this).find('td:first').text().trim();
+  if (dateText === today) {
+    let sellText = $(this).find('td:nth-child(2)').text().replace(/[₹,]/g, '');
+    let sellAmount = parseFloat(sellText) || 0;
+    totalSellAmountToday += sellAmount;
+    console.log('Matched row - Sell Amount:', sellAmount);
+  }
+});
+
+// Step 3: Add totalBet only once
+let totalBet = parseFloat(data.data.totalBet) || 0;
+totalSellAmountToday += totalBet;
+console.log('Step 3 - Total Sell Amount for today after adding totalBet once:', totalSellAmountToday);
+
+// Step 4: Update Total row's 2nd column
+$('#accountdailyTableFooter tr th:nth-child(2)').text('₹' + totalSellAmountToday.toFixed(2));
+console.log('Step 4 - Footer updated to:', $('#accountdailyTableFooter tr th:nth-child(2)').text());
+
         const overlays = document.querySelectorAll('.bet-overlay');
 
         overlays.forEach(overlay => {

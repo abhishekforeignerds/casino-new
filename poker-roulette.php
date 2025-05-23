@@ -407,7 +407,7 @@ include 'modals/cardhistorymodal.php';
     </div>
 
     
-                   <div class="bordersboxes d-flex flex-column" id="mute-sound" style="cursor:pointer;">
+ <div class="bordersboxes d-flex flex-column" id="mute-sound" style="cursor:pointer;">
   <i class="fas fa-volume-up"></i> <span>Mute</span>
 </div>            
                         
@@ -452,7 +452,7 @@ include 'modals/cardhistorymodal.php';
                 <!-- Card wrappers -->
                 <!-- Kings Row -->
                 <div class="card-wrapper" id="wheel-card-img-1" data-initial-rotation="171">
-                    <img class="king-card card" src="/assets-normal/img/goldens-k.png" alt="King of Spades" style="transform: rotate(171deg);">
+                    <img class="king-card card" src="/assets-normal/img/goldens-k.png" alt="King of Spades">
                 </div>
                 <div class="card-wrapper" id="wheel-card-img-2" data-initial-rotation="205">
                     <img class="king-card card" src="/assets-normal/img/goldens-k.png" alt="King of Diamonds" style="transform: rotate(205deg);">
