@@ -21,7 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-        // Verify the password against the hashed password in the database
+      if ($user['status'] == 'inactive') {
+         $error = "Acount is not Active";
+      }
         if (password_verify($password, $user['password'])) {
             $stmt = $conn->prepare("SELECT SUM(win_value) AS total_win FROM game_results WHERE user_id = ?");
             $stmt->bind_param("i", $user['id']);
