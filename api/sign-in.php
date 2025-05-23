@@ -1,6 +1,11 @@
 <?php
-require 'db.php';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 header('Content-Type: application/json');
+
+require '../db.php';
+// …rest of your code…
 
 $response = ['status' => false, 'message' => ''];
 
@@ -42,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $response['message'] = "User not found";
     }
 
-    $stmt->close();
+
 } else {
     $response['message'] = "Invalid request";
 }
