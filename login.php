@@ -29,7 +29,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($result->num_rows == 1) {
             $user = $result->fetch_assoc();
-            
+            if ($user['status'] == 'inactive') {
+   
+            $response = [
+                    'status' => 'error',
+                    'message' => 'Acount is not Active'
+                ];
+      }
             // Verify password
             if (password_verify($password, $user['password'])) {
                 $user_id = $user['id'];
@@ -62,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } else {
                 $response = [
                     'status' => 'error',
-                    'message' => 'Incorrect password.'
+                    'message' => 'Incorrect password. fgdfh'
                 ];
             }
         } else {

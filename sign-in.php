@@ -14,40 +14,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = trim($_POST['password']);
     
     // Prepare the query to fetch user record matching either username or email
-    $stmt = $conn->prepare("SELECT id, username,first_name,last_name, points, email, password FROM user WHERE username = ? OR email = ?");
+   $stmt = $conn->prepare("SELECT id, username, first_name, last_name, points, email, password, status FROM user WHERE username = ? OR email = ?");
+
     $stmt->bind_param("ss", $login, $login);
     $stmt->execute();
     $result = $stmt->get_result();
     
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-      if ($user['status'] == 'inactive') {
-         $error = "Acount is not Active";
-      }
-        if (password_verify($password, $user['password'])) {
-            $stmt = $conn->prepare("SELECT SUM(win_value) AS total_win FROM game_results WHERE user_id = ?");
-            $stmt->bind_param("i", $user['id']);
-            $stmt->execute();
-            $stmt->bind_result($winningPoints);
-            $stmt->fetch();
-            $stmt->close();
-        
-            // Ensure $winningPoints is at least 0 if null
-            $winningPoints = $winningPoints ?? 0;
-            // Valid credentials – set session variables and redirect
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['fname'] = $user['first_name'];
-            $_SESSION['lname'] = $user['last_name'];
-            $_SESSION['points'] = $user['points'];
-            $_SESSION['winningPoints'] = $winningPoints;
-            header("Location: poker-roulette.php");
-            exit();
+        if ($user['status'] == 'inactive') {
+
+            $error = "Acount is not Active";
         } else {
-            $error = "Invalid username/email or password.";
+            if (password_verify($password, $user['password'])) {
+                $stmt = $conn->prepare("SELECT SUM(win_value) AS total_win FROM game_results WHERE user_id = ?");
+                $stmt->bind_param("i", $user['id']);
+                $stmt->execute();
+                $stmt->bind_result($winningPoints);
+                $stmt->fetch();
+                $stmt->close();
+            
+                // Ensure $winningPoints is at least 0 if null
+                $winningPoints = $winningPoints ?? 0;
+                // Valid credentials – set session variables and redirect
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['fname'] = $user['first_name'];
+                $_SESSION['lname'] = $user['last_name'];
+                $_SESSION['points'] = $user['points'];
+                $_SESSION['winningPoints'] = $winningPoints;
+                header("Location: poker-roulette.php");
+                exit();
+            } else {
+                $error = "Invalid username/email or password. fhgfdh";
+            }
         }
     } else {
-        $error = "Invalid username/email or password.";
+        $error = "Invalid username/email or password. rtestr";
     }
     $stmt->close();
 }
