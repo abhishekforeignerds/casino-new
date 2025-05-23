@@ -55,7 +55,7 @@ try {
         throw new Exception('withdrawTime format is invalid.', 422);
     }
     $withdrawTime = date('Y-m-d H:i:s', $ts);
-$sumSql = "SELECT SUM(bet_amount) AS null_bet_sum FROM total_bet_history WHERE card_bet_amounts IS NULL";
+    $sumSql = "SELECT SUM(bet_amount) AS null_bet_sum FROM total_bet_history WHERE card_bet_amounts IS NULL";
     $sumStmt = $conn->prepare($sumSql);
     if (!$sumStmt) {
         http_response_code(500);

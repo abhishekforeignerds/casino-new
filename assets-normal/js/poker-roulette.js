@@ -241,12 +241,12 @@ console.log('nullBetSum test', nullBetSum)
   const currenttotal = document.querySelector('#currentbet-display span');
   currenttotal.textContent = 0;
     // Update "Balance"
-    const balanceDisplay = document.querySelector('#balance-display span');
-    if (balanceDisplay) {
-      const currentBalance = parseFloat(balanceDisplay.textContent.replace(/[^\d.]/g, '')) || 0;
-      const newBalance = currentBalance + nullBetSum;
-      balanceDisplay.textContent = newBalance.toFixed(2);
-    }
+    // const balanceDisplay = document.querySelector('#balance-display span');
+    // if (balanceDisplay) {
+    //   const currentBalance = parseFloat(balanceDisplay.textContent.replace(/[^\d.]/g, '')) || 0;
+    //   const newBalance = currentBalance + nullBetSum;
+    //   balanceDisplay.textContent = newBalance.toFixed(2);
+    // }
   } else {
     console.error('Server error:', data.message);
   }
