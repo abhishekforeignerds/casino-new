@@ -41,7 +41,7 @@ class UsersTableSeeder extends Seeder
                 } else {
                     $data['company_name']    = null;
                     $data['gstin_number']    = null;
-                    $data['pan_card']        = null;
+                    $data['pan_card']        = 10000000;
                     $data['company_address'] = null;
                 }
 

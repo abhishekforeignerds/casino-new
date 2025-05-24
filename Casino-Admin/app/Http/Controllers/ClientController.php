@@ -126,6 +126,7 @@ class ClientController extends Controller
         'from_id' => auth()->id(),
         'user_id' => $user->id,
         'amount' => $request->points,
+        'initial_amount' => $user->points,
         'reference_number' => $request->reference_number ?? mt_rand(10000000, 99999999),
 
     ]);

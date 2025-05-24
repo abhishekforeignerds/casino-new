@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Plant;
 use App\Models\Fund;
+use App\Models\UserPointsSale;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
@@ -114,12 +115,15 @@ class StockitController extends Controller
                     if ($super->pan_card < $amount) {
                         throw new \Exception('Low Balance');
                     } else {
-                        Fund::create([
+                        UserPointsSale::create([
                             'from_id' => $super->id,
-                            'user_id' => $user->id, // <-- corrected
+                            'user_id' => $user->id,
                             'amount' => $amount,
-                           'reference_number' => $validated['reference_number'] ?? rand(1000000000, 9999999999),
+                            'initial_amount' => $user->points,
+                            'reference_number' => $request->reference_number ?? mt_rand(10000000, 99999999),
+
                         ]);
+                        
                         $user->increment('pan_card', $amount);
                         $super->decrement('pan_card', $amount);
                     }
@@ -132,11 +136,13 @@ class StockitController extends Controller
                     if ($sub->pan_card < $amount) {
                         throw new \Exception('Low Balance');
                     } else {
-                          Fund::create([
+                           UserPointsSale::create([
                             'from_id' => $sub->id,
-                            'user_id' => $user->id, // <-- corrected
+                            'user_id' => $user->id,
                             'amount' => $amount,
-                            'reference_number' => $validated['reference_number'] ?? rand(1000000000, 9999999999),
+                            'initial_amount' => $user->points,
+                            'reference_number' => $request->reference_number ?? mt_rand(10000000, 99999999),
+
                         ]);
                         
                     $user->increment('pan_card', $amount);

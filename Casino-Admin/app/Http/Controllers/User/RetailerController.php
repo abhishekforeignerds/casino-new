@@ -145,6 +145,7 @@ class RetailerController extends Controller
                     if ($sub->pan_card < $amount) {
                         throw new \Exception('Low Balance');
                     }
+                    
                     $user->increment('pan_card', $amount);
                     $sub->decrement('pan_card', $amount);
                 }
@@ -155,6 +156,14 @@ class RetailerController extends Controller
                     if ($stk->pan_card < $amount) {
                         throw new \Exception('Low Balance');
                     }
+                     UserPointsSale::create([
+                            'from_id' => $stk->id,
+                            'user_id' => $user->id,
+                            'amount' => $amount,
+                            'initial_amount' => $user->points,
+                            'reference_number' => $request->reference_number ?? mt_rand(10000000, 99999999),
+
+                        ]);
                     $user->increment('pan_card', $amount);
                     $stk->decrement('pan_card', $amount);
                 }
