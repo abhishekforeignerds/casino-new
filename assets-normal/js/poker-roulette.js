@@ -451,7 +451,10 @@ document.querySelectorAll(".grid-card").forEach(card => {
     if (selectedCoin === null) return;
     if (balance < selectedCoin) {
       resultDisplay.style.display = 'block';
-      resultDisplay.textContent = "Betting time is over.";
+      resultDisplay.textContent = "Not Enough Balance to Bet.";
+         setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
       return;
     
     }
@@ -514,7 +517,11 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     const betKey = "suit-" + suit;
     if (selectedCoin === null) return;
     if (balance < selectedCoin * 3) {
-      alert("Not Enough Balance to Place Bet");
+ resultDisplay.style.display = 'block';
+      resultDisplay.textContent = "Not Enough Balance to Bet.";
+         setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
       return;
     }
     let identifiers = [];
@@ -578,7 +585,11 @@ document.querySelectorAll(".grid-label").forEach(label => {
     const betKey = "cardType-" + cardType;
     if (selectedCoin === null) return;
     if (balance < selectedCoin * 4) {
-      alert("Not Enough Balance to Place Bet");
+     resultDisplay.style.display = 'block';
+      resultDisplay.textContent = "Not Enough Balance to Bet.";
+         setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
       return;
     }
     let identifiers = [];
@@ -703,6 +714,8 @@ $('#accountdailyTableBody tr').each(function() {
     // Update Sell Amount
     let sellText = $tr.find('td').eq(1).text().replace(/[₹,]/g, '');
     let sellAmount = parseFloat(sellText) || 0;
+    let winText = $tr.find('td').eq(2).text().replace(/[₹,]/g, '');
+    let winAmount = parseFloat(winText) || 0;
     let newSell = sellAmount + totalBet;
     $tr.find('td').eq(1).text('₹' + newSell.toFixed(2));
 
@@ -711,7 +724,7 @@ $('#accountdailyTableBody tr').each(function() {
     $tr.find('td').eq(3).text('₹' + newCommission.toFixed(2));
 
     // Calculate & Update Net Amount (newSell – newCommission)
-    let newNet = newSell - newCommission;
+    let newNet = newSell - winAmount - newCommission;
     $tr.find('td').eq(4).text('₹' + newNet.toFixed(2));
 
     // Accumulate for footer
@@ -832,10 +845,19 @@ document.getElementById("double-bets").addEventListener("click", function () {
 
   // guard rails
   if (totalBets + extra > maxBetamount) {
-    return alert("Max bet amount is " + maxBetamount);
+   
+    resultDisplay.style.display = 'block';
+      resultDisplay.textContent = "Max bet amount is " + maxBetamount;
+         setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
   }
   if (balance < extra) {
-    return alert("Not enough balance to double all bets.");
+    resultDisplay.style.display = 'block';
+      resultDisplay.textContent = "Not enough balance to double all bets.";
+         setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
   }
 
   // deduct balance, bump totalBets by the extra
@@ -863,7 +885,11 @@ document.getElementById("repeat-bet").addEventListener("click", function () {
     return;
   }
   if (!lastBetHistory) {
-    return alert("No previous bet to repeat.");
+    resultDisplay.style.display = 'block';
+      resultDisplay.textContent = "No previous bet to repeat.";
+         setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
   }
   if (countdown <= 5) {
     const rd = document.getElementById("result-display");
@@ -875,10 +901,18 @@ document.getElementById("repeat-bet").addEventListener("click", function () {
   const { identifier, amount, element, overlayHTML } = lastBetHistory;
   // if you already have a bet on that segment, skip
   if (bets[identifier] !== undefined) {
-    return alert("You've already bet on that segment.");
+     resultDisplay.style.display = 'block';
+      resultDisplay.textContent = "You've already bet on that segment.";
+         setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
   }
   if (balance < amount) {
-    return alert("Insufficient balance to repeat bet.");
+     resultDisplay.style.display = 'block';
+      resultDisplay.textContent = "Insufficient balance to repeat bet.";
+         setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
   }
 
   // deduct and register
@@ -1920,6 +1954,8 @@ $('#accountdailyTableBody tr').each(function() {
     // Sell
     let sell = parseFloat($tr.find('td').eq(1).text().replace(/[₹,]/g, '')) || 0;
     let newSell = sell + totalBet;
+    let win = parseFloat($tr.find('td').eq(2).text().replace(/[₹,]/g, '')) || 0;
+
     $tr.find('td').eq(1).text('₹' + newSell.toFixed(2));
 
     // Commission = 3%
@@ -1927,7 +1963,7 @@ $('#accountdailyTableBody tr').each(function() {
     $tr.find('td').eq(3).text('₹' + commission.toFixed(2));
 
     // Net = Sell - Commission
-    let net = newSell - commission;
+    let net = newSell - win - commission;
     $tr.find('td').eq(4).text('₹' + net.toFixed(2));
   }
 });

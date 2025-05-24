@@ -477,7 +477,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div> -->
                     
                     <div class="table--responsive--md">
-
+                        <div id="totalsResult"></div>
+ 
                         <table class="table" id="historytable">
                             <thead>
                                 <tr>
@@ -737,6 +738,50 @@ Claimed
 }
 </style>
 <div class="modal-footer">
+    <button id="calculateTotals">Calculate Totals</button>
+
+  <!-- Container where totals will be displayed -->
+
+ <script>
+  document
+    .getElementById('calculateTotals')
+    .addEventListener('click', () => {
+      const rows = document.querySelectorAll('#historytablebody .table-history');
+
+      let sumBet       = 0;
+      let sumWin       = 0;
+      let sumClaimed   = 0;
+      let sumUnclaimed = 0;
+
+      const toNum = txt => {
+        // remove currency symbols, commas, etc.
+        const cleaned = txt.trim().replace(/[^0-9.]/g, '');
+        const n = parseFloat(cleaned);
+        return isNaN(n) ? 0 : n;
+      };
+
+      rows.forEach(row => {
+        const betCell       = row.querySelector('[data-label="Bet Amount"]');
+        const winCell       = row.querySelector('[data-label="Win Value"]');
+        const claimedCell   = row.querySelector('[data-label="Claimed Points"]');
+        const unclaimedCell = row.querySelector('[data-label="Unclaimed Points"]');
+
+        sumBet       += toNum(betCell?.textContent  || '');
+        sumWin       += toNum(winCell?.textContent  || '');
+        sumClaimed   += toNum(claimedCell?.textContent  || '');
+        sumUnclaimed += toNum(unclaimedCell?.textContent || '');
+      });
+
+      document.getElementById('totalsResult').innerHTML = `
+        <table>
+          <tr><th>Total Bet Amount:</th><td>₹${sumBet.toFixed(2)}</td></tr>
+          <tr><th>Total Win Value:</th><td>₹${sumWin.toFixed(2)}</td></tr>
+          <tr><th>Total Claimed Points:</th><td>${sumClaimed.toFixed(0)}</td></tr>
+          <tr><th>Total Unclaimed Points:</th><td>${sumUnclaimed.toFixed(0)}</td></tr>
+        </table>
+      `;
+    });
+</script>
         <button
           type="button"
           class="btn btn-secondary"
