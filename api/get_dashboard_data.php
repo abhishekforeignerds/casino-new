@@ -87,7 +87,6 @@ $stmt1 = $conn->prepare("
       FROM game_results
      WHERE user_id      = ?
        AND DATE(created_at) = CURDATE()
-       AND win_value   > 0
      ORDER BY created_at DESC, id DESC
 ");
 $stmt1->bind_param("i", $user_id);
@@ -180,4 +179,5 @@ echo json_encode([
     'totalUnclaim' => $totalUnclaim,
     'mapped' => $mapped,
     'bethistory' => $bethistory,
+    'grByTimestamp' => $grByTimestamp,
 ]);

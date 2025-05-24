@@ -1938,11 +1938,11 @@ data.bethistory.forEach(result => {
 
   const statusHtml = result.status_html != null
     ? result.status_html
-    : 'NA';
+    : '<small class="btn-sm btn-success">Bet Placed</small>';
 
   const actionHtml = result.action_html != null
     ? result.action_html
-    : 'NA';
+    : '<small class="btn btn-success disabled">Unclaimable</small>';
 
   const withdrawTime = result.withdraw_time != null
     ? result.withdraw_time
@@ -2186,7 +2186,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   $(document).ready(function() {
   setInterval(function() {
-    console.log('called updatedashboardData')
+    // console.log('called updatedashboardData')
     updatedashboardData(withdrawTime);
   }, 4000);
 });

@@ -501,7 +501,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <td data-label="Win Value">NA</td>
                                     <td data-label="Claimed Points">NA</td>
                                     <td data-label="Unclaimed Points">NA</td>
-                                    <td data-label="Unclaimed Points">  <small class="btn-sm btn-success">Bet Placed</small></td>
+                                    <td data-label="Unclaimed Points"><small class="btn-sm btn-success">Bet Placed</small></td>
                                     <td data-label="Unclaimed Points"><?= ($result['withdraw_time']) ?? ''  ?></td>
                                       <td data-label="Unclaimed Points">  <small class="btn btn-success disabled">Unclaimable</small></td>
                                      <tr>

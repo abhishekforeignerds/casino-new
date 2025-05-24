@@ -9,6 +9,7 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 date_default_timezone_set('Asia/Kolkata');
 header('Content-Type: application/json; charset=utf-8');
 session_start();
+
 require_once __DIR__ . '/../db.php';
 
 // 1) Auth & param checks
@@ -17,6 +18,7 @@ if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'User not logged in']);
     exit;
 }
+
 if (!isset($_POST['winningSpin'], $_POST['betTotal'], $_POST['winValue'], $_POST['suiticonnum'])) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Required parameters missing']);
@@ -24,12 +26,13 @@ if (!isset($_POST['winningSpin'], $_POST['betTotal'], $_POST['winValue'], $_POST
 }
 
 // 2) Cast & validate
-$user_id     = $_SESSION['user_id'];
-$game_id     = 1;
-$winningSpin = $_POST['winningSpin'];
-$betTotal    = $_POST['betTotal'];
-$winValue    = $_POST['winValue'];
-$withdrawTime  = $_POST['withdrawTime'] ?? null;
+$user_id      = $_SESSION['user_id'];
+$game_id      = 1;
+$winningSpin  = $_POST['winningSpin'];
+$betTotal     = $_POST['betTotal'];
+$winValue     = $_POST['winValue'];
+$withdrawTime = $_POST['withdrawTime'] ?? null;
+
 if (!$withdrawTime) {
     http_response_code(422);
     echo json_encode([
@@ -43,8 +46,7 @@ if (!$withdrawTime) {
 // Combine with today’s date
 $currentDate   = date('Y-m-d');
 $fullTimestamp = date('Y-m-d H:i:s', strtotime("$currentDate $withdrawTime"));
-// **Always** coerce to int
-$suiticonnum = (int) $_POST['suiticonnum'];
+$suiticonnum   = (int) $_POST['suiticonnum'];
 
 if (!is_numeric($winningSpin) || !is_numeric($betTotal) || !is_numeric($winValue)) {
     http_response_code(422);
@@ -53,7 +55,6 @@ if (!is_numeric($winningSpin) || !is_numeric($betTotal) || !is_numeric($winValue
 }
 
 if ($betTotal <= 0) {
-    // Nothing to record, but still a success
     echo json_encode(['success' => true, 'message' => 'No bet to record']);
     exit;
 }
@@ -65,103 +66,65 @@ if ($winValue > 0) {
     $winning_number = (int) $winningSpin;
     $lose_number    = null;
 
-        $userquery = "SELECT auto_claim FROM user WHERE id = ?";
-        $stmt = $conn->prepare($userquery);
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
-        $stmt->close();
-        $auto_claim = $row['auto_claim'];
+    $userquery = "SELECT auto_claim FROM user WHERE id = ?";
+    $stmt = $conn->prepare($userquery);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    $auto_claim = $row['auto_claim'];
 
-        $dt = new DateTime($fullTimestamp);
-$dt->sub(new DateInterval('PT2M'));            // “PT2M” = period of time, 2 minutes
-$twoMinBefore = $dt->format('Y-m-d H:i:s');
-$userquery = "
-    SELECT *
-    FROM total_bet_history
-    WHERE user_id = ?
-      AND withdraw_time = ?
-";
-$stmt = $conn->prepare($userquery);
+    $dt = new DateTime($fullTimestamp);
+    $dt->sub(new DateInterval('PT2M')); // “PT2M” = 2 minutes before
+    $twoMinBefore = $dt->format('Y-m-d H:i:s');
 
-// Bind two string parameters: user_id and fullTimestamp
-// If withdraw_time is stored as DATETIME/TIMESTAMP, pass it as a string in 'Y-m-d H:i:s' format.
-$stmt->bind_param("is", $user_id, $twoMinBefore);
+    $userquery = "
+        SELECT *
+        FROM total_bet_history
+        WHERE user_id = ? AND withdraw_time = ?
+    ";
+    $stmt = $conn->prepare($userquery);
+    $stmt->bind_param("is", $user_id, $twoMinBefore);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-$stmt->execute();
-$result = $stmt->get_result();
-
-$totalhistory = [];
-
-// Fetch every row (all columns) that matches both conditions
-while ($row = $result->fetch_assoc()) {
-    $totalhistory[] = $row;
-}
-
-$stmt->close();
-
+    $totalhistory = [];
+    while ($row = $result->fetch_assoc()) {
+        $totalhistory[] = $row;
+    }
+    $stmt->close();
 
     foreach ($totalhistory as $betTotal) {
-        $serial_number  = $betTotal['ticket_serial'];
+        $serial_number = $betTotal['ticket_serial'];
+        $json = $betTotal['card_bet_amounts'];
+        $cardBets = json_decode($json, true);
 
-        if ($auto_claim) {
-            $json = $betTotal['card_bet_amounts']; 
-            $cardBets = json_decode($json, true);
+        $claimpoint = 0;
+        $unclaimpoint = 0;
 
-            $claimpoint   = 0;
-            $unclaimpoint = 0;
-
-            // Loop through each card:index => bet_amount
-            foreach ($cardBets as $cardIndex => $betAmount) {
-                // cardIndex is a string, so cast or compare loosely
-                if ((int)$cardIndex === (int)$winning_number) {
-                    // when it matches, compute unclaimed points
+        foreach ($cardBets as $cardIndex => $betAmount) {
+            if ((int)$cardIndex === (int)$winning_number) {
+                if ($auto_claim) {
                     $claimpoint = floatval($betAmount) * 10;
-                    break;  // no need to check further once matched
                 } else {
-                                $claimpoint    = 0;
-                            $unclaimpoint  = 0;
-                        }
-            }
-           
-            $auto_claim    = 1;
-            $insertSql = "
-             INSERT INTO claim_point_data
-                    (user_id, claim_point, unclaim_point, balance, auto_claim,ticket_serial, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ";
-        } else {
-            
-           $json = $betTotal['card_bet_amounts']; 
-            $cardBets = json_decode($json, true);
-
-            $claimpoint   = 0;
-            $unclaimpoint = 0;
-
-            // Loop through each card:index => bet_amount
-            foreach ($cardBets as $cardIndex => $betAmount) {
-                // cardIndex is a string, so cast or compare loosely
-                if ((int)$cardIndex === (int)$winning_number) {
-                    // when it matches, compute unclaimed points
                     $unclaimpoint = floatval($betAmount) * 10;
-                    break;  // no need to check further once matched
-                } else {
-                                $claimpoint    = 0;
-                            $unclaimpoint  = 0;
-                        }
+                }
+                break;
+            } else {
+                $claimpoint = 0;
+                $unclaimpoint = 0;
             }
-            $auto_claim    = 0;
-            $insertSql = "
-               INSERT INTO claim_point_data
-                    (user_id, claim_point, unclaim_point, balance, auto_claim,ticket_serial, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ";
         }
-        
+
+        $insertSql = "
+            INSERT INTO claim_point_data
+                (user_id, claim_point, unclaim_point, balance, auto_claim, ticket_serial, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ";
+
         try {
             $stmt = $conn->prepare($insertSql);
-            // types:    i         i           i            i         i           s           s
             $stmt->bind_param(
                 'iiiiiiss',
                 $user_id,
@@ -189,14 +152,83 @@ $stmt->close();
 } else {
     $winning_number = null;
     $lose_number    = (int) $winningSpin;
+
+    // Fetch auto_claim
+    $userquery = "SELECT auto_claim FROM user WHERE id = ?";
+    $stmt = $conn->prepare($userquery);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    $auto_claim = $row['auto_claim'];
+
+    $dt = new DateTime($fullTimestamp);
+    $dt->sub(new DateInterval('PT2M')); // 2 minutes before
+    $twoMinBefore = $dt->format('Y-m-d H:i:s');
+
+    // Get bet history
+    $userquery = "
+        SELECT *
+        FROM total_bet_history
+        WHERE user_id = ? AND withdraw_time = ?
+    ";
+    $stmt = $conn->prepare($userquery);
+    $stmt->bind_param("is", $user_id, $twoMinBefore);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $totalhistory = [];
+    while ($row = $result->fetch_assoc()) {
+        $totalhistory[] = $row;
+    }
+    $stmt->close();
+
+    // Insert 0 claim/unclaim point
+    foreach ($totalhistory as $betTotal) {
+        $serial_number = $betTotal['ticket_serial'];
+
+        $insertSql = "
+            INSERT INTO claim_point_data
+                (user_id, claim_point, unclaim_point, balance, auto_claim, ticket_serial, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ";
+
+        try {
+            $stmt = $conn->prepare($insertSql);
+            $zero = 0;
+            $stmt->bind_param(
+                'iiiiiiss',
+                $user_id,
+                $zero, // claim_point
+                $zero, // unclaim_point
+                $betTotal['bet_amount'],
+                $auto_claim,
+                $serial_number,
+                $fullTimestamp,
+                $fullTimestamp
+            );
+            $stmt->execute();
+            $stmt->close();
+        } catch (mysqli_sql_exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Database error on INSERT in else',
+                'error'   => $e->getMessage()
+            ]);
+            exit;
+        }
+    }
 }
+
 
 $ts = date('Y-m-d H:i:s');
 
 $insertSql = "
-  INSERT INTO game_results
-    (user_id, game_id, winning_number, lose_number, suiticonnum, bet, win_value, created_at, updated_at)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO game_results
+        (user_id, game_id, winning_number, lose_number, suiticonnum, bet, win_value, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 ";
 
 try {
@@ -220,24 +252,13 @@ try {
     echo json_encode([
         'success' => false,
         'message' => 'Database error on INSERT',
-        // this is the exact error (e.g. column can’t be null, syntax, etc.)
         'error'   => $e->getMessage()
     ]);
     exit;
 }
 
-// // 4) Optionally update user points
-// if ($win_value > 0) {
-//     try {
-//         $ustmt = $conn->prepare('UPDATE `user` SET points = points + ? WHERE id = ?');
-//         $ustmt->bind_param('di', $win_value, $user_id);
-//         $ustmt->execute();
-//         $ustmt->close();
-//     } catch (mysqli_sql_exception $e) {
-//         // log but don’t break the user’s flow
-//         error_log('Points update failed: ' . $e->getMessage());
-//     }
-// }
-
-// 5) Return success
-echo json_encode(['success' => true, 'message' => 'Game result recorded successfully']);
+echo json_encode([
+    'success' => true,
+    'message' => 'Game result recorded successfully',
+    'post_data' => $_POST
+]);
