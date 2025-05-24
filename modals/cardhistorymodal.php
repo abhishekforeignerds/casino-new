@@ -256,7 +256,7 @@ foreach ($claim_list as $idx => $cpd) {
 
 
 
-    $stmt = $conn->prepare("SELECT SUM(bet_amount) AS total_bet FROM total_bet_history WHERE user_id = ? AND DATE(created_at) = CURDATE()");
+    $stmt = $conn->prepare("SELECT SUM(bet_amount) AS total_bet FROM total_bet_history WHERE user_id = ? AND DATE(created_at) = CURDATE()  AND card_bet_amounts IS NOT NULL");
 $stmt->bind_param("i", $user_id);
 
 $stmt->execute();

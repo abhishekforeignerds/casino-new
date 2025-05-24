@@ -247,6 +247,12 @@ console.log('nullBetSum test', nullBetSum)
     //   const newBalance = currentBalance + nullBetSum;
     //   balanceDisplay.textContent = newBalance.toFixed(2);
     // }
+    const balanceDisplay = document.querySelector('#balance-display span');
+    if (balanceDisplay) {
+      const currentBalance = parseFloat(balanceDisplay.textContent.replace(/[^\d.]/g, '')) || 0;
+    balance = currentBalance;
+    }
+  
   } else {
     console.error('Server error:', data.message);
   }
@@ -504,7 +510,6 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
       resultDisplay.textContent = "Betting time is over.";
       return;
     }
-
     const suit = this.textContent.trim();
     const betKey = "suit-" + suit;
     if (selectedCoin === null) return;
@@ -512,71 +517,45 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
       alert("Not Enough Balance to Place Bet");
       return;
     }
-    const currentAmount = pcbets[index] || 0;
-if (currentAmount + selectedCoin > 10000) {
-    resultDisplay.style.display = 'block';
-    resultDisplay.textContent = "Maximum bet done.";
-    return;
-}
-    balance -= (selectedCoin * 3);
-    // updateBalanceDisplay();
-
-    if (bets[betKey] === undefined) bets[betKey] = (selectedCoin * 3);
-    else bets[betKey] += (selectedCoin * 3);
-    totalBets += (selectedCoin * 3);
-    totalCurrBets += (selectedCoin * 3);
+    let identifiers = [];
+    switch (this.id) {
+      case 'suitIcon1': identifiers = [0, 4, 8]; break;
+      case 'suitIcon2': identifiers = [1, 5, 9]; break;
+      case 'suitIcon3': identifiers = [2, 6, 10]; break;
+      case 'suitIcon4': identifiers = [3, 7, 11]; break;
+      default: console.warn('Unknown suit icon:', this); return;
+    }
+    const wouldOverflow = identifiers.some(id => (pcbets[id] || 0) + selectedCoin > 10000);
+    if (wouldOverflow) {
+      resultDisplay.style.display = 'block';
+      resultDisplay.textContent = "Maximum bet per Card is 10 000.";
+        setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
+      return;
+    }
+    balance -= selectedCoin * 3;
+    if (!bets[betKey]) bets[betKey] = selectedCoin * 3;
+    else bets[betKey] += selectedCoin * 3;
+    totalBets += selectedCoin * 3;
+    totalCurrBets += selectedCoin * 3;
     updateTotalBetDisplay();
-    updateTotalBetDisplay();
-
-    const clickedIndex = gridCells.findIndex(cell => cell === this); // not used now
+    const clickedIndex = gridCells.findIndex(cell => cell === this);
     const col = clickedIndex % GRID_COLUMNS;
     gridCells.forEach((cell, idx) => {
       if (idx % GRID_COLUMNS === col) addOrMergeOverlay(cell, selectedCoin);
     });
-
     lastBet = { identifier: betKey, amount: selectedCoin, element: this, overlayHTML: null };
     lastBetHistory = { ...lastBet };
-
-    let identifiers = [];
-    switch (lastBet.element.id) {
-      case 'suitIcon1':
-        identifiers = [0, 4, 8];
-        break;
-      case 'suitIcon2':
-        identifiers = [1, 5, 9];
-        break;
-      case 'suitIcon3':
-        identifiers = [2, 6, 10];
-        break;
-      case 'suitIcon4':
-        identifiers = [3, 7, 11];
-        break;
-      default:
-        console.warn('Unknown suit icon:', lastBet.element);
-    }
-
-    // Update allbetamtinx and localStorage for each identifier
     identifiers.forEach(id => {
       allbetamtinx[id] = (allbetamtinx[id] || 0) + selectedCoin;
       localStorage.setItem('allbetamtinx', JSON.stringify(allbetamtinx));
-
       pcbets[id] = (pcbets[id] || 0) + selectedCoin;
-
-      const data = {
-        user_id: user_id,
-        identifier: id,
-        amount: selectedCoin,
-        ntrack: n,
-        withdrawTime: withdrawTime
-      };
       fetch('../../api/total_history.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-      .then(response => response.json())
-      .then(result => console.log('Server response:', result))
-      .catch(error => console.error('Error sending data:', error));
+        body: JSON.stringify({ user_id, identifier: id, amount: selectedCoin, ntrack: n, withdrawTime })
+      }).then(res => res.json()).then(r => console.log(r)).catch(e => console.error(e));
     });
   });
 });
@@ -593,7 +572,6 @@ document.querySelectorAll(".grid-label").forEach(label => {
       resultDisplay.textContent = "Betting time is over.";
       return;
     }
-
     const img = this.querySelector("img");
     if (!img) return;
     const cardType = img.getAttribute("alt").split(" ")[0];
@@ -603,70 +581,49 @@ document.querySelectorAll(".grid-label").forEach(label => {
       alert("Not Enough Balance to Place Bet");
       return;
     }
-    const currentAmount = pcbets[index] || 0;
-if (currentAmount + selectedCoin > 10000) {
-    resultDisplay.style.display = 'block';
-    resultDisplay.textContent = "Maximum bet done.";
-    return;
-}
-    balance -= (selectedCoin * 4);
-    // updateBalanceDisplay();
-
-    if (bets[betKey] === undefined) bets[betKey] = (selectedCoin * 4);
-    else bets[betKey] += (selectedCoin * 4);
-    totalBets += (selectedCoin * 4);
-    totalCurrBets += (selectedCoin * 4);
+    let identifiers = [];
+    switch (this.id) {
+      case 'grid-label-1': identifiers = [0, 1, 2, 3]; break;
+      case 'grid-label-2': identifiers = [4, 5, 6, 7]; break;
+      case 'grid-label-3': identifiers = [8, 9, 10, 11]; break;
+      default: console.warn('Unknown card label:', this); return;
+    }
+    const wouldOverflow = identifiers.some(id => (pcbets[id] || 0) + selectedCoin > 10000);
+    if (wouldOverflow) {
+      resultDisplay.style.display = 'block';
+      resultDisplay.textContent = "Maximum bet per Card is 10 000.";
+        setTimeout(() => {
+  resultDisplay.style.display = 'none';
+}, 2000);
+      return;
+      
+    }
+    balance -= selectedCoin * 4;
+    if (!bets[betKey]) bets[betKey] = selectedCoin * 4;
+    else bets[betKey] += selectedCoin * 4;
+    totalBets += selectedCoin * 4;
+    totalCurrBets += selectedCoin * 4;
     updateTotalBetDisplay();
-
-    const clickedIndex = gridCells.findIndex(cell => cell === this); // not used now
+    const clickedIndex = gridCells.findIndex(cell => cell === this);
     const row = Math.floor(clickedIndex / GRID_COLUMNS);
     gridCells.forEach((cell, idx) => {
       if (Math.floor(idx / GRID_COLUMNS) === row) addOrMergeOverlay(cell, selectedCoin);
     });
-
     lastBet = { identifier: betKey, amount: selectedCoin, element: this, overlayHTML: null };
     lastBetHistory = { ...lastBet };
-
-    let identifiers = [];
-    switch (lastBet.element.id) {
-      case 'grid-label-3':
-        identifiers = [8, 9, 10, 11];
-        break;
-      case 'grid-label-2':
-        identifiers = [4, 5, 6, 7];
-        break;
-      case 'grid-label-1':
-        identifiers = [0, 1, 2, 3];
-        break;
-      default:
-        console.warn('Unknown card label:', lastBet.element);
-    }
-
-    // Update allbetamtinx and localStorage for each identifier
     identifiers.forEach(id => {
       allbetamtinx[id] = (allbetamtinx[id] || 0) + selectedCoin;
       localStorage.setItem('allbetamtinx', JSON.stringify(allbetamtinx));
-
       pcbets[id] = (pcbets[id] || 0) + selectedCoin;
-
-      const data = {
-        user_id: user_id,
-        identifier: id,
-        amount: selectedCoin,
-        ntrack: n,
-        withdrawTime: withdrawTime
-      };
       fetch('../../api/total_history.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-      .then(response => response.json())
-      .then(result => console.log('Server response:', result))
-      .catch(error => console.error('Error sending data:', error));
+        body: JSON.stringify({ user_id, identifier: id, amount: selectedCoin, ntrack: n, withdrawTime })
+      }).then(res => res.json()).then(r => console.log(r)).catch(e => console.error(e));
     });
   });
 });
+
 
 // Clear cache on spin button click and reset allbetamtinx
 
@@ -686,6 +643,7 @@ if (Object.keys(pcbets).length < 1) {
    
 totalCurrBets = 0;
 updateTotalBetDisplay();
+
 updateBalanceDisplay();
   const formData = new FormData();
   formData.append('withdrawTime', withdrawTime);
@@ -1814,16 +1772,24 @@ Object.values(groupedData).forEach(group => {
 
       let withdrawTime = '—';
       if (result.created_at) {
-        const dt = new Date(result.created_at);
-        dt.setMinutes(dt.getMinutes() - 2);
-        const yyyy = dt.getFullYear();
-        const MM   = String(dt.getMonth()+1).padStart(2,'0');
-        const dd   = String(dt.getDate()).padStart(2,'0');
-        const hh   = String(dt.getHours()).padStart(2,'0');
-        const mm   = String(dt.getMinutes()).padStart(2,'0');
-        const ss   = String(dt.getSeconds()).padStart(2,'0');
+        const utcDate = new Date(result.created_at);
+
+        // Convert to IST (Asia/Kolkata)
+        const istDate = new Date(utcDate.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+        
+        // Subtract 2 minutes
+        istDate.setMinutes(istDate.getMinutes() - 2);
+
+        const yyyy = istDate.getFullYear();
+        const MM   = String(istDate.getMonth() + 1).padStart(2, '0');
+        const dd   = String(istDate.getDate()).padStart(2, '0');
+        const hh   = String(istDate.getHours()).padStart(2, '0');
+        const mm   = String(istDate.getMinutes()).padStart(2, '0');
+        const ss   = String(istDate.getSeconds()).padStart(2, '0');
+
         withdrawTime = `${yyyy}-${MM}-${dd} ${hh}:${mm}:${ss}`;
       }
+
 
       // — figure out the 0–11 index as before —
       let index = null;
@@ -1931,7 +1897,7 @@ data.bethistory.forEach(result => {
   // Prepend row
   const row = `
     <tr class="table-history">
-      <td data-label="Card Win" class="image-tr d-flex">${cardsHtml}</td>
+      <td data-label="Card Win" class="image-tr d-flex">NA</td>
       <td data-label="Ticket Serial">${ticketSerial}</td>
       <td data-label="Bet Amount">${betAmount}</td>
       <td data-label="Win Value">${winValue}</td>
