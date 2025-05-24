@@ -1651,7 +1651,13 @@ if ((from === today && to === today) || (countdown == 115)) {
         <td>₹${totalNetAmount.toFixed(2)}</td>
       </tr>`;
   } else {
-    bodyHtml = `<tr><td colspan="5">No entries for today</td></tr>`;
+    bodyHtml = `<tr>
+        <td>${today}</td>
+        <td>₹0</td>
+        <td>₹0</td>
+        <td>₹0</td>
+        <td>₹0</td>
+      </tr>`;
   }
 
   // Build footer row
@@ -1886,69 +1892,43 @@ Object.values(groupedData).forEach(group => {
       `;
       $tbody.append(row);
     });
-let totalamntunresulted = 0; 
+// 1) Initialize totals
+let totalBet = 0;
+
+// 2) Build rows and compute totalBet
 data.bethistory.forEach(result => {
-  // 2) Determine index from result.card_type; show NA if missing/invalid
+  // Determine card index
   let index = null;
-  if (result.card_type !== undefined && result.card_type !== null) {
+  if (result.card_type != null) {
     const parsed = parseInt(result.card_type, 10);
     if (!isNaN(parsed) && parsed >= 0 && parsed <= 11) {
       index = parsed;
     }
   }
 
-  // 3) Build the Card‐Win cell (two cards or “NA”)
-  let cardsHtml;
-  if (index === null) {
-    cardsHtml = 'NA';
-  } else {
+  // Build Card‑Win cell
+  let cardsHtml = 'NA';
+  if (index !== null) {
     const rankKey  = ranks[Math.floor(index / 4)];
     const suitKey  = suits[index % 4];
     const rankFile = rankIcons[rankKey];
     const suitFile = suitIcons[suitKey];
-
-    cardsHtml = `NA`;
+    cardsHtml = `<img src="${rankFile}" alt="${rankKey}" /><img src="${suitFile}" alt="${suitKey}" />`;
   }
 
-  // 4) For every other column, default to “NA” if undefined/null
-  const ticketSerial = result.ticket_serial != null
-    ? `#${result.ticket_serial}`
-    : 'NA';
+  // Other columns with fallbacks
+  const ticketSerial   = result.ticket_serial != null ? `#${result.ticket_serial}` : 'NA';
+  const numericBet     = parseFloat(result.bet_amount) || 0;
+  const betAmount      = result.bet_amount != null ? `₹${numericBet.toFixed(2)}` : 'NA';
+  totalBet += Math.floor(numericBet);
+  const winValue       = result.win_value   != null ? `₹${parseFloat(result.win_value).toFixed(2)}`   : 'NA';
+  const claimedPoints  = result.claim_point  != null ? parseFloat(result.claim_point).toFixed(0)    : 'NA';
+  const unclaimedPoints= result.unclaim_point!= null ? parseFloat(result.unclaim_point).toFixed(0)  : 'NA';
+  const statusHtml     = result.status_html  || '<small class="btn-sm btn-success">Bet Placed</small>';
+  const actionHtml     = result.action_html  || '<small class="btn btn-success disabled">Unclaimable</small>';
+  const withdrawTime   = result.withdraw_time|| 'NA';
 
-  const betAmount = (result.bet_amount !== undefined && result.bet_amount !== null)
-    ? `₹${parseFloat(result.bet_amount).toFixed(2)}`
-    : 'NA';
-     const numericAmount = parseFloat(result.bet_amount);
-  if (!isNaN(numericAmount)) {
-    totalamntunresulted += Math.floor(numericAmount); // Only include integer part
-  }
-
-
-  const winValue = (result.win_value !== undefined && result.win_value !== null)
-    ? `₹${parseFloat(result.win_value).toFixed(2)}`
-    : 'NA';
-
-  const claimedPoints = (result.claim_point !== undefined && result.claim_point !== null)
-    ? parseFloat(result.claim_point).toFixed(0)
-    : 'NA';
-
-  const unclaimedPoints = (result.unclaim_point !== undefined && result.unclaim_point !== null)
-    ? parseFloat(result.unclaim_point).toFixed(0)
-    : 'NA';
-
-  const statusHtml = result.status_html != null
-    ? result.status_html
-    : '<small class="btn-sm btn-success">Bet Placed</small>';
-
-  const actionHtml = result.action_html != null
-    ? result.action_html
-    : '<small class="btn btn-success disabled">Unclaimable</small>';
-
-  const withdrawTime = result.withdraw_time != null
-    ? result.withdraw_time
-    : 'NA';
-
-  // 5) Build the row string exactly as before
+  // Prepend row
   const row = `
     <tr class="table-history">
       <td data-label="Card Win" class="image-tr d-flex">${cardsHtml}</td>
@@ -1962,51 +1942,49 @@ data.bethistory.forEach(result => {
       <td data-label="Action">${actionHtml}</td>
     </tr>
   `;
-
-  // 6) Prepend this row instead of append
   $tbody.prepend(row);
 });
+
+// 3) Update today's row: add today's totalBet, recalc commission & net
 let todaysnew = new Date().toISOString().split('T')[0];
-
-// Parse totalBet once
-let totalBet = parseFloat(totalamntunresulted ) || 0;
-
-// Initialize running totals
-let totalSell = 0;
-let totalCommission = 0;
-let totalNet = 0;
-
 $('#accountdailyTableBody tr').each(function() {
-  let $tr = $(this);
-  let dateText = $tr.find('td').eq(0).text().trim();
-
-  if (dateText === todaysnew) {
-    // Update Sell Amount
-    let sellText = $tr.find('td').eq(1).text().replace(/[₹,]/g, '');
-    let sellAmount = parseFloat(sellText) || 0;
-    let newSell = sellAmount + totalBet;
+  const $tr = $(this);
+  let date = $tr.find('td').eq(0).text().trim();
+  if (date === todaysnew) {
+    // Sell
+    let sell = parseFloat($tr.find('td').eq(1).text().replace(/[₹,]/g, '')) || 0;
+    let newSell = sell + totalBet;
     $tr.find('td').eq(1).text('₹' + newSell.toFixed(2));
 
-    // Calculate & Update Commission (3% of newSell)
-    let newCommission = newSell * 0.03;
-    $tr.find('td').eq(3).text('₹' + newCommission.toFixed(2));
+    // Commission = 3%
+    let commission = newSell * 0.03;
+    $tr.find('td').eq(3).text('₹' + commission.toFixed(2));
 
-    // Calculate & Update Net Amount (newSell – newCommission)
-    let newNet = newSell - newCommission;
-    $tr.find('td').eq(4).text('₹' + newNet.toFixed(2));
-
-    // Accumulate for footer
-    totalSell += newSell;
-    totalCommission += newCommission;
-    totalNet += newNet;
+    // Net = Sell - Commission
+    let net = newSell - commission;
+    $tr.find('td').eq(4).text('₹' + net.toFixed(2));
   }
 });
 
-// Update footer row: Sell, Commission, Net
+// 4) Sum all rows and insert into footer
+totalSell = 0;
+totalCommission = 0;
+totalNet = 0;
+$('#accountdailyTableBody tr').each(function() {
+  const $tds = $(this).find('td');
+  let sell       = parseFloat($tds.eq(1).text().replace(/[₹,]/g, '')) || 0;
+  let commission = parseFloat($tds.eq(3).text().replace(/[₹,]/g, '')) || 0;
+  let net        = parseFloat($tds.eq(4).text().replace(/[₹,]/g, '')) || 0;
+  totalSell       += sell;
+  totalCommission += commission;
+  totalNet        += net;
+});
+
 let $footerTh = $('#accountdailyTableFooter tr').find('th');
 $footerTh.eq(1).text('₹' + totalSell.toFixed(2));       // Sell total
 $footerTh.eq(3).text('₹' + totalCommission.toFixed(2)); // Commission total
-$footerTh.eq(4).text('₹' + totalNet.toFixed(2));  
+$footerTh.eq(4).text('₹' + totalNet.toFixed(2));         // Net total
+
     const winPointsDisplay = document.getElementById("claim-display");
  winPointsDisplay.innerHTML = "Claimed: <span style='color: gold;font-weight:800;'>" + data.totalClaim + "</span>";
     const totalUnclaimdisplay = document.getElementById("unclaim-display");
