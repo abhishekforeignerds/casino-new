@@ -4,6 +4,15 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Models\Ticket;
+use App\Models\Users;
+
+Route::get('/tickets', function () {
+      $user = Users::findOrFail(1);
+    $tickets = Ticket::latest()->take(1)->get();
+    return Inertia::render('Players/Viewprinttickets', ['tickets' => $tickets, 'user' => $user]);
+});
+
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
