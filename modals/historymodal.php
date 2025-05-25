@@ -13,7 +13,7 @@
 ">
       <div class="modal-header">
         <h5 class="modal-title" id="historyModalLabel">History Log</h5>
-        
+        <button type="button" class="" data-bs-dismiss="modal" aria-label="Close" style="color:white;background: transparent;font-size: 1rem;padding: 0.6rem 1rem;">X</button>
       </div>
       <div class="modal-body">
       <?php
@@ -738,7 +738,7 @@ Claimed
 }
 </style>
 <div class="modal-footer">
-    <button id="calculateTotals">Calculate Totals</button>
+    <button  class="btn btn-primary" id="calculateTotals">Calculate Totals</button>
 
   <!-- Container where totals will be displayed -->
 

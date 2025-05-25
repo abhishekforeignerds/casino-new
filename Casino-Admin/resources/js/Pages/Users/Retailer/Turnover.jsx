@@ -114,12 +114,12 @@ export default function Turnover({ gameResults, claimsByUser, saleToUser, unClai
             let diffC = 0, commC = 0, netC = 0;
 
             if (userRoles[0] === 'Retailer') {
-                diffC = saleC - pointsC;
+                diffC = betC - (rec.claim_point + rec.unclaim_point);
                 commC = Math.round(betC * commission);
                 netC = diffC - commC;
 
             } else if (userRoles[0] === 'Stockit') {
-                const retdiffC = saleC - pointsC;
+                const retdiffC = betC - (rec.claim_point + rec.unclaim_point);
                 const gstPercent = parseFloat(rec?.client?.retailer?.gstin_number) || 0;
                 const retC = Math.round(betC * (gstPercent / 100));
                 const retnetC = retdiffC - retC;
@@ -129,7 +129,7 @@ export default function Turnover({ gameResults, claimsByUser, saleToUser, unClai
                 netC = diffC - commC;
 
             } else {
-                const retdiffC = saleC - pointsC;
+                const retdiffC = betC - (rec.claim_point + rec.unclaim_point);
                 const gstR = parseFloat(rec?.client?.retailer?.gstin_number) || 0;
                 const retC1 = Math.round(betC * (gstR / 100));
                 const retnetC = retdiffC - retC1;

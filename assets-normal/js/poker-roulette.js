@@ -1896,7 +1896,7 @@ Object.values(groupedData).forEach(group => {
 let totalBet = 0;
 
 // 2) Build rows and compute totalBet
-data.bethistory.forEach(result => {
+data.bethistory.reverse().forEach(result => {
   // Determine card index
   let index = null;
   if (result.card_type != null) {

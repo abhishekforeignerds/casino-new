@@ -296,7 +296,7 @@ const DashboardStateGrid = ({ statusCounts = {} }) => {
         img: img3,
         title: "Today Average Bet",
         description: "",
-        numberInfo: (statusCounts.totalBetToday / statusCounts.normalUsers) || 0,
+        numberInfo: (statusCounts.totalBetToday / statusCounts.normalUsers).toFixed(0) || 0,
         bgColor: "#D9D2FF",
         statusInfo: "",
         link: route("retailer.playerhistory"),
