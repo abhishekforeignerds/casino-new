@@ -480,8 +480,7 @@ if (currentAmount + selectedCoin > 10000) {
     lastBetHistory = { ...lastBet };
 
     // Update allbetamtinx and localStorage
-    allbetamtinx[index] = (allbetamtinx[index] || 0) + selectedCoin;
-    localStorage.setItem('allbetamtinx', JSON.stringify(allbetamtinx));
+   
 
     pcbets[index] = (pcbets[index] || 0) + selectedCoin;
 
@@ -555,8 +554,7 @@ document.querySelectorAll(".grid-header:not(.empty)").forEach(header => {
     lastBet = { identifier: betKey, amount: selectedCoin, element: this, overlayHTML: null };
     lastBetHistory = { ...lastBet };
     identifiers.forEach(id => {
-      allbetamtinx[id] = (allbetamtinx[id] || 0) + selectedCoin;
-      localStorage.setItem('allbetamtinx', JSON.stringify(allbetamtinx));
+      
       pcbets[id] = (pcbets[id] || 0) + selectedCoin;
       fetch('../../api/total_history.php', {
         method: 'POST',
@@ -623,8 +621,7 @@ document.querySelectorAll(".grid-label").forEach(label => {
     lastBet = { identifier: betKey, amount: selectedCoin, element: this, overlayHTML: null };
     lastBetHistory = { ...lastBet };
     identifiers.forEach(id => {
-      allbetamtinx[id] = (allbetamtinx[id] || 0) + selectedCoin;
-      localStorage.setItem('allbetamtinx', JSON.stringify(allbetamtinx));
+     
       pcbets[id] = (pcbets[id] || 0) + selectedCoin;
       fetch('../../api/total_history.php', {
         method: 'POST',
@@ -651,7 +648,12 @@ if (Object.keys(pcbets).length < 1) {
 }, 2000);
   return;
 } else{
-   
+   Object.entries(pcbets).forEach(([key, amt]) => {
+    allbetamtinx[key] = (allbetamtinx[key] || 0) + amt;
+  });
+
+  // Persist the merged totals to localStorage once:
+  localStorage.setItem('allbetamtinx', JSON.stringify(allbetamtinx));
 totalCurrBets = 0;
 updateTotalBetDisplay();
 
@@ -1409,26 +1411,29 @@ if (chosenIndex === undefined) {
   chosenIndex = Math.floor(Math.random() * 12);
   console.log('chosenIndexlast', chosenIndex);
 }
-
-   function evaluateBet(allbetamtinx, chosenIndex) {
+function evaluateBet(allbetamtinx, chosenIndex) {
   console.log('incoming bets:', allbetamtinx);
   console.log('chosenIndex:', chosenIndex);
 
-  // check if chosenIndex is a key in allbetamtinx
+  // Calculate total amount
+  const totalAmountbetwasplaced = Object.values(allbetamtinx).reduce((sum, val) => sum + parseFloat(val), 0);
+  console.log('Total amount bet:', totalAmountbetwasplaced);
+
+  // Check if chosenIndex is a key in allbetamtinx
   if (allbetamtinx.hasOwnProperty(chosenIndex)) {
     const rawAmt = allbetamtinx[chosenIndex];
     const amount = parseFloat(rawAmt);
-    console.log(`found amount for index ${chosenIndex}:`, rawAmt, '→ parsed:', amount);
+    console.log(`Found amount for index ${chosenIndex}:`, rawAmt, '→ parsed:', amount);
 
     const userWon = true;
     const winamt = amount * 10;
     console.log('userWon:', userWon, 'winamt:', winamt);
 
-    return { userWon, winamt };
+    return { userWon, winamt, totalAmountbetwasplaced };
   }
 
-  console.log(`no bet found at index ${chosenIndex}`);
-  return { userWon: false, winamt: 0 };
+  console.log(`No bet found at index ${chosenIndex}`);
+  return { userWon: false, winamt: 0, totalAmountbetwasplaced };
 }
 
     const result = evaluateBet(allbetamtinx, chosenIndex);
@@ -1479,7 +1484,7 @@ if (result.winamt > 0 && result.userWon) {
     if (userWon) {
       // balanceDisplay.innerHTML = "Balance: <span style='color: gold;font-weight:800;'>" + (balance) + "</span>";
       msg = `Total Win ${winValue}!`;
-    } else if (lastBet && Object.keys(lastBet).length > 0) {
+    } else if (lastBet && Object.keys(lastBet).length > 0 && result.totalAmountbetwasplaced) {
       msg = `Lose.`;
     } else {
       msg = `No bet was placed.`;
@@ -1501,7 +1506,7 @@ if (result.winamt > 0 && result.userWon) {
   />
    </div>
   <p>${msg}</p>
-  <span><strong>Total Bet:</strong> ${totalBets}</span>
+  <span><strong>Total Bet:</strong> ${result.totalAmountbetwasplaced}</span>
 `;
 
 

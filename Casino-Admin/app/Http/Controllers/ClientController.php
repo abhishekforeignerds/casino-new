@@ -343,7 +343,12 @@ class ClientController extends Controller
     public function viewticket(Request $request, $id)
     {
         $user = Users::findOrFail($id);
-        $tickets = Ticket::where('user_id', $id)->get();
+      $tickets = Ticket::where('user_id', $id)->get();
+
+$tickets->transform(function ($ticket) {
+    $ticket->created_at_formatted = \Carbon\Carbon::parse($ticket->created_at)->format('Y-m-d h:i A');
+    return $ticket;
+});
         return Inertia::render('Players/ViewTicket', ['user' => $user, 'tickets' => $tickets]);
     }
     

@@ -1,6 +1,13 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import img1 from "../../../../../assets-normal/img/goldens-k-sm.png";
+import img2 from "../../../../../assets-normal/img/golden-q-sm.png";
+import img3 from "../../../../../assets-normal/img/golden-j-sm.png";
+import img4 from "../../../../../assets-normal/img/spades-golden-sm.png";
+import img5 from "../../../../../assets-normal/img/golden-diamond-sm.png";
+import img6 from "../../../../../assets-normal/img/clubs-golden-sm.png";
+import img7 from "../../../../../assets-normal/img/golden-hearts-sm.png";
 
 export default function ViewTickets({ tickets, user }) {
     const getResultTimeFromCreatedAt = (createdAt) => {
@@ -27,33 +34,55 @@ export default function ViewTickets({ tickets, user }) {
 
         const printWindow = window.open('', '', 'width=800,height=600');
         printWindow.document.write(`
-            <html>
-                <head>
-                    <title>Print Ticket</title>
-                    ${Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'))
+      <html>
+        <head>
+          <title>Print Ticket</title>
+          <base href="${window.location.origin}" />
+          ${Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'))
                 .map(link => `<link rel="stylesheet" href="${link.href}" />`)
                 .join('\n')}
-                    <style>
-                        @media print { .no-print { display: none !important; } }
-                        @page { margin: 1cm; }
-                        body { margin: 0; padding: 1cm; }
-                    </style>
-                </head>
-                <body>
-                    ${clone.outerHTML}
-                </body>
-            </html>
-        `);
+          <style>
+            @media print {
+              .no-print { display: none !important; }
+              .print-table { display: table !important; }
+              .print-table td img { width: 50px !important; height: 50px !important; }
+            }
+            @page { margin: 1cm; }
+            body { margin: 0; padding: 1cm; }
+          </style>
+        </head>
+        <body>
+          ${clone.outerHTML}
+          <script>
+            window.onload = function() {
+              window.focus();
+              window.print();
+              window.close();
+            };
+          </script>
+        </body>
+      </html>
+    `);
         printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
     };
 
+    const cardImages = [
+        { rank: img1, suit: img4, alt: 'King of Spades' },
+        { rank: img1, suit: img5, alt: 'King of Diamonds' },
+        { rank: img1, suit: img6, alt: 'King of Clubs' },
+        { rank: img1, suit: img7, alt: 'King of Hearts' },
+        { rank: img2, suit: img4, alt: 'Queen of Spades' },
+        { rank: img2, suit: img5, alt: 'Queen of Diamonds' },
+        { rank: img2, suit: img6, alt: 'Queen of Clubs' },
+        { rank: img2, suit: img7, alt: 'Queen of Hearts' },
+        { rank: img3, suit: img4, alt: 'Jack of Spades' },
+        { rank: img3, suit: img5, alt: 'Jack of Diamonds' },
+        { rank: img3, suit: img6, alt: 'Jack of Clubs' },
+        { rank: img3, suit: img7, alt: 'Jack of Hearts' },
+    ];
+
     return (
-        <AuthenticatedLayout
-            header={<h2 className="text-xl font-semibold">View Tickets for {user.name}</h2>}
-        >
+        <AuthenticatedLayout header={<h2 className="text-xl font-semibold">View Tickets for {user.name}</h2>}>
             <Head title="Your Tickets" />
 
             <div className="w-4/5 ml-auto pt-[15vh] flex flex-wrap justify-start gap-8">
@@ -64,7 +93,11 @@ export default function ViewTickets({ tickets, user }) {
                             id={`ticket-${ticket.id}`}
                             className="w-full max-w-md border rounded-lg shadow p-6 bg-white"
                         >
-                            <h1 className="text-2xl font-bold mb-4">Lottery Ticket</h1>
+                            <h1 className="text-2xl font-bold mb-4">Poker Roulette</h1>
+                            <p className="mb-4">
+                                <strong>Date & Time:</strong> {ticket.created_at_formatted}
+
+                            </p>
 
                             <p className="mb-2">
                                 <strong>Serial #:</strong>{' '}
@@ -72,13 +105,40 @@ export default function ViewTickets({ tickets, user }) {
                             </p>
 
                             <p className="mb-2">
-                                <strong>Amount:</strong>{' '}
+                                <strong>Total Play:</strong>{' '}
                                 ₹{Number(ticket.amount).toLocaleString()}
                             </p>
 
                             <p className="mb-4">
-                                <strong>Card Name:</strong> {ticket.card_name}
+                                <strong>Card Name:</strong>
                             </p>
+
+
+
+                            {/* Print-only table (hidden on screen) */}
+                            <table className="print:hidden print-table w-full border-collapse border">
+                                <tbody>
+                                    {Array.from({ length: 3 }, (_, row) => (
+                                        <tr key={row}>
+                                            {Array.from({ length: 4 }, (_, col) => {
+                                                const index = row * 4 + col;
+                                                const data = JSON.parse(ticket.card_name || '{}');
+                                                const amount = data[index] || 0;
+                                                const { rank, suit, alt } = cardImages[index];
+                                                return (
+                                                    <td key={col} className="border p-2 text-center align-middle">
+                                                        <div className="mb-1">
+                                                            <img src={rank} alt={alt} width="50" height="50" />
+                                                            <img src={suit} alt={alt} width="50" height="50" />
+                                                        </div>
+                                                        <div>₹{amount}</div>
+                                                    </td>
+                                                );
+                                            })}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
 
                             <img
                                 src={`${ticket.bar_code_scanner}`}
@@ -86,9 +146,6 @@ export default function ViewTickets({ tickets, user }) {
                                 className="mb-4"
                             />
 
-                            <p className="mb-4">
-                                <strong>Ticket Result:</strong> {getResultTimeFromCreatedAt(ticket.created_at)}
-                            </p>
 
                             <button
                                 onClick={() => printTicket(ticket.id)}

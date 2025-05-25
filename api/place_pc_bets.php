@@ -200,7 +200,7 @@ $cardBetJson = json_encode($cardBets);
         $serial_number,
         $dummyPath,
         $totalBet,
-        $card_type,
+        $cardBetJson,
         $retailer_id,
         $now,
         $now
