@@ -217,7 +217,7 @@ $cardBetJson = json_encode($cardBets);
     $barcodeData = $barcodeGenerator->getBarcode($serial_number, $barcodeGenerator::TYPE_CODE_39);
 
     // Ensure barcodes directory exists
-    $barcodeDir = __DIR__ . '/../Casino-admin/public/barcodes';
+    $barcodeDir = __DIR__ . '/../assets-normal/img';
 
     if (! file_exists($barcodeDir)) {
         mkdir($barcodeDir, 0755, true);
@@ -228,7 +228,7 @@ $cardBetJson = json_encode($cardBets);
     file_put_contents($fullPath, $barcodeData);
 
     // Relative path to store in DB
-    $relativePath = '/barcodes/' . $filename;
+    $relativePath = $filename;
 
     // 9) Update the ticket with the correct barcode path
     $updateSql = "UPDATE tickets SET bar_code_scanner = ? WHERE id = ?";

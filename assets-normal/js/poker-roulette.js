@@ -636,6 +636,74 @@ document.querySelectorAll(".grid-label").forEach(label => {
 // Clear cache on spin button click and reset allbetamtinx
 
 
+// 1) Define a JS helper that mirrors your PHP logic:
+
+function getCardImages(idx) {
+    switch (idx) {
+        case 0:
+            return `
+                <img class="card" src="/assets-normal/img/goldens-k.png" style="width:25px;height:25px;"   alt="King of Spades" />
+                <img class="card" src="/assets-normal/img/spades-golden.png" style="width:25px;height:25px;" alt="King of Spades" />
+            `;
+        case 1:
+            return `
+                <img class="card" src="/assets-normal/img/goldens-k.png" style="width:25px;height:25px;"     alt="King of Diamonds" />
+                <img class="card" src="/assets-normal/img/golden-diamond.png" style="width:25px;height:25px;" alt="King of Diamonds" />
+            `;
+        case 2:
+            return `
+                <img class="card" src="/assets-normal/img/goldens-k.png" style="width:25px;height:25px;"   alt="King of Clubs" />
+                <img class="card" src="/assets-normal/img/clubs-golden.png" style="width:25px;height:25px;" alt="King of Clubs" />
+            `;
+        case 3:
+            return `
+                <img class="card" src="/assets-normal/img/goldens-k.png" style="width:25px;height:25px;"    alt="King of Hearts" />
+                <img class="card" src="/assets-normal/img/golden-hearts.png" style="width:25px;height:25px;" alt="King of Hearts" />
+            `;
+        case 4:
+            return `
+                <img class="card" src="/assets-normal/img/golden-q.png" style="width:25px;height:25px;"   alt="Queen of Spades" />
+                <img class="card" src="/assets-normal/img/spades-golden.png" style="width:25px;height:25px;" alt="Queen of Spades" />
+            `;
+        case 5:
+            return `
+                <img class="card" src="/assets-normal/img/golden-q.png" style="width:25px;height:25px;"     alt="Queen of Diamonds" />
+                <img class="card" src="/assets-normal/img/golden-diamond.png" style="width:25px;height:25px;" alt="Queen of Diamonds" />
+            `;
+        case 6:
+            return `
+                <img class="card" src="/assets-normal/img/golden-q.png" style="width:25px;height:25px;"   alt="Queen of Clubs" />
+                <img class="card" src="/assets-normal/img/clubs-golden.png" style="width:25px;height:25px;" alt="Queen of Clubs" />
+            `;
+        case 7:
+            return `
+                <img class="card" src="/assets-normal/img/golden-q.png" style="width:25px;height:25px;"    alt="Queen of Hearts" />
+                <img class="card" src="/assets-normal/img/golden-hearts.png" style="width:25px;height:25px;" alt="Queen of Hearts" />
+            `;
+        case 8:
+            return `
+                <img class="card" src="/assets-normal/img/golden-j.png" style="width:25px;height:25px;"   alt="Jack of Spades" />
+                <img class="card" src="/assets-normal/img/spades-golden.png" style="width:25px;height:25px;" alt="Jack of Spades" />
+            `;
+        case 9:
+            return `
+                <img class="card" src="/assets-normal/img/golden-j.png" style="width:25px;height:25px;"     alt="Jack of Diamonds" />
+                <img class="card" src="/assets-normal/img/golden-diamond.png" style="width:25px;height:25px;" alt="Jack of Diamonds" />
+            `;
+        case 10:
+            return `
+                <img class="card" src="/assets-normal/img/golden-j.png" style="width:25px;height:25px;"   alt="Jack of Clubs" />
+                <img class="card" src="/assets-normal/img/clubs-golden.png" style="width:25px;height:25px;" alt="Jack of Clubs" />
+            `;
+        case 11:
+            return `
+                <img class="card" src="/assets-normal/img/golden-j.png" style="width:25px;height:25px;"    alt="Jack of Hearts" />
+                <img class="card" src="/assets-normal/img/golden-hearts.png" style="width:25px;height:25px;" alt="Jack of Hearts" />
+            `;
+        default:
+            return ''; // or fallback if index > 11 or < 0
+    }
+}
 
 
 
@@ -671,48 +739,64 @@ updateBalanceDisplay();
     console.log('API RESPONSE PLACEPC BETS:', data);
     console.log('Ticket Info:', data?.data?.ticket);
 const ticket = data?.data?.ticket;
+ if (ticket) {
+  const printSection = document.getElementById('printSection');
+  const cardData = JSON.parse(ticket.card_name || '[]');
+  const rows = [];
+  for (let r = 0; r < 3; r++) {
+    let cols = '';
+    for (let c = 0; c < 4; c++) {
+      const i = r * 4 + c;
+      const amt = cardData[i] || 0;
+      cols += '<td style="padding: 10px; color: #000; text-align: center;">' +
+                getCardImages(i) +
+                '<div><strong style="color: #000;">₹' + amt + '</strong></div>' +
+              '</td>';
+    }
+    rows.push('<tr>' + cols + '</tr>');
+  }
+  const tableHTML = '<table style="border-collapse: separate; border-spacing: 10px;"><tbody>' + rows.join('') + '</tbody></table>';
+  const barcodeSrc = window.location.origin + '/assets-normal/img/' + ticket.bar_code_scanner;
+  const ticketHTML = 
+    '<div class="ticket" style="color: #000;">' +
+      '<h4 style="color: #000;">Ticket ID: ' + ticket.id + '</h4>' +
+      '<p style="color: #000;"> Date & Time : ' + ticket.created_at + '</p>' +
+      '<p><strong style="color: #000;">Serial Number:</strong> ' + ticket.serial_number + '</p>' +
+      '<p><strong style="color: #000;">Amount:</strong> ₹' + ticket.amount + '</p>' +
+      '<p><strong style="color: #000;">User ID:</strong> ' + ticket.user_id + '</p>' +
+      tableHTML +
+      '<img src="' + barcodeSrc + '" alt="Barcode" />' +
+    '</div>';
 
-if (ticket) {
-    const printSection = document.getElementById('printSection');
+  printSection.innerHTML = ticketHTML;
+  printSection.style.display = 'block';
 
-    const ticketHTML = `
-        <div class="ticket">
-            <h2>Ticket ID: ${ticket.id}</h2>
-            <p><strong>Serial Number:</strong> ${ticket.serial_number}</p>
-            <p><strong>Amount:</strong> ₹${ticket.amount}</p>
-            <p><strong>User ID:</strong> ${ticket.user_id}</p>
-            <img src="${ticket.bar_code_scanner}" alt="Barcode" />
-        </div>
-        <style>
-            .ticket {
-                font-family: Arial, sans-serif;
-                border: 1px solid #000;
-                padding: 20px;
-                width: 300px;
-                margin: auto;
-                text-align: center;
-            }
-            .ticket img {
-                max-width: 100%;
-                height: auto;
-                margin-top: 10px;
-            }
-            .ticket h2 {
-                margin-bottom: 10px;
-            }
-        </style>
-    `;
+  const printOnlyStyle = document.createElement('style');
+  printOnlyStyle.innerHTML = 
+    '@media print {' +
+      'body * { visibility: hidden; }' +
+      '#printSection, #printSection * { visibility: visible; color: #000 !important; }' +
+      '#printSection { position: absolute; top: 0; left: 0; width: 100%; }' +
+    '}';
+  document.head.appendChild(printOnlyStyle);
 
-    printSection.innerHTML = ticketHTML;
-    printSection.style.display = 'block';
+  const imgs = Array.from(printSection.querySelectorAll('img'));
+  const promises = imgs.map(img => new Promise(resolve => {
+    if (img.complete && img.naturalHeight !== 0) return resolve();
+    img.addEventListener('load',  () => resolve());
+    img.addEventListener('error', () => resolve());
+  }));
 
+  Promise.all(promises).then(() => {
     window.print();
-
-    window.onafterprint = function () {
-        printSection.style.display = 'none';
-        printSection.innerHTML = '';
-        window.onafterprint = null;  // clean up the handler
+    printSection.style.display = 'none';
+    window.onafterprint = () => {
+      document.head.removeChild(printOnlyStyle);
+      printSection.innerHTML = '';
+      printSection.style.display = 'none';
+      window.onafterprint = null;
     };
+  });
 }
 
 

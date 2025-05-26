@@ -350,10 +350,6 @@ include 'modals/historymodal.php';
 include 'modals/accountmodal.php';
 include 'modals/cardhistorymodal.php';
 ?>
-<div id="overlay">
-    
-
-</div>
 
 
 
@@ -365,7 +361,18 @@ include 'modals/cardhistorymodal.php';
 <button id="exitKioskBtn" class="cmn--btn active btn--md d-none d-sm-block btn-sm">
   Exit
 </button>
-
+<script>
+document.getElementById("exitKioskBtn").addEventListener("click", function () {
+  fetch('/close-kiosk.php')
+    .then(response => response.text())
+    .then(data => {
+      console.log(data);
+    })
+    .catch(error => {
+      console.error('Error closing kiosk:', error);
+    });
+});
+</script>
  <a href="logout.php" class="cmn--btn active btn--md d-none d-sm-block btn-sm">Logout</a>
 
 <button
