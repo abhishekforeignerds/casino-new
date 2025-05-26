@@ -362,11 +362,15 @@ include 'modals/cardhistorymodal.php';
         style="color:white; font-size:32px; border:none; background:none; z-index:1000; cursor:pointer;">
   <i class="fas fa-expand"></i>
 </button> -->
- <a href="logout.php" class="cmn--btn active btn--md d-none d-sm-block">Logout</a>
+<button id="exitKioskBtn" class="cmn--btn active btn--md d-none d-sm-block btn-sm">
+  Exit
+</button>
+
+ <a href="logout.php" class="cmn--btn active btn--md d-none d-sm-block btn-sm">Logout</a>
 
 <button
   type="button"
-  class="cmn--btn active btn--md d-none d-sm-block"
+  class="cmn--btn active btn--md d-none d-sm-block btn-sm"
   data-bs-toggle="modal"
   data-bs-target="#cardHistory"
 >
@@ -375,7 +379,7 @@ include 'modals/cardhistorymodal.php';
 
  <button
   type="button"
-  class="cmn--btn active btn--md d-none d-sm-block"
+  class="cmn--btn active btn--md d-none d-sm-block btn-sm"
   data-bs-toggle="modal"
   data-bs-target="#historyModal"
 >
@@ -384,7 +388,7 @@ include 'modals/cardhistorymodal.php';
 
 <button
   type="button"
-  class="cmn--btn active btn--md d-none d-sm-block"
+  class="cmn--btn active btn--md d-none d-sm-block btn-sm"
   data-bs-toggle="modal"
   data-bs-target="#accountModal"
 >
@@ -397,7 +401,7 @@ include 'modals/cardhistorymodal.php';
             </span>
         </div> -->
     
-        <div class="bordersboxes cmn--btn active btn--md d-none d-sm-block">
+        <div class="bordersboxes cmn--btn active btn--md d-none d-sm-block btn-sm">
         <label>
             <input
             type="checkbox"
@@ -686,6 +690,8 @@ include 'modals/cardhistorymodal.php';
             <div id="history-box">
                 <div id="history-container"></div>
             </div>
+<div id="printSection" style="display:none;"></div>
+
 
         </div>
     </div>

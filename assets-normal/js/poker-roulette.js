@@ -669,6 +669,52 @@ updateBalanceDisplay();
   .then(res => res.json())
   .then(data => {
     console.log('API RESPONSE PLACEPC BETS:', data);
+    console.log('Ticket Info:', data?.data?.ticket);
+const ticket = data?.data?.ticket;
+
+if (ticket) {
+    const printSection = document.getElementById('printSection');
+
+    const ticketHTML = `
+        <div class="ticket">
+            <h2>Ticket ID: ${ticket.id}</h2>
+            <p><strong>Serial Number:</strong> ${ticket.serial_number}</p>
+            <p><strong>Amount:</strong> ₹${ticket.amount}</p>
+            <p><strong>User ID:</strong> ${ticket.user_id}</p>
+            <img src="${ticket.bar_code_scanner}" alt="Barcode" />
+        </div>
+        <style>
+            .ticket {
+                font-family: Arial, sans-serif;
+                border: 1px solid #000;
+                padding: 20px;
+                width: 300px;
+                margin: auto;
+                text-align: center;
+            }
+            .ticket img {
+                max-width: 100%;
+                height: auto;
+                margin-top: 10px;
+            }
+            .ticket h2 {
+                margin-bottom: 10px;
+            }
+        </style>
+    `;
+
+    printSection.innerHTML = ticketHTML;
+    printSection.style.display = 'block';
+
+    window.print();
+
+    window.onafterprint = function () {
+        printSection.style.display = 'none';
+        printSection.innerHTML = '';
+        window.onafterprint = null;  // clean up the handler
+    };
+}
+
 
     if (data.status === 'success') {
       console.log('Bet placed:', data.data.insertedId, 'totalBet:', data.data.totalBet);
@@ -2130,7 +2176,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!document.fullscreenElement) {
         enterFullscreen();
       }
-    }, 1000);
+    }, 2000);
   }
 
   // On DOM ready, lock in the overlay and start polling
@@ -2174,4 +2220,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // console.log('called updatedashboardData')
     updatedashboardData(withdrawTime);
   }, 4000);
+});
+
+document.getElementById('exitKioskBtn').addEventListener('click', () => {
+  // Exit fullscreen if active
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+  }
+
+  // Give fullscreen exit a moment, then close window
+  setTimeout(() => {
+    window.close(); // This may work depending on browser context
+  }, 500);
 });

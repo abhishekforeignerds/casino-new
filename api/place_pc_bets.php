@@ -242,6 +242,22 @@ $cardBetJson = json_encode($cardBets);
     }
     $up->close();
 
+
+    $selectSql = "SELECT * FROM tickets WHERE id = ?";
+$sel = $conn->prepare($selectSql);
+if (! $sel) {
+    throw new Exception('SELECT ticket prepare failed: ' . $conn->error, 500);
+}
+$sel->bind_param('i', $ticketId);
+if (! $sel->execute()) {
+    throw new Exception('SELECT ticket execute failed: ' . $sel->error, 500);
+}
+
+$result = $sel->get_result();
+$ticket = $result->fetch_assoc();
+$sel->close();
+
+
     // 10) Re‑insert aggregated record into total_bet_history
     $sqlIns = "
         INSERT INTO total_bet_history
@@ -312,7 +328,8 @@ if (! $updateStmt->execute()) {
             'barcodePath' => $relativePath,
             'totalBet'    => $totalBet,
             'totalBet'    => $totalBet,
-            'deletedRows' => $deletedRows
+            'deletedRows' => $deletedRows,
+            'ticket' => $ticket
         ]
     ]);
     $ins->close();
