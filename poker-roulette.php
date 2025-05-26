@@ -352,27 +352,13 @@ include 'modals/cardhistorymodal.php';
 ?>
 
 
-
     <div id="mini-nav">
        <!-- <button class="bordersboxes fullscreen-toggle"
         style="color:white; font-size:32px; border:none; background:none; z-index:1000; cursor:pointer;">
   <i class="fas fa-expand"></i>
 </button> -->
-<button id="exitKioskBtn" class="cmn--btn active btn--md d-none d-sm-block btn-sm">
-  Exit
-</button>
-<script>
-document.getElementById("exitKioskBtn").addEventListener("click", function () {
-  fetch('/close-kiosk.php')
-    .then(response => response.text())
-    .then(data => {
-      console.log(data);
-    })
-    .catch(error => {
-      console.error('Error closing kiosk:', error);
-    });
-});
-</script>
+
+
  <a href="logout.php" class="cmn--btn active btn--md d-none d-sm-block btn-sm">Logout</a>
 
 <button

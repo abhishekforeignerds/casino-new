@@ -1750,7 +1750,7 @@ if ((from === today && to === today) || (countdown == 115)) {
   data.mapped.forEach(result => {
     const createdDate = result.created_at?.slice(0, 10);
     if (createdDate === today) {
-      const balance = parseFloat(result.balance) || 0;
+      const balance = parseFloat(result.bet_amount) || 0;
       const claim_point = parseFloat(result.claim_point) || 0;
       const unclaim_point = parseFloat(result.unclaim_point) || 0;
       const commission = balance * 0.03;
@@ -1831,12 +1831,13 @@ const suits     = ['spades','diamond','clubs','hearts'];
 const groupedData = {};
 
 data.mapped.forEach(result => {
+
     const gameResult = result.game_result || {};
     const index = gameResult.winning_number ?? gameResult.lose_number;
 
     let output = '0';
-    if (result.created_at) {
-        const dt = new Date(result.created_at);
+    if (result.withdraw_time) {
+        const dt = new Date(result.withdraw_time);
         dt.setMinutes(dt.getMinutes() - 2);
         output = dt.toISOString().replace('T', ' ').slice(0, 19);
     }
@@ -1845,7 +1846,7 @@ data.mapped.forEach(result => {
 
     const claim_point = result.claim_point || 0;
     const unclaim_point = result.unclaim_point || 0;
-    const balance = result.balance || 0;
+    const balance = result.bet_amount ? parseFloat(result.bet_amount) : 0;
 
     const win_value = (unclaim_point === 0 && claim_point === 0) ? 0 : (unclaim_point || claim_point);
 
@@ -1866,6 +1867,7 @@ data.mapped.forEach(result => {
     groupedData[groupKey].total_claim_point += claim_point;
     groupedData[groupKey].total_unclaim_point += unclaim_point;
     groupedData[groupKey].ticket_ids.push(result.ticket_serial);
+
 });
 
 // Optional: format currency
@@ -2016,7 +2018,7 @@ Object.values(groupedData).forEach(group => {
         <tr class="table-history">
           <td data-label="Card Win" class="image-tr d-flex">${cardsHtml}</td>
           <td data-label="Ticket Serial">#${result.ticket_serial}</td>
-          <td data-label="Bet Amount">₹${parseFloat(result.balance).toFixed(2)}</td>
+          <td data-label="Bet Amount">₹${parseFloat(result.bet_amount).toFixed(2)}</td>
           <td data-label="Win Value">₹${win_value.toFixed(2)}</td>
           <td data-label="Claimed Points">${claim.toFixed(0)}</td>
           <td data-label="Unclaimed Points">${unclaim.toFixed(0)}</td>

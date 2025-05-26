@@ -65,98 +65,114 @@ $totalUnclaim = (int) $row['total_unclaim'];
 
 date_default_timezone_set('Asia/Kolkata');
 
-// assume $conn is your mysqli connection and $user_id is defined…
 
-// 1) Fetch all of today’s claim_point_data for this user
-$stmt2 = $conn->prepare("
+// 1) Fetch today’s total_bet_history rows
+$stmtTBH = $conn->prepare("
     SELECT *
-      FROM claim_point_data
-     WHERE user_id      = ?
+      FROM total_bet_history
+     WHERE user_id        = ?
        AND DATE(created_at) = CURDATE()
-     ORDER
-        BY created_at DESC, id DESC
+       AND ticket_serial  > 0
+        AND withdraw_time  < NOW()
+     ORDER BY id DESC
 ");
-$stmt2->bind_param("i", $user_id);
-$stmt2->execute();
-$res2 = $stmt2->get_result();
-$claim_list = $res2->fetch_all(MYSQLI_ASSOC);
+$stmtTBH->bind_param("i", $user_id);
+$stmtTBH->execute();
+$totalbethistory = $stmtTBH->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// 2) Fetch today’s game_results that actually have a win_value > 0
-$stmt1 = $conn->prepare("
+// 2) Fetch today’s game_results (all rows)
+$stmtGR = $conn->prepare("
     SELECT *
       FROM game_results
-     WHERE user_id      = ?
+     WHERE user_id        = ?
        AND DATE(created_at) = CURDATE()
      ORDER BY created_at DESC, id DESC
 ");
-$stmt1->bind_param("i", $user_id);
-$stmt1->execute();
-$res1 = $stmt1->get_result();
-$game_results = $res1->fetch_all(MYSQLI_ASSOC);
+$stmtGR->bind_param("i", $user_id);
+$stmtGR->execute();
+$game_results = $stmtGR->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// 3) Build a lookup from created_at → game_result row
+// 3) Index game_results by timestamp
 $grByTimestamp = [];
 foreach ($game_results as $gr) {
-    // If there are multiple wins at the exact same timestamp,
-    // you could push them into an array. Here we assume one‐to‐one.
-    $grByTimestamp[$gr['created_at']] = $gr;
-}
-$stmt3 = $conn->prepare("
-    SELECT *
-      FROM total_bet_history
-     WHERE user_id = ?
-       AND DATE(created_at) = CURDATE()
-       AND ticket_serial > 0
-       AND withdraw_time  > NOW()
-     ORDER BY id DESC
-");
-$stmt3->bind_param("i", $user_id);
-$stmt3->execute();
+    $datetime = new DateTime($gr['created_at']);
+    $datetime->modify('-2 minutes');
+    $adjustedTimestamp = $datetime->format('Y-m-d H:i:s');
 
-$res3 = $stmt3->get_result(); // Corrected from $stmt2 to $stmt3
-$bethistory = $res3->fetch_all(MYSQLI_ASSOC); 
-// 4) Now merge, but matching by created_at instead of array index
+    $grByTimestamp[$adjustedTimestamp] = $gr;
+}
+
+
+// 4) Prepare your “no-match” stub
+$defaultGR = [
+    'id'             => 0,
+    'user_id'        => null,    // will set per row below
+    'game_id'        => null,
+    'winning_number' => null,    // as requested
+    'lose_number'    => 0,       // as requested
+    'suiticonnum'    => null,
+    'bet'            => 0.00,
+    'win_value'      => 0,
+    'created_at'     => null,
+    'updated_at'     => null,
+];
+
+// 5) Map every bet_history → game_result (real or stub)
 $mapped = [];
-foreach ($claim_list as $idx => $cpd) {
-    $ts = $cpd['created_at'];
+foreach ($totalbethistory as $idx => $bh) {
+    $ts = $bh['withdraw_time'];
 
     if (isset($grByTimestamp[$ts])) {
-        // We found a winning game_result at exactly the same timestamp
         $matchedGR = $grByTimestamp[$ts];
     } else {
-        // No winning row for this timestamp → use a default “no‐win” template
-        $matchedGR = [
-            'id'         => 0,
-            'user_id'    => $cpd['user_id'],
-            'game_id'    => null,
-            'winning_number' => null,
-            'lose_number'    => null,
-            'suiticonnum'    => null,
-            'bet'            => 0.00,
-            'win_value'      => 0,
-            'created_at'     => null,
-            'updated_at'     => null,
-            // …and any other fields you expect from game_results
-        ];
+        // use stub, but keep correct user_id
+        $defaultGR['user_id'] = $bh['user_id'];
+        $matchedGR = $defaultGR;
     }
 
-    // Decide which “index” you want to display: if winning_number is null, use lose_number; else use winning_number
-    if (empty($matchedGR['winning_number'])) {
-        $index = $matchedGR['lose_number'];
-    } else {
-        $index = $matchedGR['winning_number'];
-    }
+    // attach game_result
+    $bh['game_result'] = $matchedGR;
 
-    // Inject the game_result into the claim_row
-    $cpd['game_result'] = $matchedGR;
-    // Optionally store the computed “index” for your view:
-    $cpd['display_index'] = $index;
-
-    // Optionally assign a 1‐based serial number for UI
-    $cpd['serial'] = $idx + 1;
-
-    $mapped[] = $cpd;
+    $mapped[] = $bh;
 }
+
+
+$stmtCL = $conn->prepare("
+    SELECT *
+      FROM claim_point_data
+     WHERE user_id        = ?
+       AND DATE(created_at) = CURDATE()
+     ORDER BY created_at DESC, id DESC
+");
+$stmtCL->bind_param("i", $user_id);
+$stmtCL->execute();
+$claim_list = $stmtCL->get_result()->fetch_all(MYSQLI_ASSOC);
+
+$claimBySerial = [];
+foreach ($claim_list as $cl) {
+    $claimBySerial[$cl['ticket_serial']] = $cl;
+}
+
+// 7) Inject claim_point / unclaim_point into each mapped row
+foreach ($mapped as &$row) {
+    $serial = $row['ticket_serial'];
+
+    if (isset($claimBySerial[$serial])) {
+        $row['claim_point']   = $claimBySerial[$serial]['claim_point'];
+        $row['unclaim_point'] = $claimBySerial[$serial]['unclaim_point'];
+    } else {
+        // no matching claim_point_data → zero defaults
+        $row['claim_point']   = 0;
+        $row['unclaim_point'] = 0;
+    }
+}
+unset($row);
+// Now $mapped is an array of today's total_bet_history rows,
+// each with a ['game_result'] array—either the real match or
+// a stub where winning_number=null and lose_number=0.
+
+
+
 $today = date('Y-m-d');  
 $now   = date('Y-m-d H:i:s');  
 $stmt3 = $conn->prepare("
@@ -179,5 +195,5 @@ echo json_encode([
     'totalUnclaim' => $totalUnclaim,
     'mapped' => $mapped,
     'bethistory' => $bethistory,
-    'grByTimestamp' => $grByTimestamp,
+    'claim_list' => $claim_list,
 ]);
