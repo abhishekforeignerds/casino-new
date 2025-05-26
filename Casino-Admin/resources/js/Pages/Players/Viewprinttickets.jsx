@@ -36,14 +36,17 @@ export default function ViewTickets({ tickets: initialTickets, user }) {
                             clone.querySelectorAll('.no-print').forEach(node => node.remove());
 
                             const printWindow = window.open('', '', 'width=800,height=600');
+
+                            const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'))
+                                .map(link => `<link rel="stylesheet" href="${link.href}" />`)
+                                .join('\n');
+
                             printWindow.document.write(`
                                 <html>
                                 <head>
                                     <title>Print Ticket</title>
                                     <base href="${window.location.origin}" />
-                                    ${Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'))
-                                    .map(link => `<link rel="stylesheet" href="${link.href}" />`)
-                                    .join('\n')}
+                                    ${styles}
                                     <style>
                                         @media print {
                                             .no-print { display: none !important; }
@@ -67,7 +70,7 @@ export default function ViewTickets({ tickets: initialTickets, user }) {
                                 </html>
                             `);
                             printWindow.document.close();
-                        }, 1000);
+                        }, 5000);
                     }
                 }
             } catch (error) {
@@ -146,7 +149,7 @@ export default function ViewTickets({ tickets: initialTickets, user }) {
                             </table>
 
                             <img
-                                src={`${ticket.bar_code_scanner}`}
+                                src={ticket.bar_code_scanner}
                                 alt={`Barcode for ${ticket.serial_number}`}
                                 className="mb-4"
                             />
@@ -158,14 +161,17 @@ export default function ViewTickets({ tickets: initialTickets, user }) {
                                     const clone = element.cloneNode(true);
                                     clone.querySelectorAll('.no-print').forEach(node => node.remove());
                                     const printWindow = window.open('', '', 'width=800,height=600');
+
+                                    const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'))
+                                        .map(link => `<link rel="stylesheet" href="${link.href}" />`)
+                                        .join('\n');
+
                                     printWindow.document.write(`
                                         <html>
                                         <head>
                                             <title>Print Ticket</title>
                                             <base href="${window.location.origin}" />
-                                            ${Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'))
-                                            .map(link => `<link rel="stylesheet" href="${link.href}" />`)
-                                            .join('\n')}
+                                            ${styles}
                                             <style>
                                                 @media print {
                                                     .no-print { display: none !important; }

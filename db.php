@@ -1,5 +1,5 @@
 <?php
-// $// $host = "localhost";
+// $host = "localhost";
 // $user = "root"; // Change to your database username
 // $pass = "";     // Change to your database password
 // $dbname = "casino-game";

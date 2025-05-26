@@ -13,7 +13,15 @@ Route::get('/tickets', function () {
     return Inertia::render('Players/Viewprinttickets', ['tickets' => $tickets, 'user' => $user]);
 });
 
+Route::post('/api/qz-sign', function (Request $request) {
+    $dataToSign = $request->input('data');
+    $privateKey = file_get_contents(storage_path('qz.key'));
 
+    openssl_sign($dataToSign, $signature, $privateKey, OPENSSL_ALGO_SHA512);
+    return response()->json([
+        'signature' => base64_encode($signature),
+    ]);
+});
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),

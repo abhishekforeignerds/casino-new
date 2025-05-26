@@ -1,5 +1,8 @@
 import React from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Link, usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import img1 from "../../../../../assets-normal/img/goldens-k-sm.png";
 import img2 from "../../../../../assets-normal/img/golden-q-sm.png";
@@ -10,6 +13,7 @@ import img6 from "../../../../../assets-normal/img/clubs-golden-sm.png";
 import img7 from "../../../../../assets-normal/img/golden-hearts-sm.png";
 
 export default function ViewTickets({ tickets, user }) {
+
     const getResultTimeFromCreatedAt = (createdAt) => {
         const date = new Date(createdAt);
         const minutes = date.getMinutes();
@@ -80,85 +84,93 @@ export default function ViewTickets({ tickets, user }) {
         { rank: img3, suit: img6, alt: 'Jack of Clubs' },
         { rank: img3, suit: img7, alt: 'Jack of Hearts' },
     ];
+    const currentPath = window.location.pathname;
+    const refreshLinkRef = useRef(null);
 
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            if (refreshLinkRef.current) {
+                refreshLinkRef.current.click();
+            }
+        }, 10000); // Refresh every 10 seconds
+
+        return () => clearInterval(intervalId);
+    }, []);
     return (
         <AuthenticatedLayout header={<h2 className="text-xl font-semibold">View Tickets for {user.name}</h2>}>
             <Head title="Your Tickets" />
 
-            <div className="w-4/5 ml-auto pt-[15vh] flex flex-wrap justify-start gap-8">
+            <div className="w-4/5 ml-auto pt-[15vh]">
+                <Link hidden ref={refreshLinkRef} href={currentPath}>
+                    Refresh
+                </Link>
+
                 {tickets.length > 0 ? (
-                    tickets.map(ticket => (
-                        <div
-                            key={ticket.id}
-                            id={`ticket-${ticket.id}`}
-                            className="w-full max-w-md border rounded-lg shadow p-6 bg-white"
-                        >
-                            <h1 className="text-2xl font-bold mb-4">Poker Roulette</h1>
-                            <p className="mb-4">
-                                <strong>Date & Time:</strong> {ticket.created_at_formatted}
-
-                            </p>
-
-                            <p className="mb-2">
-                                <strong>Serial #:</strong>{' '}
-                                <span className="font-mono">{ticket.serial_number}</span>
-                            </p>
-
-                            <p className="mb-2">
-                                <strong>Total Play:</strong>{' '}
-                                ₹{Number(ticket.amount).toLocaleString()}
-                            </p>
-
-                            <p className="mb-4">
-                                <strong>Card Name:</strong>
-                            </p>
-
-
-
-                            {/* Print-only table (hidden on screen) */}
-                            <table className="print:hidden print-table w-full border-collapse border">
-                                <tbody>
-                                    {Array.from({ length: 3 }, (_, row) => (
-                                        <tr key={row}>
-                                            {Array.from({ length: 4 }, (_, col) => {
-                                                const index = row * 4 + col;
-                                                const data = JSON.parse(ticket.card_name || '{}');
-                                                const amount = data[index] || 0;
-                                                const { rank, suit, alt } = cardImages[index];
-                                                return (
-                                                    <td key={col} className="border p-2 text-center align-middle">
-                                                        <div className="mb-1">
-                                                            <img src={rank} alt={alt} width="50" height="50" />
-                                                            <img src={suit} alt={alt} width="50" height="50" />
-                                                        </div>
-                                                        <div>₹{amount}</div>
-                                                    </td>
-                                                );
-                                            })}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-
-                            <img
-                                src={`${ticket.bar_code_scanner}`}
-                                alt={`Barcode for ${ticket.serial_number}`}
-                                className="mb-4"
-                            />
-
-
-                            <button
-                                onClick={() => printTicket(ticket.id)}
-                                className="no-print px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    <div className="grid grid-cols-5 gap-4">
+                        {[...tickets].reverse().map((ticket) => (
+                            <div
+                                key={ticket.id}
+                                id={`ticket-${ticket.id}`}
+                                className="border rounded-lg shadow p-4 bg-white flex flex-col"
                             >
-                                Print Ticket
-                            </button>
-                        </div>
-                    ))
+                                <h1 className="text-base font-bold mb-2">Poker Roulette</h1>
+
+                                <p className="mb-1 text-sm">
+                                    <strong>Date & Time:</strong> {ticket.created_at_formatted}
+                                </p>
+                                <p className="mb-1 text-sm">
+                                    <strong>Serial #:</strong>{' '}
+                                    <span className="font-mono">{ticket.serial_number}</span>
+                                </p>
+                                <p className="mb-1 text-sm">
+                                    <strong>Total Play:</strong> ₹{Number(ticket.amount).toLocaleString()}
+                                </p>
+
+                                {/* Print-only table */}
+                                <table className="print:hidden w-full border-collapse border text-xs mb-2">
+                                    <tbody>
+                                        {Array.from({ length: 3 }, (_, row) => (
+                                            <tr key={row}>
+                                                {Array.from({ length: 4 }, (_, col) => {
+                                                    const index = row * 4 + col;
+                                                    const data = JSON.parse(ticket.card_name || '{}');
+                                                    const amount = data[index] || 0;
+                                                    const { rank, suit, alt } = cardImages[index];
+                                                    return (
+                                                        <td key={col} className="border p-1 text-center align-middle">
+                                                            <div className="flex justify-center mb-1">
+                                                                <img src={rank} alt={alt} className="h-5 w-auto" />
+                                                                <img src={suit} alt={alt} className="h-5 w-auto" />
+                                                            </div>
+                                                            <div className="text-xs">₹{amount}</div>
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                <img
+                                    src={ticket.bar_code_scanner}
+                                    alt={`Barcode for ${ticket.serial_number}`}
+                                    className="mb-2 w-full h-auto object-contain"
+                                />
+
+                                <button
+                                    onClick={() => printTicket(ticket.id)}
+                                    className="no-print mt-auto text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                >
+                                    Print Ticket
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 ) : (
-                    <p className="text-gray-500">No tickets found.</p>
+                    <p className="text-gray-500 text-sm">No tickets found.</p>
                 )}
             </div>
+
         </AuthenticatedLayout>
     );
 }
