@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@import url("css/font.css");
+*{
+  /* font-family: "Roboto", sans-serif; */
+  font-family: 'Manrope', sans-serif;
+}
+:root {
+    --primary: #A43434;
+    --secondary: #29343D;
+    --primary-hover: #7a2525;
+    --primary-dark: #621010;
+    --rgba-primary-1: rgba(164, 52, 52, 0.1);
+    --rgba-primary-2: rgba(164, 52, 52, 0.2);
+    --rgba-primary-3: rgba(164, 52, 52, 0.3);
+    --rgba-primary-4: rgba(164, 52, 52, 0.4);
+    --rgba-primary-5: rgba(164, 52, 52, 0.5);
+    --rgba-primary-6: rgba(164, 52, 52, 0.6);
+    --rgba-primary-7: rgba(164, 52, 52, 0.7);
+    --rgba-primary-8: rgba(164, 52, 52, 0.8);
+    --rgba-primary-9: rgba(164, 52, 52, 0.9);
+    --bg-light:#F4F7FB;
+    --primary-light: #FFEFEF;
+    --input-text:#737373;
+    --white:#ffffff;
+    --black: #000000;
+    --heading-font: "Roboto", sans-serif;
+    --para-font: "Manrope", sans-serif;
+    --form-labal: "Hind Madurai", serif;
+    --light-green:#E4FFD2;
+}
+
+/* custom css */
+.bg-light{
+    background-color: var(--bg-light);
+}
+.bg-primary{
+  background-color: var(--primary);
+}
+.color-primary{
+    color: var(--primary);
+}
+.color-secondary{
+    color: var(--secondary);
+}
+  .main-sidebar nav a:hover, .main-sidebar nav a:active, .inner-nav a:hover, .inner-nav a:active{
+background-color: var(--primary);
+color: var(--white);
+  }
+  .main-sidebar nav a svg{
+    font-size: 22px;
+  }
+  .logo-topbar{
+    position: fixed;
+    width: 100%;
+  }
+  .logo-topbar>div{max-width: 95%;}
+  .main-content-container{
+    padding-top: 4rem;
+    padding-bottom: 1rem;
+  }
+  .main-content-container>div{
+    max-width: 95%;
+  }
+  .cardContent{
+    min-width: 70%;
+  }
+.theme-style-form label, .styled-form label{
+font-family: var(--para-font);
+color: var(--black);
+letter-spacing: 1px;
+font-weight: 500; font-size: 1rem;
+}
+.theme-style-form input, .theme-style-form select, .styled-form input, .styled-form select{
+  font-size: 14px;
+  color: var(--input-text);
+  letter-spacing: 0.05em;
+}
+.styled-form button[type="submit"], .styled-form button[type="button"]{
+  text-transform: capitalize;
+  font-weight: 400;
+  margin-top: 1rem;
+  background-color: var(--primary);
+}
+.styled-form button[type="submit"]:hover, .styled-form button[type="button"]:hover{
+  background-color: var(--rgba-primary-8);
+}
+.styled-form button[type="submit"].border-btn, .styled-form button[type="button"].border-btn{
+  background-color: white;
+  border: 1px solid var(--primary);
+}
+.styled-form button[type="submit"].border-btn:hover, .styled-form button[type="button"].border-btn:hover{
+  background-color: rgb(238, 238, 238);
+
+}
+.styled-form .product-check-input label{
+  color: #969696;
+  font-size: 14px;
+}
+.inner-nav{
+  max-width: 13.43rem;
+}
+.tooltip {
+  position: absolute;
+  bottom: 10%; /* Position the tooltip above the link */
+  left: 80%;
+  transform: translateX(10px);
+  background-color: black;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none; /* Prevent tooltip from interfering with hover */
+}
+
+.group:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+form{
+accent-color: var(--primary);
+}
+[type='checkbox']:checked:hover, [type='checkbox']:checked:focus, [type='radio']:checked:hover, [type='radio']:checked:focus, [type='checkbox']:checked, [type='radio']:checked{
+  background-color: var(--primary);
+  border: none;
+  outline: none;
+}
+input#material-search::placeholder {
+  color: black;
+}
+body{
+  background-color: #f4f7fb;
+}
+Link:hover{
+color: var(--primary);
+}
+.styled-form button.uplaod-r-btn
+{
+  margin-top: 0;
+}
+.css-13cymwt-control{
+  border-color: rgb(209 213 219);
+  min-height: 40px;
+}
+@media (max-width: 768px) {  
+  th, td {  
+      font-size: 0.875rem; /* Smaller font for better fit */  
+  }  
+}  

@@ -1,0 +1,89 @@
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, useForm } from '@inertiajs/react';
+import { FiChevronRight } from 'react-icons/fi';
+import { Link } from '@inertiajs/react';
+
+export default function Edit({ user, roles }) {
+    const { data, setData, put, processing, errors } = useForm({
+        name: user.name,
+        email: user.email,
+        status: user.status,
+        mobile_number: user.mobile_number,
+        password: '',
+        role: user.roles && user.roles.length > 0 ? user.roles[0].name : '', // Safely access roles
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        put(route('users.update', user.id));
+    };
+
+    return (
+        <AuthenticatedLayout
+
+
+            header={
+                <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                    View User
+                </h2>
+            }
+        >
+            <Head title="View User" />
+
+            <div className="main-content-container sm:ml-52">
+                <div className="mx-auto py-6 flex justify-between flex-col md:flex-row gap-2">
+                    <p className='flex'><Link href={route('dashboard')}>Dashboard</Link>  <FiChevronRight size={24} color="black" /><Link href={route('users.index')}> Users Management</Link> <FiChevronRight size={24} color="black" /> <span className='text-red'>View User</span></p>
+
+                    <Link
+                        href={route('users.index')}  // Use the correct path to navigate to the users page
+                        className="border border-red py-1 px-14 text-red rounded max-w-max"
+                    >
+                        Back
+                    </Link>
+                </div>
+                <div className="mx-auto py-6">
+                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg min-h-[80vh]">
+                        <div className="p-6 text-gray-900">
+                            <div className='top-search-bar-box flex'>
+                                <h2 className='mb-6 text-2xl font-bold text-gray-800'>View User</h2>
+
+                            </div>
+                            <div className='bg-lightGrayTheme p-4 grid grid-cols-2 gap-col-4'>
+                                <div className="mb-2 flex items-center gap-1">
+                                    <p className="text-md font-semibold text-gray-700">Full Name:</p>
+                                    <p className="text-gray-600">{data.name || 'N/A'}</p>
+                                </div>
+                                <div className="mb-2 flex items-center gap-1">
+                                    <p className="text-md font-semibold text-gray-700">Role:</p>
+                                    <p className="text-gray-600">{data.role || 'N/A'}</p>
+                                </div>
+                                <div className="mb-2 flex items-center gap-1">
+                                    <p className="text-md font-semibold text-gray-700">Email Address:</p>
+                                    <p className="text-gray-600">{data.email || 'N/A'}</p>
+                                </div>
+                                <div className="mb-2 flex items-center gap-1">
+                                    <p className="text-md font-semibold text-gray-700">Mobile Number:</p>
+                                    <p className="text-gray-600">{data.mobile_number || 'N/A'}</p>
+                                </div>
+                                <div className="mb-2 flex items-center gap-1">
+                                    <p className="text-md font-semibold text-gray-700">Status:</p>
+                                    <p className="text-gray-600 capitalize">{data.status || 'N/A'}</p>
+                                </div>
+
+                            </div>
+                            <div>
+                                <Link
+                                    href={route('users.index')}  // Use the correct path to navigate to the users page
+                                    className=" block max-w-max mt-4 px-4 py-2 font-normal uppercase text-sm text-white bg-red rounded hover:bg-red-800"
+                                >
+                                    Back to Users
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </AuthenticatedLayout>
+    );
+}
