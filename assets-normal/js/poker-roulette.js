@@ -739,7 +739,7 @@ updateBalanceDisplay();
     console.log('API RESPONSE PLACEPC BETS:', data);
     console.log('Ticket Info:', data?.data?.ticket);
 const ticket = data?.data?.ticket;
- if (ticket) {
+if (ticket) {
   const printSection = document.getElementById('printSection');
   const cardData = JSON.parse(ticket.card_name || '[]');
   const rows = [];
@@ -748,24 +748,34 @@ const ticket = data?.data?.ticket;
     for (let c = 0; c < 4; c++) {
       const i = r * 4 + c;
       const amt = cardData[i] || 0;
-      cols += '<td style="padding: 10px; color: #000; text-align: center;">' +
-                getCardImages(i) +
-                '<div><strong style="color: #000;">₹' + amt + '</strong></div>' +
-              '</td>';
+      if (amt !== 0) {
+        cols += '<td style="padding: 10px; color: #000; text-align: center;">' +
+                  getCardImages(i) +
+                  '<div><strong style="color: #000;">₹' + amt + '</strong></div>' +
+                '</td>';
+      }
     }
-    rows.push('<tr>' + cols + '</tr>');
+    if (cols) rows.push('<tr>' + cols + '</tr>');
   }
+
   const tableHTML = '<table style="border-collapse: separate; border-spacing: 10px;"><tbody>' + rows.join('') + '</tbody></table>';
   const barcodeSrc = window.location.origin + '/assets-normal/img/' + ticket.bar_code_scanner;
+
+  // Format date and time separately
+  const createdAt = new Date(ticket.created_at);
+  const formattedTime = createdAt.toLocaleTimeString();
+  const formattedDate = createdAt.toLocaleDateString();
+
   const ticketHTML = 
     '<div class="ticket" style="color: #000;">' +
       '<h4 style="color: #000;">Ticket ID: ' + ticket.id + '</h4>' +
-      '<p style="color: #000;"> Date & Time : ' + ticket.created_at + '</p>' +
+      '<p style="color: #000;">Date: ' + formattedDate + '</p>' +
+      '<p style="color: #000;">Time: ' + formattedTime + '</p>' +
       '<p><strong style="color: #000;">Serial Number:</strong> ' + ticket.serial_number + '</p>' +
       '<p><strong style="color: #000;">Amount:</strong> ₹' + ticket.amount + '</p>' +
       '<p><strong style="color: #000;">User ID:</strong> ' + ticket.user_id + '</p>' +
       tableHTML +
-      '<img src="' + barcodeSrc + '" alt="Barcode" />' +
+      '<img src="' + barcodeSrc + '" alt="Barcode" style="margin-bottom: 20px;" />' +
     '</div>';
 
   printSection.innerHTML = ticketHTML;
@@ -783,7 +793,7 @@ const ticket = data?.data?.ticket;
   const imgs = Array.from(printSection.querySelectorAll('img'));
   const promises = imgs.map(img => new Promise(resolve => {
     if (img.complete && img.naturalHeight !== 0) return resolve();
-    img.addEventListener('load',  () => resolve());
+    img.addEventListener('load', () => resolve());
     img.addEventListener('error', () => resolve());
   }));
 
@@ -2006,7 +2016,7 @@ Object.values(groupedData).forEach(group => {
              class="btn btn-sm btn-danger win-value claim-btn"
              data-user-id="${result.user_id}"
               data-unclaim-points="${result.unclaim_point}"
-             data-claim-id="${result.id}">
+             data-claim-id="${result.claim_id}">
              Claim
            </button>`
         : `<button class="btn btn-sm btn-secondary" disabled>
@@ -2084,26 +2094,26 @@ data.bethistory.reverse().forEach(result => {
 
 // 3) Update today's row: add today's totalBet, recalc commission & net
 let todaysnew = new Date().toISOString().split('T')[0];
-$('#accountdailyTableBody tr').each(function() {
-  const $tr = $(this);
-  let date = $tr.find('td').eq(0).text().trim();
-  if (date === todaysnew) {
-    // Sell
-    let sell = parseFloat($tr.find('td').eq(1).text().replace(/[₹,]/g, '')) || 0;
-    let newSell = sell + totalBet;
-    let win = parseFloat($tr.find('td').eq(2).text().replace(/[₹,]/g, '')) || 0;
+// $('#accountdailyTableBody tr').each(function() {
+//   const $tr = $(this);
+//   let date = $tr.find('td').eq(0).text().trim();
+//   if (date === todaysnew) {
+//     // Sell
+//     let sell = parseFloat($tr.find('td').eq(1).text().replace(/[₹,]/g, '')) || 0;
+//     let newSell = sell + totalBet;
+//     let win = parseFloat($tr.find('td').eq(2).text().replace(/[₹,]/g, '')) || 0;
 
-    $tr.find('td').eq(1).text('₹' + newSell.toFixed(2));
+//     $tr.find('td').eq(1).text('₹' + newSell.toFixed(2));
 
-    // Commission = 3%
-    let commission = newSell * 0.03;
-    $tr.find('td').eq(3).text('₹' + commission.toFixed(2));
+//     // Commission = 3%
+//     let commission = newSell * 0.03;
+//     $tr.find('td').eq(3).text('₹' + commission.toFixed(2));
 
-    // Net = Sell - Commission
-    let net = newSell - win - commission;
-    $tr.find('td').eq(4).text('₹' + net.toFixed(2));
-  }
-});
+//     // Net = Sell - Commission
+//     let net = newSell - win - commission;
+//     $tr.find('td').eq(4).text('₹' + net.toFixed(2));
+//   }
+// });
 
 // 4) Sum all rows and insert into footer
 totalSell = 0;

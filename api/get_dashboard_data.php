@@ -73,7 +73,6 @@ $stmtTBH = $conn->prepare("
      WHERE user_id        = ?
        AND DATE(created_at) = CURDATE()
        AND ticket_serial  > 0
-        AND withdraw_time  < NOW()
      ORDER BY id DESC
 ");
 $stmtTBH->bind_param("i", $user_id);
@@ -158,6 +157,7 @@ foreach ($mapped as &$row) {
     $serial = $row['ticket_serial'];
 
     if (isset($claimBySerial[$serial])) {
+        $row['claim_id']   = $claimBySerial[$serial]['id'];
         $row['claim_point']   = $claimBySerial[$serial]['claim_point'];
         $row['unclaim_point'] = $claimBySerial[$serial]['unclaim_point'];
     } else {
